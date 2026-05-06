@@ -623,6 +623,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .detail-desc a { color: var(--accent); text-decoration: underline; }
 .detail-desc hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
+.detail-where-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
 .detail-where {
   display: inline-flex;
   align-items: center;
