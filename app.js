@@ -133,14 +133,29 @@ function stripHtml(html) {
   return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function plainTextToHtml(text) {
-  if (/<[a-z][\s\S]*?>/i.test(text)) return text;
-  return text.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+function renderMarkdown(text) {
+  if (typeof marked === 'undefined') {
+    return text.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+  }
+  return marked.parse(text, { breaks: true });
 }
 
-function shortDesc(text, max = 130) {
-  const plain = stripHtml(text);
-  return plain.length > max ? plain.slice(0, max).replace(/\s+\S*$/, '') + '…' : plain;
+function stripMarkdown(text) {
+  return text
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/#{1,6}\s+/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    .replace(/`{3}[\s\S]*?`{3}/g, '')
+    .replace(/`(.+?)`/g, '$1')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/^\s*>\s*/gm, '')
+    .replace(/\n+/g, ' ')
+    .trim();
 }
 
 function parseTags(val) {
@@ -474,7 +489,7 @@ function createCard(script) {
   const cats     = parseTags(script['Categorías']);
   const tags     = parseTags(script['Etiquetas']);
   const related  = parseTags(script['Relacionados']);
-  const fullDesc = stripHtml(script['Descripción'] || '');
+  const fullDesc = stripMarkdown(stripHtml(script['Descripción'] || ''));
   const id       = script['ID'];
   const isSelected = selectedIds.has(id);
 
@@ -546,7 +561,7 @@ function showDetail(script, pushHistory = true) {
   const related = parseTags(script['Relacionados']);
   const code    = script['Script'] || '';
   const lang    = detectLang(code);
-  const desc    = plainTextToHtml(script['Descripción'] || '');
+  const desc    = renderMarkdown(script['Descripción'] || '');
   const where   = script['Donde insertar'];
 
   let highlighted = '';
