@@ -9,7 +9,7 @@ const CSV_URL =
 /* ─── i18n ──────────────────────────────────────────────── */
 const T = {
   appName:        'HackeXeLearning',
-  appSub:         'Scripts para eXeLearning 4+',
+  appSub:         'Recursos para eXeLearning 4+',
   categories:     'Categorías',
   allCats:        'Todas',
   loading:        'Cargando recursos…',
@@ -291,19 +291,23 @@ function selectCategory(cat) {
     el.classList.toggle('active', el.dataset.cat === cat));
   dom.detailView.hidden = true;
   dom.listView.hidden   = false;
+  syncSearchClear();
   renderList();
   updateURL();
   if (window.innerWidth < 769) closeSidebar();
 }
 
 function syncSearchClear() {
-  dom.searchClear.hidden = !dom.searchInput.value;
+  dom.searchClear.hidden = !dom.searchInput.value && !activeCategory;
 }
 
 function clearSearch() {
   searchQuery = '';
+  activeCategory = '';
   dom.searchInput.value = '';
   dom.searchClear.hidden = true;
+  dom.catList.querySelectorAll('.cat-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.cat === ''));
   sharedScripts = [];
   renderList();
   updateURL();
