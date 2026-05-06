@@ -133,7 +133,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 #searchInput {
   width: 100%;
   height: 38px;
-  padding: 0 .75rem 0 2.25rem;
+  padding: 0 2.25rem 0 2.25rem;
   background: var(--surface-alt);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -149,6 +149,21 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: var(--surface);
 }
 #searchInput::-webkit-search-cancel-button { display: none; }
+
+.input-clear {
+  position: absolute;
+  right: .5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  transition: background .15s, color .15s;
+  z-index: 1;
+}
+.input-clear:hover { background: var(--border); color: var(--text); }
+.input-clear[hidden] { display: none; }
 
 .search-clear {
   display: none;

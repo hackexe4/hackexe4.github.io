@@ -90,6 +90,7 @@ function initDom() {
     toast:         $('toast'),
     searchClear:   $('searchClear'),
     headerSearch:  $('headerSearch'),
+    inputClear:    $('inputClear'),
   });
 }
 
@@ -321,6 +322,9 @@ function syncSearchClear(currentCount) {
   // Solo mostrar si se está viendo un subconjunto de los recursos totales
   const isFiltered = currentCount < allScripts.length && allScripts.length > 0;
   dom.searchClear.classList.toggle('visible', isFiltered);
+
+  // Mostrar "x" interna solo si hay texto en el buscador
+  dom.inputClear.hidden = !dom.searchInput.value.trim();
 }
 
 function clearSearch() {
@@ -824,6 +828,14 @@ function initEvents() {
   });
 
   dom.searchClear.addEventListener('click', clearSearch);
+
+  dom.inputClear.addEventListener('click', () => {
+    searchQuery = '';
+    dom.searchInput.value = '';
+    renderList();
+    updateURL();
+    dom.searchInput.focus();
+  });
 
   const allItem = dom.catList.querySelector('[data-cat=""]');
   allItem.addEventListener('click', () => selectCategory(''));
