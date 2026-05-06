@@ -5,6 +5,7 @@ const CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/' +
   '2PACX-1vTkmdZbTZ-rLI305yY5IhP7sDJY7ViC2MnCUh1J2muinEjoOT4BT4yLV8I7v0kxdiba_R81vHjBA_b0' +
   '/pub?output=csv';
+const FALLBACK_CSV_URL = 'HackeXe4.csv';
 
 /* ─── i18n ──────────────────────────────────────────────── */
 const T = {
@@ -775,23 +776,37 @@ function toggleSidebar() {
 }
 
 /* ─── Data loading ───────────────────────────────────────── */
+async function fetchScriptsFrom(url) {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`${url}: HTTP ${resp.status}`);
+  const rows = parseCSV(await resp.text());
+  const scripts = csvToScripts(rows);
+  if (scripts.length === 0) throw new Error(`${url}: CSV sin recursos válidos`);
+  return scripts;
+}
+
 async function loadData() {
   showLoading();
   dom.listView.hidden   = false;
   dom.detailView.hidden = true;
   currentScript = null;
-  try {
-    const resp = await fetch(CSV_URL);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const rows = parseCSV(await resp.text());
-    allScripts = csvToScripts(rows);
-    dom.statusMsg.hidden = true;
-    renderCategories();
-    applyURLState(pendingURLState);
-  } catch (err) {
-    console.error('HackeXe4:', err);
-    showError();
+
+  const errors = [];
+  for (const url of [CSV_URL, FALLBACK_CSV_URL]) {
+    try {
+      allScripts = await fetchScriptsFrom(url);
+      dom.statusMsg.hidden = true;
+      renderCategories();
+      applyURLState(pendingURLState);
+      return;
+    } catch (err) {
+      errors.push(err);
+      console.warn('HackeXe4:', err);
+    }
   }
+
+  console.error('HackeXe4:', errors);
+  showError();
 }
 
 /* ─── Events ─────────────────────────────────────────────── */

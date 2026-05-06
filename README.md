@@ -20,7 +20,7 @@ Compatibles con **eXeLearning 4 y superiores**. Para la versión 2.9 visita [hac
 - **Copiar con un clic** para pegar directamente en eXeLearning
 - **Compartir recursos** mediante URL: una vista, un recurso concreto o una selección personalizada
 - **Modo claro/oscuro** automático y manual
-- Los datos se cargan desde una hoja de Google Sheets pública — añadir un recurso es inmediato
+- Los datos se cargan desde una hoja de Google Sheets pública, con `HackeXe4.csv` como copia local de respaldo
 
 ## Uso
 
@@ -30,7 +30,9 @@ Para compartir un recurso o una selección, usa el botón **Compartir** — gene
 
 ## Datos
 
-Los recursos se gestionan en una hoja de Google Sheets con las columnas:
+Los recursos se gestionan en una hoja de Google Sheets. Si la hoja pública no responde, la aplicación usa el archivo local `HackeXe4.csv` como fallback.
+
+Columnas:
 
 | Columna | Descripción |
 |---|---|

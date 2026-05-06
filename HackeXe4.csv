@@ -1,0 +1,483 @@
+ID,Título,Resumen,Descripción,Donde insertar,Script,Etiquetas,Categorías,Relacionados,Fuente
+exe_0001,Indice de subpáginas,Genera un indice con las subpáginas del apartado actual. Permite ajustar la profundidad de navegación con data-depth y muestra un índice local dentro del iDevice. No es compatible con SCORM.,"### Índice de subpáginas
+
+Genera un índice local con las subpáginas del apartado actual en eXeLearning. Es útil para crear navegación interna dentro de una sección concreta del proyecto.
+
+**Uso**
+
+- Inserta el fragmento en el lugar donde quieras mostrar el menú.
+- El script busca la página actual en el menú lateral de eXeLearning.
+- Si encuentra subpáginas, crea una lista de enlaces dentro del iDevice.
+
+**Configuración**
+
+Modifica el atributo `data-depth` del contenedor principal:
+
+- `data-depth=""0""`: muestra todos los niveles disponibles.
+- `data-depth=""1""`: muestra solo las subpáginas directas.
+- `data-depth=""2""`: muestra las subpáginas directas y sus hijas.
+- Cualquier número superior limita el menú hasta ese nivel.
+
+**Inserción**
+
+Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+
+**Limitación**
+
+No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<div data-exe-fragment=""exe-script-indice-subpaginas"" data-page-title="""" data-depth=""0"" style=""box-sizing:border-box; max-width:48rem; margin:1rem 0; padding:1rem; border:1px solid #d7e3f4; border-radius:0.75rem; background:#f8fbff; color:#1f2937; font-family:Arial, sans-serif;"">
+  <p data-role=""title"" style=""margin:0 0 0.75rem 0; font-size:1.1rem; font-weight:700;"">Índice de contenidos</p>
+  <p data-role=""message"" style=""margin:0; line-height:1.5;"">Generando índice de contenidos...</p>
+  <nav data-role=""nav"" aria-label=""Subpáginas de este apartado"" hidden style=""margin-top:0.75rem;""></nav>
+  <template data-role=""code"">
+(function () {
+  var script = document.currentScript;
+  var root = script
+    ? script.closest('[data-exe-fragment=""exe-script-indice-subpaginas""]')
+    : document.querySelector('[data-exe-fragment=""exe-script-indice-subpaginas""][data-exe-l=""1""]');
+  if (!root || root.getAttribute('data-exe-fragment') !== 'exe-script-indice-subpaginas') return;
+  if (root._exeR) return;
+  root._exeR = true;
+
+  var maxAttempts = 20;
+  var retryDelay = 100;
+
+  function setMessage(text) {
+    var message = root.querySelector('[data-role=""message""]');
+    if (message) message.textContent = text;
+  }
+
+  function getDirectChildUl(listItem) {
+    if (!listItem) return null;
+    for (var i = 0; i < listItem.children.length; i += 1) {
+      if (listItem.children[i].tagName && listItem.children[i].tagName.toLowerCase() === 'ul') {
+        return listItem.children[i];
+      }
+    }
+    return null;
+  }
+
+  function getDirectChildLink(listItem) {
+    if (!listItem) return null;
+    for (var i = 0; i < listItem.children.length; i += 1) {
+      if (listItem.children[i].tagName && listItem.children[i].tagName.toLowerCase() === 'a') {
+        return listItem.children[i];
+      }
+    }
+    return null;
+  }
+
+  function normalizeText(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
+
+  function findReferenceItem(siteNav) {
+    var requestedTitle = normalizeText(root.getAttribute('data-page-title'));
+    var links = siteNav.querySelectorAll('a');
+
+    if (requestedTitle) {
+      for (var i = 0; i < links.length; i += 1) {
+        if (normalizeText(links[i].textContent) === requestedTitle) {
+          return links[i].closest('li');
+        }
+      }
+      return null;
+    }
+
+    var activeLink = siteNav.querySelector('a.active');
+    if (activeLink) return activeLink.closest('li');
+
+    var activeItem = siteNav.querySelector('li.active, #active');
+    if (activeItem) return activeItem.closest('li');
+
+    return null;
+  }
+
+  function styleList(list, depth) {
+    list.style.boxSizing = 'border-box';
+    list.style.margin = depth === 0 ? '0' : '0.35rem 0 0 1.25rem';
+    list.style.padding = depth === 0 ? '0 0 0 1.25rem' : '0 0 0 1rem';
+    list.style.lineHeight = '1.5';
+  }
+
+  function styleItem(item) {
+    item.style.margin = '0.35rem 0';
+  }
+
+  function styleLink(link) {
+    link.style.color = '#145ea8';
+    link.style.textDecoration = 'underline';
+    link.style.textUnderlineOffset = '0.15em';
+  }
+
+  function clonePages(sourceList, currentDepth, depthLimit) {
+    var outputList = document.createElement('ul');
+    styleList(outputList, currentDepth);
+
+    Array.prototype.forEach.call(sourceList.children, function (sourceItem) {
+      if (!sourceItem || sourceItem.tagName.toLowerCase() !== 'li') return;
+
+      var sourceLink = getDirectChildLink(sourceItem);
+      if (!sourceLink) return;
+
+      var item = document.createElement('li');
+      var link = document.createElement('a');
+      item.appendChild(link);
+
+      link.href = sourceLink.getAttribute('href') || '#';
+      link.textContent = normalizeVisibleTitle(sourceLink.textContent);
+      if (sourceLink.getAttribute('title')) link.title = sourceLink.getAttribute('title');
+      if (sourceLink.getAttribute('target')) link.target = sourceLink.getAttribute('target');
+      if (sourceLink.getAttribute('rel')) link.rel = sourceLink.getAttribute('rel');
+
+      styleItem(item);
+      styleLink(link);
+
+      var canGoDeeper = depthLimit === 0 || (currentDepth + 1 < depthLimit);
+      if (canGoDeeper) {
+        var nestedSourceList = getDirectChildUl(sourceItem);
+        if (nestedSourceList) {
+          item.appendChild(clonePages(nestedSourceList, currentDepth + 1, depthLimit));
+        }
+      }
+
+      outputList.appendChild(item);
+    });
+
+    return outputList;
+  }
+
+  function normalizeVisibleTitle(text) {
+    return String(text || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function renderIndex() {
+    var siteNav = document.getElementById('siteNav');
+    if (!siteNav) return false;
+
+    var referenceItem = findReferenceItem(siteNav);
+    if (!referenceItem) {
+      setMessage('No se ha podido localizar la página de referencia en el menú.');
+      return true;
+    }
+
+    var subPagesList = getDirectChildUl(referenceItem);
+    if (!subPagesList || subPagesList.children.length === 0) {
+      setMessage('No hay subsecciones en este apartado.');
+      return true;
+    }
+
+    var depthLimit = parseInt(root.getAttribute('data-depth'), 10);
+    if (isNaN(depthLimit)) depthLimit = 0;
+
+    var nav = root.querySelector('[data-role=""nav""]');
+    var generatedList = clonePages(subPagesList, 0, depthLimit);
+
+    if (!nav || generatedList.children.length === 0) {
+      setMessage('No hay subsecciones en este apartado.');
+      return true;
+    }
+
+    while (nav.firstChild) nav.removeChild(nav.firstChild);
+    nav.appendChild(generatedList);
+    nav.hidden = false;
+    setMessage('');
+    return true;
+  }
+
+  function start(attempt) {
+    if (renderIndex()) return;
+    if (attempt >= maxAttempts) {
+      setMessage('No se ha encontrado el menú de navegación de eXeLearning.');
+      return;
+    }
+    window.setTimeout(function () {
+      start(attempt + 1);
+    }, retryDelay);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      start(1);
+    }, { once: true });
+  } else {
+    start(1);
+  }
+})();
+  </template>
+  <img alt="""" src=""data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="" onload=""(function(img){var root=img.closest('[data-exe-fragment=&quot;exe-script-indice-subpaginas&quot;]');if(!root||root._exeB)return;root._exeB=true;var code=root.querySelector('template[data-role=&quot;code&quot;]');if(!code)return;root.setAttribute('data-exe-l','1');var script=document.createElement('script');script.text=code.content.textContent;root.appendChild(script);root.removeAttribute('data-exe-l');})(this)"" onerror=""this.onload&&this.onload()"" style=""position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"" />
+</div>
+",índice; subpáginas; menú local; navegación; niveles,Índices de contenido,exe_0002; exe_0005,Elaboración propia
+exe_0002,Indice de todo el proyecto,Crea un indice con todas las páginas del proyecto. Permite limitar los niveles mostrados con eXeAutoIndex y filtra páginas ocultas marcadas con .oc. en el título. No es compatible con SCORM.,"### Indice de todo el proyecto
+
+Genera un índice global con enlaces a las páginas del proyecto eXeLearning. Sirve para ofrecer una navegación completa desde cualquier iDevice.
+
+**Uso**
+
+- Inserta el fragmento en el punto donde quieras mostrar el índice.
+- El script lee el menú lateral del proyecto.
+- Construye una lista de enlaces con las páginas disponibles.
+- Omite las páginas cuyo título contiene `.oc.`.
+
+**Configuración**
+
+Modifica la llamada final a `eXeAutoIndex()`:
+
+- `eXeAutoIndex(0)`: muestra todos los niveles.
+- `eXeAutoIndex(1)`: muestra solo el primer nivel.
+- `eXeAutoIndex(2)`: muestra dos niveles.
+- Cualquier número superior limita la profundidad del índice.
+
+**Inserción**
+
+Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+
+**Limitación**
+
+No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<div id=""contentNav"" class=""js-hidden"">Activa JavaScript para ver el índice.</div>
+
+<script>
+// HACKeXe - https://hackexe.tiddlyhost.com
+// Menú de páginas de todo el proyecto con niveles configurables y filtrado de páginas ocultas que contienen .oc. en su título. V2
+
+function eXeAutoIndex(levels = 2) {
+    var nav = $(""#siteNav"");
+    if (nav.length != 1) return false;
+
+    var navContainer = $(""<ul></ul>"");  // Contenedor principal
+
+    function appendChildren(element, currentLevel, parentContainer) {
+        element.children(""ul"").children(""li"").each(function() {
+            if (!$(this).find(""a"").text().includes("".oc."")) {
+                var liClone = $(this).clone();
+                liClone.children(""ul"").remove();  // Elimina sublistas existentes antes de clonar
+
+                var newSubList = $(""<ul></ul>"");  // Nueva sublista para niveles adicionales
+                if (levels === 0 || currentLevel < levels) {
+                    appendChildren($(this), currentLevel + 1, newSubList);  // Recursión para subniveles
+                    if (newSubList.children().length > 0) {
+                        liClone.append(newSubList);  // Solo añade la sublista si tiene elementos
+                    }
+                }
+
+                parentContainer.append(liClone);  // Añade el elemento clonado al contenedor padre
+            }
+        });
+    }
+
+    appendChildren(nav, 1, navContainer);  // Inicia la recursión desde el primer nivel
+    $(""#contentNav"").html(navContainer).show();  // Muestra el menú
+}
+
+$(function() {
+    eXeAutoIndex(0);  // Configura aquí el número de niveles que deseas (0 para todos los niveles, 1 para un nivel, 2 para dos niveles, etc.)
+});
+</script>",índice; proyecto completo; menú global; navegación; niveles,Índices de contenido,exe_0001; exe_0005,Elaboración propia a partir del código de Rafael Bueno.
+exe_0003,Añadir delimitadores de fórmulas $...$,Permite escribir fórmulas en línea con $...$ además de \(...\) mediante MathJax. Solo se ve correctamente en la vista previa y puede causar conflictos si el texto contiene símbolos $ no destinados a fórmulas.,"### Añadir delimitadores de fórmulas `$...$`
+
+Permite usar fórmulas en línea escritas con delimitadores `$...$`, además de los delimitadores habituales `\(...\)` de MathJax.
+
+**Uso**
+
+- Inserta el fragmento en una página donde quieras activar esta forma de escribir fórmulas.
+- Al cargar la página, el script modifica la configuración de MathJax.
+- Después fuerza un nuevo procesado para que las fórmulas se muestren correctamente.
+
+**Ejemplo**
+
+Puedes escribir una fórmula como `$x^2+y^2=z^2$` y MathJax la interpretará como expresión matemática en línea.
+
+**Inserción**
+
+Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+
+**Advertencias**
+
+- Puede causar problemas si el texto contiene símbolos `$` que no delimitan fórmulas.
+- La fórmula solo se verá procesada en la **vista previa** o en la página exportada, no en el editor.
+- Conviene revisar el texto de la página después de insertarlo.",Pie del proyecto,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true,
+    processEnvironments: true
+  },
+  options: {
+    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  },
+  startup: {
+    pageReady: function() {
+      // Cuando MathJax esté listo, procesar la página
+      return MathJax.startup.defaultPageReady().then(function() {
+        console.log('MathJax: Renderizado inicial completo con delimitadores $');
+      });
+    }
+  }
+};
+</script>
+<script>
+(function() {
+  // Intentar cargar MathJax desde la ruta local de eXeLearning (common/mathjax/)
+  // Si no existe, se puede añadir un fallback a CDN.
+  var script = document.createElement('script');
+  script.src = 'common/mathjax/tex-chtml.js';
+  script.async = true;
+  script.id = 'MathJax-script';
+  
+  // Si la carga local falla (por ejemplo, si no se marcó ""Añadir MathJax"" en eXe),
+  // esto intentará cargarlo desde un CDN para que no falle el renderizado.
+  script.onerror = function() {
+    console.warn(""MathJax local no encontrado. Intentando cargar desde CDN..."");
+    var cdnScript = document.createElement('script');
+    cdnScript.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
+    cdnScript.async = true;
+    document.head.appendChild(cdnScript);
+  };
+  
+  document.head.appendChild(script);
+})();
+</script>
+",MathJax; fórmulas; LaTeX; delimitadores; vista previa,Fórmulas,,Elaboración propia
+exe_0004,Cambiar el color de fondo y del texto de acordeón,Cambia el color de fondo y del texto de los títulos del acordeón. Puede aplicarse a todo el proyecto desde el pie o solo a una página desde el botón HTML.,"### Cambiar el color de fondo y del texto de acordeón
+
+Permite modificar el color de fondo y el color del texto de los títulos del acordeón en eXeLearning.
+
+**Uso**
+
+- Para que afecte a todo el proyecto, coloca el código en el **pie**.
+- Para que afecte solo a una página, colócalo usando el botón **HTML**.
+
+**Personalización**
+
+Deben cambiarse los colores de fondo y del texto por los que cada uno quiera. En el script, modifica estos valores:
+
+- `background-color: '#ff0000'`: color de fondo.
+- `color: '#ffffff'`: color del texto.
+
+**Fuente**
+
+[Manuel Narváez](https://t.me/eXeLearning/26649)",Pie del proyecto; HTML de la página,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<script>
+// HACKeXe - Cambia el color de fondo y del texto del fx acordeón
+$(function(){
+$('.fx-accordion-title, .exe-accordion h2').css({
+        'background-color':'#ff0000', //color de fondo
+        'color':'#ffffff' // color del texto
+    });
+});
+</script>",acordeón; colores; fondo; texto,Personalización visual,,[Manuel Narváez](https://t.me/eXeLearning/26649)
+exe_0005,Índice de contenido de los títulos de una página,"Crea un índice con los encabezados de la página y enlaza cada entrada con su título. Por defecto incluye h1, h2 y h3, aunque se puede cambiar maxLevel. Debe insertarse justo donde se quiere mostrar el índice.","### Índice de contenido de los títulos de una página
+
+Crea un índice automático con los títulos de una página de eXeLearning. El índice se genera a partir de los encabezados presentes en el contenido y enlaza cada entrada con el título correspondiente.
+
+**Uso**
+
+- Inserta el fragmento en el punto exacto donde quieras que aparezca el índice.
+- Puedes usar el botón **HTML** o el botón **Insertar código**.
+- Al cargar la página, el script recorre los encabezados y crea una lista de enlaces.
+- El primer título encontrado se elimina del índice porque normalmente corresponde al título general de la página.
+
+**Configuración**
+
+Por defecto se incluyen los tres primeros niveles de encabezado:
+
+```javascript
+var maxLevel = 3;
+```
+
+Puedes cambiar ese valor para incluir más o menos niveles, por ejemplo `2` para usar solo `h1` y `h2`.
+
+**Inserción**
+
+Colócalo en el lugar exacto donde debe aparecer el índice, mediante el **botón HTML** o el botón **Insertar código**.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<ul id=""indice""></ul>
+
+<script>
+// HACKeXe - https://hackexe.tiddlyhost.com
+// Índice de contenido de los títulos de una página. v2 
+
+    document.addEventListener(""DOMContentLoaded"", function() {
+        // Número de niveles que quieres en el índice (por ejemplo, 3 para incluir h1, h2 y h3)
+        var maxLevel = 3;
+        var indice = document.getElementById(""indice"");
+        
+        // Crear un contenedor temporal para almacenar los elementos del índice
+        var tempIndice = [];
+
+        // Recorrer todos los elementos del documento
+        document.body.querySelectorAll(""*"").forEach(function(node, index) {
+            // Comprobar si el nodo es un encabezado y si está dentro del rango de niveles deseado
+            var tagName = node.tagName.toLowerCase();
+            if (tagName.startsWith('h') && parseInt(tagName.charAt(1)) <= maxLevel) {
+                // Asegurar que cada encabezado tenga un ID único
+                if (!node.id) {
+                    node.id = ""header-"" + index;
+                }
+                
+                // Crear un elemento de lista para el índice
+                var li = document.createElement(""li"");
+                var a = document.createElement(""a"");
+                a.href = ""#"" + node.id;
+                a.textContent = node.textContent;
+                
+                // Añadir sangría para niveles más profundos
+                li.style.marginLeft = (parseInt(tagName.charAt(1)) - 1) * 20 + ""px"";
+                
+                li.appendChild(a);
+                tempIndice.push(li);
+            }
+        });
+
+        // Eliminar el primer título que corresponde a la página
+        if (tempIndice.length > 0) {
+            tempIndice.shift();
+        }
+
+        // Añadir todos los elementos del índice al contenedor principal
+        tempIndice.forEach(function(li) {
+            indice.appendChild(li);
+        });
+    });
+</script>",índice; títulos; encabezados; navegación; página,Índices de contenido,exe_0001; exe_0002,Elaboración propia
+exe_0006,EdEX,"Editor web para crear, modificar y extraer estilos de eXeLearning. Permite trabajar con estilos ZIP y con el estilo incorporado en archivos ELPX.","### EdEX
+
+Editor de estilos para eXeLearning. Permite partir de un estilo base, cargar estilos en formato ZIP o abrir un archivo ELPX para trabajar con el estilo que incorpora. También permite extraer el estilo y volver a guardar el ELPX con los cambios.
+
+**URL:** https://exe-style-editor.github.io/",,,estilos; editor; ELPX; ZIP; diseño,Software y utilidades externas,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://exe-style-editor.github.io/
+exe_0007,eXeConvert,"Convierte proyectos eXeLearning entre ELP, ELPX, DOCX, Markdown y PDF, usando ELPX como formato central.","### eXeConvert
+
+Utilidad para convertir entre formatos relacionados con eXeLearning. Permite importar ELP o DOCX para generar ELPX, y exportar ELPX a DOCX, Markdown o PDF. Al trabajar con DOCX y Markdown mantiene la estructura mediante encabezados.
+
+**URL:** https://execonvert.github.io/",,,conversión; ELPX; DOCX; Markdown; PDF,Software y utilidades externas,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://execonvert.github.io/
+exe_0008,Visor Web-ZIP,"Publica y comparte archivos ELPX, ZIP, H5P y otros recursos digitales desde enlaces públicos de servicios en la nube.","### Visor Web-ZIP
+
+Aplicación web para publicar y compartir recursos digitales educativos desde un archivo ZIP, ELPX, H5P u otros formatos alojados en Drive, Dropbox, Nextcloud, Box.com u otros servicios con enlace público. Genera un enlace que permite abrir el recurso directamente en el navegador y admite opciones como fechas de disponibilidad.
+
+**URL:** https://visor-webzip.github.io/",,,publicación; ELPX; ZIP; nube; visor,Software y utilidades externas,exe_0010; exe_0011,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://visor-webzip.github.io/
+exe_0009,ELPX Translator,Traductor de proyectos ELPX con dos modalidades: una versión de escritorio que funciona en local sin servicios externos y una versión web que utiliza la API aportada por el usuario.,"### ELPX Translator
+
+Herramienta para traducir proyectos ELPX. Dispone de dos modalidades:
+
+- **ELPX Translator Desktop**, aplicación de escritorio que se ejecuta en local y no necesita servicios externos.
+- **ELPX Translator Web**, versión en línea que requiere que el usuario aporte su propia API para realizar la traducción.
+
+Está pensada para facilitar la traducción de recursos creados con eXeLearning manteniendo la estructura del proyecto ELPX.
+
+**URL:** https://elpx-translator-desktop.github.io/",,,traducción; ELPX; IA; escritorio; web,Software y utilidades externas,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/
+exe_0010,eXeReader,Aplicación libre y gratuita para Android e iOS que permite leer contenidos creados con eXeLearning en dispositivos móviles.,"### eXeReader
+
+Aplicación libre y gratuita para visualizar contenidos creados con eXeLearning en dispositivos móviles. Lee sitios web HTML generados con eXeLearning y permite abrir materiales exportados para su lectura, especialmente en Android e iOS.
+
+**URLs:**
+
+- Android: https://play.google.com/store/apps/details?id=net.exelearning.exereader
+- iOS: https://apps.apple.com/es/app/exereader/id6444196265
+- Código fuente: https://github.com/exelearning/exereader",,,lector; móvil; Android; iOS; HTML,Software y utilidades externas,exe_0008; exe_0011,"Google Play, App Store y GitHub"
+exe_0011,eXeViewer,Visor para abrir paquetes de contenido de eXeLearning directamente en el navegador. Puede usarse como alternativa de publicación para ELPX y ZIP.,"### eXeViewer
+
+Visor de paquetes de contenido de eXeLearning pensado para abrirlos directamente en el navegador. Está disponible como imagen Docker `exelearning/exeviewer` y se orienta a visualizar contenidos de eXeLearning sin editar el proyecto.
+
+**URL:** https://hub.docker.com/r/exelearning/exeviewer",,,visor; ELPX; ZIP; navegador; Docker,Software y utilidades externas,exe_0008; exe_0010,Docker Hub: https://hub.docker.com/r/exelearning/exeviewer
