@@ -28,6 +28,7 @@ const T = {
   viewCode:       'Ver recurso',
   summary:        'Resumen',
   description:    'Descripción',
+  source:         'Fuente',
   share:          'Compartir',
   shareView:      'Compartir vista',
   shareScript:    'Compartir este recurso',
@@ -569,6 +570,7 @@ function showDetail(script, pushHistory = true) {
   const resumen = renderMarkdown(script['Resumen'] || '');
   const desc    = renderMarkdown(script['Descripción'] || '');
   const where   = script['Donde insertar'];
+  const fuente  = renderMarkdown(script['Fuente'] || '');
 
   let highlighted = '';
   try {
@@ -633,6 +635,11 @@ function showDetail(script, pushHistory = true) {
       ${tags.length ? `<div class="detail-section">
         <p class="detail-label">${T.tags}</p>
         <div class="detail-tags">${tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>
+      </div>` : ''}
+
+      ${fuente ? `<div class="detail-section">
+        <p class="detail-label">${T.source}</p>
+        <div class="detail-desc">${fuente}</div>
       </div>` : ''}
 
       ${relatedHtml}
