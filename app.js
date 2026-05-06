@@ -8,7 +8,7 @@ const CSV_URL =
 
 /* ─── i18n ──────────────────────────────────────────────── */
 const T = {
-  appName:        'HackeXeLearning',
+  appName:        'HackeXe',
   appSub:         'Recursos para eXeLearning 4+',
   categories:     'Categorías',
   allCats:        'Todas',
@@ -19,13 +19,14 @@ const T = {
   noResults:      'Sin resultados',
   noResultsSub:   'Prueba con otros términos de búsqueda',
   scripts:        n => `${n} recurso${n !== 1 ? 's' : ''}`,
-  back:           '← Volver',
+  back:           'Volver',
   whereInsert:    'Dónde insertar',
   tags:           'Etiquetas',
   related:        'Recursos relacionados',
   copyCode:       'Copiar código',
   copied:         '¡Copiado!',
   viewCode:       'Ver recurso',
+  summary:        'Resumen',
   description:    'Descripción',
   share:          'Compartir',
   shareView:      'Compartir vista',
@@ -47,6 +48,7 @@ const IC = {
   check:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
   copy:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
   back:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>`,
+  home:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
   next:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`,
   where:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
   retry:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
@@ -86,6 +88,7 @@ function initDom() {
     aboutClose:    $('aboutClose'),
     toast:         $('toast'),
     searchClear:   $('searchClear'),
+    headerSearch:  $('headerSearch'),
   });
 }
 
@@ -313,17 +316,17 @@ function selectCategory(cat) {
 }
 
 function syncSearchClear() {
-  dom.searchClear.classList.toggle('visible', !!(dom.searchInput.value || activeCategory));
+  const isFiltered = !!(dom.searchInput.value.trim() || activeCategory || sharedScripts.length > 0);
+  dom.searchClear.classList.toggle('visible', isFiltered);
 }
 
 function clearSearch() {
   searchQuery = '';
   activeCategory = '';
+  sharedScripts = [];
   dom.searchInput.value = '';
-  dom.searchClear.classList.remove('visible');
   dom.catList.querySelectorAll('.cat-item').forEach(el =>
     el.classList.toggle('active', el.dataset.cat === ''));
-  sharedScripts = [];
   renderList();
   updateURL();
 }
@@ -331,7 +334,6 @@ function clearSearch() {
 function filterByTag(tag) {
   searchQuery = tag;
   dom.searchInput.value = tag;
-  dom.searchClear.classList.add('visible');
   sharedScripts = [];
   currentScript = null;
   navStack = [];
@@ -350,6 +352,7 @@ function filteredScripts() {
     const q = searchQuery.toLowerCase();
     list = list.filter(s =>
       (s['Título']         || '').toLowerCase().includes(q) ||
+      (s['Resumen']        || '').toLowerCase().includes(q) ||
       (s['Descripción']    || '').toLowerCase().includes(q) ||
       (s['Etiquetas']      || '').toLowerCase().includes(q) ||
       (s['Categorías']     || '').toLowerCase().includes(q) ||
@@ -470,6 +473,7 @@ function renderList() {
   const list = filteredScripts();
   dom.cardGrid.innerHTML = '';
   dom.cardGrid.classList.toggle('selection-mode', selectionMode);
+  syncSearchClear();
   renderToolbar();
 
   if (list.length === 0) {
@@ -489,7 +493,7 @@ function createCard(script) {
   const cats     = parseTags(script['Categorías']);
   const tags     = parseTags(script['Etiquetas']);
   const related  = parseTags(script['Relacionados']);
-  const fullDesc = stripMarkdown(stripHtml(script['Descripción'] || ''));
+  const fullDesc = stripMarkdown(stripHtml(script['Resumen'] || script['Descripción'] || ''));
   const id       = script['ID'];
   const isSelected = selectedIds.has(id);
 
@@ -513,6 +517,7 @@ function createCard(script) {
       ${tags.map(t => `<span class="tag tag-clickable" data-tag="${escHtml(t)}">${escHtml(t)}</span>`).join('')}
     </div>
     ${relatedItems.length ? `<div class="card-related">
+      <p class="card-related-label">${T.related}</p>
       ${relatedItems.map(r => `<button class="card-related-link" data-rel-id="${escHtml(r['ID'])}">${IC.next} ${escHtml(r['Título'])}</button>`).join('')}
     </div>` : ''}
     ${!selectionMode ? `
@@ -561,6 +566,7 @@ function showDetail(script, pushHistory = true) {
   const related = parseTags(script['Relacionados']);
   const code    = script['Script'] || '';
   const lang    = detectLang(code);
+  const resumen = renderMarkdown(script['Resumen'] || '');
   const desc    = renderMarkdown(script['Descripción'] || '');
   const where   = script['Donde insertar'];
 
@@ -589,21 +595,27 @@ function showDetail(script, pushHistory = true) {
       </div>
     </div>` : '';
 
+  dom.listToolbar.innerHTML = `
+    <div class="toolbar-btns" style="flex:1; justify-content: space-between;">
+      <button class="btn-toolbar" id="detailBack">${IC.back} ${T.back}</button>
+      <button class="btn-toolbar btn-share" id="btnShareDetail"
+        data-url="${escHtml(scriptURL)}" title="${T.shareScript}">
+        ${IC.link} ${T.share}
+      </button>
+    </div>`;
+
   dom.detailView.innerHTML = `
     <div class="detail-view">
-      <div class="detail-topbar">
-        <button class="detail-back" id="detailBack">${IC.back} ${T.back}</button>
-        <button class="btn-toolbar btn-share detail-share" id="btnShareDetail"
-          data-url="${escHtml(scriptURL)}" title="${T.shareScript}">
-          ${IC.link} ${T.share}
-        </button>
-      </div>
-
       <div class="detail-header">
         ${cats.length ? `<div class="detail-category">${escHtml(cats.join(' · '))}</div>` : ''}
         <h1 class="detail-title">${escHtml(script['Título'])}</h1>
         <p class="detail-id">ID: <code>${escHtml(script['ID'])}</code></p>
       </div>
+
+      ${resumen ? `<div class="detail-section">
+        <p class="detail-label">${T.summary}</p>
+        <div class="detail-desc">${resumen}</div>
+      </div>` : ''}
 
       ${desc ? `<div class="detail-section">
         <p class="detail-label">${T.description}</p>
@@ -642,6 +654,7 @@ function showDetail(script, pushHistory = true) {
 
   dom.listView.hidden   = true;
   dom.detailView.hidden = false;
+  dom.headerSearch.hidden = true;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if (pushHistory) {
@@ -688,6 +701,8 @@ function showList(popHistory = false) {
   navStack = [];
   dom.detailView.hidden = true;
   dom.listView.hidden   = false;
+  dom.headerSearch.hidden = false;
+  renderToolbar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (!popHistory) updateURL();
 }
@@ -761,7 +776,7 @@ async function loadData() {
     renderCategories();
     applyURLState(pendingURLState);
   } catch (err) {
-    console.error('HackeXeLearning:', err);
+    console.error('HackeXe:', err);
     showError();
   }
 }

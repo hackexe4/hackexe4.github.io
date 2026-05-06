@@ -1,4 +1,4 @@
-# HackeXeLearning
+# HackeXe
 
 **Directorio de recursos para [eXeLearning](https://exelearning.net) 4+**
 
@@ -8,7 +8,7 @@
 
 ## ¿Qué es?
 
-HackeXeLearning es un directorio de recursos (HTML, CSS, JavaScript) listos para pegar en eXeLearning sin necesidad de conocimientos de programación. Permiten ampliar las funcionalidades del programa más allá de lo que ofrecen sus iDevices por defecto.
+HackeXe es un directorio de recursos (HTML, CSS, JavaScript) listos para pegar en eXeLearning sin necesidad de conocimientos de programación. Permiten ampliar las funcionalidades del programa más allá de lo que ofrecen sus iDevices por defecto.
 
 Compatibles con **eXeLearning 4 y superiores**. Para la versión 2.9 visita [hackexe.tiddlyhost.com](https://hackexe.tiddlyhost.com).
 

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="HackeXeLearning — Recursos listos para pegar en eXeLearning 4+ sin conocimientos de programación.">
-  <title>HackeXeLearning — Recursos para eXeLearning</title>
+  <meta name="description" content="HackeXe — Recursos listos para pegar en eXeLearning 4+ sin conocimientos de programación.">
+  <title>HackeXe — Recursos para eXeLearning</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <link id="hlTheme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
@@ -17,21 +17,26 @@
     <button class="brand" id="brandLink" aria-label="Ir al inicio">
       <span class="brand-logo" aria-hidden="true">HX</span>
       <div class="brand-text">
-        <span class="brand-name">HackeXeLearning</span>
+        <span class="brand-name">HackeXe</span>
         <span class="brand-sub">Recursos para eXeLearning 4+</span>
       </div>
     </button>
 
-    <div class="header-search">
-      <span class="search-icon" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      </span>
-      <input type="search" id="searchInput" placeholder="Buscar recursos…" autocomplete="off" spellcheck="false" aria-label="Buscar recursos">
+    <div class="header-search-wrap" id="headerSearch">
+      <div class="header-search">
+        <span class="search-icon" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </span>
+        <input type="search" id="searchInput" placeholder="Buscar recursos…" autocomplete="off" spellcheck="false" aria-label="Buscar recursos">
+      </div>
+
+      <button class="btn-toolbar search-clear" id="searchClear" aria-label="Restablecer vista" title="Restablecer vista">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Ver todos</span>
+      </button>
     </div>
 
-    <button class="search-clear btn-icon" id="searchClear" aria-label="Restablecer vista" title="Restablecer vista">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
+    <div class="header-toolbar" id="listToolbar" aria-live="polite"></div>
 
     <div class="header-actions">
       <button id="sidebarToggle" class="btn-icon" aria-label="Mostrar categorías" title="Categorías" aria-expanded="false">
@@ -68,7 +73,7 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         </div>
         <div class="about-body">
-          <strong>HackeXeLearning</strong> es un directorio de recursos listos para pegar en
+          <strong>HackeXe</strong> es un directorio de recursos listos para pegar en
           <a href="https://exelearning.net" target="_blank" rel="noopener">eXeLearning</a>,
           que permiten ampliar sus funcionalidades sin necesidad de conocimientos de programación.
           Compatibles con <strong>eXeLearning 4 y superiores</strong>.
@@ -79,8 +84,6 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
-
-      <div class="list-toolbar" id="listToolbar" aria-live="polite"></div>
 
       <div id="statusMsg" class="status-msg" role="status" hidden></div>
       <div id="cardGrid" class="card-grid"></div>
