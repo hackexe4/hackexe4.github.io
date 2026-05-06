@@ -63,6 +63,7 @@ let selectedIds    = new Set();
 let sharedScripts  = [];        // non-empty = shared-set view
 let debounceTimer  = null;
 let pendingURLState = null;     // URL state to apply after data loads
+let navStack       = [];        // history stack for detail-to-detail navigation
 
 /* ─── DOM refs ──────────────────────────────────────────── */
 const $ = id => document.getElementById(id);
@@ -84,6 +85,7 @@ function initDom() {
     aboutBanner:   $('aboutBanner'),
     aboutClose:    $('aboutClose'),
     toast:         $('toast'),
+    searchClear:   $('searchClear'),
   });
 }
 
@@ -294,6 +296,32 @@ function selectCategory(cat) {
   if (window.innerWidth < 769) closeSidebar();
 }
 
+function syncSearchClear() {
+  dom.searchClear.hidden = !dom.searchInput.value;
+}
+
+function clearSearch() {
+  searchQuery = '';
+  dom.searchInput.value = '';
+  dom.searchClear.hidden = true;
+  sharedScripts = [];
+  renderList();
+  updateURL();
+}
+
+function filterByTag(tag) {
+  searchQuery = tag;
+  dom.searchInput.value = tag;
+  dom.searchClear.hidden = false;
+  sharedScripts = [];
+  currentScript = null;
+  navStack = [];
+  dom.detailView.hidden = true;
+  dom.listView.hidden   = false;
+  renderList();
+  updateURL();
+}
+
 /* ─── Filter ─────────────────────────────────────────────── */
 function filteredScripts() {
   if (sharedScripts.length > 0) return sharedScripts;
@@ -441,11 +469,14 @@ function renderList() {
 function createCard(script) {
   const cats     = parseTags(script['Categorías']);
   const tags     = parseTags(script['Etiquetas']);
+  const related  = parseTags(script['Relacionados']);
   const fullDesc = stripHtml(script['Descripción'] || '');
-  const brief    = shortDesc(script['Descripción']);
-  const isTruncated = fullDesc.length > brief.length;
   const id       = script['ID'];
   const isSelected = selectedIds.has(id);
+
+  const relatedItems = related
+    .map(r => allScripts.find(s => s['ID'] === r || s['Título'].toLowerCase() === r.toLowerCase()))
+    .filter(Boolean);
 
   const card = document.createElement('article');
   card.className = 'script-card' + (isSelected ? ' selected' : '');
@@ -458,33 +489,32 @@ function createCard(script) {
     </div>
     ${cats.length ? `<div class="card-category">${escHtml(cats[0])}</div>` : ''}
     <h3 class="card-title">${escHtml(script['Título'])}</h3>
-    <p class="card-desc">${escHtml(brief)}</p>
-    ${isTruncated ? `<button class="btn-expand" aria-expanded="false">Leer más ▾</button>` : ''}
+    <p class="card-desc">${escHtml(fullDesc)}</p>
     <div class="card-meta">
-      ${tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}
+      ${tags.map(t => `<span class="tag tag-clickable" data-tag="${escHtml(t)}">${escHtml(t)}</span>`).join('')}
     </div>
+    ${relatedItems.length ? `<div class="card-related">
+      ${relatedItems.map(r => `<button class="card-related-link" data-rel-id="${escHtml(r['ID'])}">${IC.next} ${escHtml(r['Título'])}</button>`).join('')}
+    </div>` : ''}
     ${!selectionMode ? `
     <div class="card-footer">
       <span class="btn-view">${T.viewCode} ${IC.next}</span>
     </div>` : ''}`;
 
-  if (isTruncated) {
-    const btnExpand = card.querySelector('.btn-expand');
-    const descEl    = card.querySelector('.card-desc');
-    btnExpand.addEventListener('click', e => {
+  card.querySelectorAll('.tag-clickable').forEach(tagEl => {
+    tagEl.addEventListener('click', e => {
       e.stopPropagation();
-      const expanded = btnExpand.getAttribute('aria-expanded') === 'true';
-      if (expanded) {
-        descEl.textContent = brief;
-        btnExpand.textContent = 'Leer más ▾';
-        btnExpand.setAttribute('aria-expanded', 'false');
-      } else {
-        descEl.textContent = fullDesc;
-        btnExpand.textContent = 'Leer menos ▴';
-        btnExpand.setAttribute('aria-expanded', 'true');
-      }
+      filterByTag(tagEl.dataset.tag);
     });
-  }
+  });
+
+  card.querySelectorAll('.card-related-link').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const found = findById(btn.dataset.relId);
+      if (found) showDetail(found);
+    });
+  });
 
   if (selectionMode) {
     card.setAttribute('role', 'checkbox');
@@ -504,6 +534,7 @@ function createCard(script) {
 
 /* ─── Detail View ────────────────────────────────────────── */
 function showDetail(script, pushHistory = true) {
+  if (pushHistory && currentScript) navStack.push(currentScript);
   currentScript = script;
 
   const cats    = parseTags(script['Categorías']);
@@ -598,7 +629,14 @@ function showDetail(script, pushHistory = true) {
     history.pushState({ scriptId: script['ID'] }, '', '#' + new URLSearchParams({ script: script['ID'] }));
   }
 
-  $('detailBack').addEventListener('click', () => showList(true));
+  $('detailBack').addEventListener('click', () => {
+    if (navStack.length > 0) {
+      const prev = navStack.pop();
+      showDetail(prev, false);
+    } else {
+      showList(true);
+    }
+  });
 
   $('btnShareDetail').addEventListener('click', e =>
     shareURL(e.currentTarget.dataset.url));
@@ -628,6 +666,7 @@ function showDetail(script, pushHistory = true) {
 
 function showList(popHistory = false) {
   currentScript = null;
+  navStack = [];
   dom.detailView.hidden = true;
   dom.listView.hidden   = false;
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -721,6 +760,7 @@ function initEvents() {
     searchQuery = '';
     currentScript = null;
     dom.searchInput.value = '';
+    dom.searchClear.hidden = true;
     dom.catList.querySelectorAll('.cat-item').forEach(el =>
       el.classList.toggle('active', el.dataset.cat === ''));
     showList();
@@ -728,6 +768,7 @@ function initEvents() {
   });
 
   dom.searchInput.addEventListener('input', () => {
+    syncSearchClear();
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       searchQuery = dom.searchInput.value.trim();
@@ -736,6 +777,8 @@ function initEvents() {
       updateURL();
     }, 200);
   });
+
+  dom.searchClear.addEventListener('click', clearSearch);
 
   const allItem = dom.catList.querySelector('[data-cat=""]');
   allItem.addEventListener('click', () => selectCategory(''));

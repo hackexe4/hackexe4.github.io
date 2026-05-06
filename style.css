@@ -158,7 +158,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 #searchInput {
   width: 100%;
   height: 38px;
-  padding: 0 .75rem 0 2.25rem;
+  padding: 0 2.25rem 0 2.25rem;
   background: var(--surface-alt);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -173,7 +173,26 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
   background: var(--surface);
 }
-#searchInput::-webkit-search-cancel-button { cursor: pointer; }
+#searchInput::-webkit-search-cancel-button { display: none; }
+
+.search-clear {
+  position: absolute;
+  right: .6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: var(--text-xmuted);
+  color: var(--surface);
+  cursor: pointer;
+  opacity: .7;
+  transition: opacity .15s, background .15s;
+  padding: 0;
+}
+.search-clear:hover { opacity: 1; background: var(--text-muted); }
 
 /* Header actions */
 .header-actions { display: flex; align-items: center; gap: .25rem; margin-left: auto; }
@@ -426,27 +445,34 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-size: .85rem;
   color: var(--text-muted);
   line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   flex: 1;
 }
 
-.btn-expand {
-  display: inline-block;
-  font-size: .75rem;
-  font-weight: 600;
-  color: var(--accent);
-  padding: 0;
-  margin-top: -.25rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: color .15s;
+.card-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+  margin-top: .4rem;
 }
-.btn-expand:hover { color: var(--accent-h); }
+
+.card-related-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: .15rem .55rem;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.card-related-link:hover {
+  background: var(--accent);
+  color: #fff;
+}
 
 .card-meta {
   display: flex;
@@ -463,6 +489,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: var(--tag-text);
   padding: .15rem .5rem;
   border-radius: 20px;
+}
+
+.tag-clickable {
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.tag-clickable:hover {
+  background: var(--accent);
+  color: #fff;
 }
 
 
