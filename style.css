@@ -408,6 +408,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   transform: translateY(-2px);
 }
 
+.card-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+
 .card-category {
   display: inline-flex;
   align-items: center;
@@ -419,7 +425,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: var(--accent-bg);
   padding: .2rem .6rem;
   border-radius: 20px;
-  width: fit-content;
 }
 
 .card-title {

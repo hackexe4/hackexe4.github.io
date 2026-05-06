@@ -506,7 +506,7 @@ function createCard(script) {
     <div class="card-check ${isSelected ? 'checked' : ''}" aria-hidden="true">
       ${IC.check}
     </div>
-    ${cats.length ? `<div class="card-category">${escHtml(cats[0])}</div>` : ''}
+    ${cats.length ? `<div class="card-cats">${cats.map(c => `<span class="card-category">${escHtml(c)}</span>`).join('')}</div>` : ''}
     <h3 class="card-title">${escHtml(script['Título'])}</h3>
     <p class="card-desc">${escHtml(fullDesc)}</p>
     <div class="card-meta">
