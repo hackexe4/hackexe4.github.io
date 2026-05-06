@@ -665,8 +665,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   text-align: center;
   font-size: .8rem;
   color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
 }
 .app-footer a { color: var(--accent); }
+.footer-sub { font-size: .75rem; color: var(--text-xmuted); }
 
 /* ─── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
