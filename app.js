@@ -519,7 +519,7 @@ function createCard(script) {
     </div>
     ${relatedItems.length ? `<div class="card-related">
       <p class="card-related-label">${T.related}</p>
-      ${relatedItems.map(r => `<button class="card-related-link" data-rel-id="${escHtml(r['ID'])}">${IC.next} ${escHtml(r['Título'])}</button>`).join('')}
+      ${relatedItems.map(r => `<button class="card-related-link" data-rel-id="${escHtml(r['ID'])}">${escHtml(r['Título'])}</button>`).join('')}
     </div>` : ''}
     ${!selectionMode ? `
     <div class="card-footer">

@@ -451,38 +451,31 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .card-related {
   display: flex;
-  flex-wrap: wrap;
-  gap: .3rem;
+  flex-direction: column;
+  gap: .2rem;
   margin-top: .4rem;
 }
 
 .card-related-label {
-  width: 100%;
   font-size: .65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .05em;
   color: var(--text-xmuted);
-  margin-bottom: -.1rem;
+  margin-bottom: .1rem;
 }
 
 .card-related-link {
-  display: inline-flex;
-  align-items: center;
-  gap: .25rem;
-  font-size: .72rem;
-  font-weight: 500;
+  display: block;
+  font-size: .78rem;
   color: var(--accent);
-  background: none;
-  border: 1px solid var(--accent);
-  border-radius: 20px;
-  padding: .15rem .55rem;
-  cursor: pointer;
-  transition: background .15s, color .15s;
+  text-align: left;
+  padding: 0;
+  transition: color .15s;
 }
 .card-related-link:hover {
-  background: var(--accent);
-  color: #fff;
+  text-decoration: underline;
+  color: var(--accent-h);
 }
 
 .card-meta {
