@@ -1,0 +1,46 @@
+name: Bump version
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Increment patch version
+        id: version
+        run: |
+          CURRENT=$(grep -oP '(?<=·\n\s{4})v\K[0-9]+\.[0-9]+\.[0-9]+' index.html \
+            || grep -oP 'v\K[0-9]+\.[0-9]+\.[0-9]+(?= ·)' index.html | head -1)
+
+          if [ -z "$CURRENT" ]; then
+            echo "Version not found, skipping."
+            exit 0
+          fi
+
+          MAJOR=$(echo "$CURRENT" | cut -d. -f1)
+          MINOR=$(echo "$CURRENT" | cut -d. -f2)
+          PATCH=$(echo "$CURRENT" | cut -d. -f3)
+          NEW="$MAJOR.$MINOR.$((PATCH + 1))"
+
+          sed -i "s/v$CURRENT/v$NEW/" index.html
+
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "new=$NEW"         >> $GITHUB_OUTPUT
+
+      - name: Commit bump
+        if: steps.version.outputs.new != ''
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --staged --quiet && exit 0
+          git commit -m "chore: v${{ steps.version.outputs.new }} [skip ci]"
+          git push
