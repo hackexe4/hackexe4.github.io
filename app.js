@@ -517,7 +517,7 @@ function createCard(script) {
     <div class="card-check ${isSelected ? 'checked' : ''}" aria-hidden="true">
       ${IC.check}
     </div>
-    ${cats.length ? `<div class="card-cats">${cats.map(c => `<span class="card-category">${escHtml(c)}</span>`).join('')}</div>` : ''}
+    ${cats.length ? `<div class="card-cats">${cats.map(c => `<span class="card-category tag-clickable" data-cat="${escHtml(c)}">${escHtml(c)}</span>`).join('')}</div>` : ''}
     <h3 class="card-title">${escHtml(script['Título'])}</h3>
     <p class="card-desc">${escHtml(fullDesc)}</p>
     <div class="card-meta">
@@ -535,7 +535,11 @@ function createCard(script) {
   card.querySelectorAll('.tag-clickable').forEach(tagEl => {
     tagEl.addEventListener('click', e => {
       e.stopPropagation();
-      filterByTag(tagEl.dataset.tag);
+      if (tagEl.dataset.tag) {
+        filterByTag(tagEl.dataset.tag);
+      } else if (tagEl.dataset.cat) {
+        selectCategory(tagEl.dataset.cat);
+      }
     });
   });
 
