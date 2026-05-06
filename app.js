@@ -298,14 +298,14 @@ function selectCategory(cat) {
 }
 
 function syncSearchClear() {
-  dom.searchClear.hidden = !dom.searchInput.value && !activeCategory;
+  dom.searchClear.classList.toggle('visible', !!(dom.searchInput.value || activeCategory));
 }
 
 function clearSearch() {
   searchQuery = '';
   activeCategory = '';
   dom.searchInput.value = '';
-  dom.searchClear.hidden = true;
+  dom.searchClear.classList.remove('visible');
   dom.catList.querySelectorAll('.cat-item').forEach(el =>
     el.classList.toggle('active', el.dataset.cat === ''));
   sharedScripts = [];
@@ -316,7 +316,7 @@ function clearSearch() {
 function filterByTag(tag) {
   searchQuery = tag;
   dom.searchInput.value = tag;
-  dom.searchClear.hidden = false;
+  dom.searchClear.classList.add('visible');
   sharedScripts = [];
   currentScript = null;
   navStack = [];
@@ -764,7 +764,7 @@ function initEvents() {
     searchQuery = '';
     currentScript = null;
     dom.searchInput.value = '';
-    dom.searchClear.hidden = true;
+    dom.searchClear.classList.remove('visible');
     dom.catList.querySelectorAll('.cat-item').forEach(el =>
       el.classList.toggle('active', el.dataset.cat === ''));
     showList();
