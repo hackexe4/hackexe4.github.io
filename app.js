@@ -317,7 +317,11 @@ function selectCategory(cat) {
 }
 
 function syncSearchClear() {
-  const isFiltered = !!(dom.searchInput.value.trim() || activeCategory || sharedScripts.length > 0);
+  const hasSearch = (dom.searchInput.value || '').trim().length > 0;
+  const hasCat = !!activeCategory;
+  const hasShared = sharedScripts.length > 0;
+  const isFiltered = hasSearch || hasCat || hasShared;
+
   dom.searchClear.classList.toggle('visible', isFiltered);
 }
 
@@ -801,7 +805,6 @@ function initEvents() {
     searchQuery = '';
     currentScript = null;
     dom.searchInput.value = '';
-    dom.searchClear.classList.remove('visible');
     dom.catList.querySelectorAll('.cat-item').forEach(el =>
       el.classList.toggle('active', el.dataset.cat === ''));
     showList();
