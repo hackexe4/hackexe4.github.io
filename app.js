@@ -123,7 +123,9 @@ function csvToScripts(rows) {
     const obj = {};
     headers.forEach((h, i) => { obj[h] = (row[i] || '').trim(); });
     return obj;
-  }).filter(s => s['ID'] && s['Título']);
+  })
+  .filter(s => s['ID'] && s['Título'])
+  .sort((a, b) => a['Título'].localeCompare(b['Título'], 'es'));
 }
 
 /* ─── Helpers ────────────────────────────────────────────── */
