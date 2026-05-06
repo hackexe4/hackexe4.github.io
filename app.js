@@ -310,18 +310,14 @@ function selectCategory(cat) {
     el.classList.toggle('active', el.dataset.cat === cat));
   dom.detailView.hidden = true;
   dom.listView.hidden   = false;
-  syncSearchClear();
   renderList();
   updateURL();
   if (window.innerWidth < 769) closeSidebar();
 }
 
-function syncSearchClear() {
-  const hasSearch = (dom.searchInput.value || '').trim().length > 0;
-  const hasCat = !!activeCategory;
-  const hasShared = sharedScripts.length > 0;
-  const isFiltered = hasSearch || hasCat || hasShared;
-
+function syncSearchClear(currentCount) {
+  // Solo mostrar si se está viendo un subconjunto de los recursos totales
+  const isFiltered = currentCount < allScripts.length && allScripts.length > 0;
   dom.searchClear.classList.toggle('visible', isFiltered);
 }
 
@@ -478,7 +474,7 @@ function renderList() {
   const list = filteredScripts();
   dom.cardGrid.innerHTML = '';
   dom.cardGrid.classList.toggle('selection-mode', selectionMode);
-  syncSearchClear();
+  syncSearchClear(list.length);
   renderToolbar();
 
   if (list.length === 0) {
