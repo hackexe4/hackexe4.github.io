@@ -2,7 +2,7 @@
 
 **Directorio de recursos para [eXeLearning](https://exelearning.net) 4+**
 
-🌐 **[hackexelearning.github.io](https://hackexelearning.github.io)**
+🌐 **[hackexe4.github.io](https://hackexe4.github.io)**
 
 ---
 
