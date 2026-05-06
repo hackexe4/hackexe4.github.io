@@ -21,7 +21,6 @@ const T = {
   scripts:        n => `${n} recurso${n !== 1 ? 's' : ''}`,
   back:           'Volver',
   whereInsert:    'Dónde insertar',
-  tags:           'Etiquetas',
   related:        'Recursos relacionados',
   copyCode:       'Copiar código',
   copied:         '¡Copiado!',
@@ -573,7 +572,6 @@ function showDetail(script, pushHistory = true) {
   currentScript = script;
 
   const cats    = parseTags(script['Categorías']);
-  const tags    = parseTags(script['Etiquetas']);
   const related = parseTags(script['Relacionados']);
   const code    = script['Script'] || '';
   const lang    = detectLang(code);
@@ -643,11 +641,6 @@ function showDetail(script, pushHistory = true) {
               ${escHtml(w)}
             </div>`).join('')}
         </div>
-      </div>` : ''}
-
-      ${tags.length ? `<div class="detail-section">
-        <p class="detail-label">${T.tags}</p>
-        <div class="detail-tags">${tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</div>
       </div>` : ''}
 
       ${fuente ? `<div class="detail-section">

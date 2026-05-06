@@ -669,8 +669,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--radius-sm);
 }
 
-.detail-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
-
 .detail-related {
   display: flex;
   flex-wrap: wrap;
