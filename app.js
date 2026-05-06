@@ -8,7 +8,7 @@ const CSV_URL =
 
 /* ─── i18n ──────────────────────────────────────────────── */
 const T = {
-  appName:        'HackeXe',
+  appName:        'HackeXe4',
   appSub:         'Recursos para eXeLearning 4+',
   categories:     'Categorías',
   allCats:        'Todas',
@@ -792,7 +792,7 @@ async function loadData() {
     renderCategories();
     applyURLState(pendingURLState);
   } catch (err) {
-    console.error('HackeXe:', err);
+    console.error('HackeXe4:', err);
     showError();
   }
 }
