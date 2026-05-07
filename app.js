@@ -46,7 +46,7 @@ const T = {
 const WHERE_INSERT_HELP = [
   {
     title: 'HTML del iDevice',
-    body: 'El HTML se pega directamente en el iDevice. Pulsa el botón <em>Pegar fragmento HTML</em> (&lt;&gt;) para insertarlo en el lugar en el que se encuentra el cursor. Pulsar el botón <em>HTML</em> para insertarlo directamente en el código del iDevice.'
+    body: 'El HTML se pega directamente en el iDevice, dispones de dos formas. (1) Pulsa el botón <em>Pegar fragmento HTML</em> (&lt;&gt;) para insertarlo en el lugar en el que se encuentra el cursor. (2) Pulsa el botón <em>HTML</em> para insertarlo directamente en el código del iDevice.'
   },
   {
     title: 'Pie del proyecto',
