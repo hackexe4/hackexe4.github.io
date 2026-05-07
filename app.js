@@ -155,12 +155,12 @@ function stripHtml(html) {
   return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function renderWhereInsertHelp(id) {
+function renderWhereInsertHelp(id, label) {
+  const item = WHERE_INSERT_HELP.find(h => h.title.toLowerCase() === label.toLowerCase());
+  if (!item) return '';
   return `
     <div class="where-help" id="${escHtml(id)}" hidden>
-      ${WHERE_INSERT_HELP.map(item => `
-        <p><strong>${escHtml(item.title)}:</strong> ${item.body}</p>
-      `).join('')}
+      <p>${item.body}</p>
     </div>`;
 }
 
@@ -661,14 +661,18 @@ function showDetail(script, pushHistory = true) {
       ${wheres.length ? `<div class="detail-section">
         <p class="detail-label">${T.whereInsert}</p>
         <div class="detail-where-list">
-          ${wheres.map(w => `
+          ${wheres.map((w, i) => {
+            const helpId = `${whereHelpId}-${i}`;
+            const helpHtml = renderWhereInsertHelp(helpId, w);
+            return `
             <button class="detail-where" type="button" data-where-help-toggle
-              aria-expanded="false" aria-controls="${escHtml(whereHelpId)}">
+              aria-expanded="false" aria-controls="${helpHtml ? escHtml(helpId) : ''}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               ${escHtml(w)}
-            </button>`).join('')}
+            </button>
+            ${helpHtml}`;
+          }).join('')}
         </div>
-        ${renderWhereInsertHelp(whereHelpId)}
       </div>` : ''}
 
       ${fuente ? `<div class="detail-section">
@@ -729,14 +733,15 @@ function showDetail(script, pushHistory = true) {
     });
   }
 
-  const whereHelp = $(whereHelpId);
   dom.detailView.querySelectorAll('[data-where-help-toggle]').forEach(btn => {
     btn.addEventListener('click', () => {
+      const controlsId = btn.getAttribute('aria-controls');
+      if (!controlsId) return;
+      const helpDiv = document.getElementById(controlsId);
+      if (!helpDiv) return;
       const isOpen = btn.getAttribute('aria-expanded') === 'true';
-      dom.detailView.querySelectorAll('[data-where-help-toggle]').forEach(toggle => {
-        toggle.setAttribute('aria-expanded', String(!isOpen));
-      });
-      if (whereHelp) whereHelp.hidden = isOpen;
+      btn.setAttribute('aria-expanded', String(!isOpen));
+      helpDiv.hidden = isOpen;
     });
   });
 
