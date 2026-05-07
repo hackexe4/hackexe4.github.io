@@ -21,7 +21,7 @@ const T = {
   noResultsSub:   'Prueba con otros términos de búsqueda',
   scripts:        n => `${n} recurso${n !== 1 ? 's' : ''}`,
   back:           'Volver',
-  whereInsert:    'Dónde insertar',
+  whereInsert:    'Dónde insertar el código',
   related:        'Recursos relacionados',
   copyCode:       'Copiar código',
   copied:         '¡Copiado!',
@@ -42,6 +42,21 @@ const T = {
   linkCopied:     '¡Enlace copiado!',
   linkCopiedFail: 'No se pudo copiar el enlace',
 };
+
+const WHERE_INSERT_HELP = [
+  {
+    title: 'HTML del iDevice',
+    body: 'El HTML se pega directamente en el iDevice. Pulsa el botón <em>Pegar fragmento HTML</em> (&lt;&gt;) para insertarlo en el lugar en el que se encuentra el cursor. Pulsar el botón <em>HTML</em> para insertarlo directamente en el código del iDevice.'
+  },
+  {
+    title: 'Pie del proyecto',
+    body: 'Pulsa sobre Archivo -&gt; Propiedades del proyecto -&gt; Código personalizado -&gt; Pie de página.'
+  },
+  {
+    title: 'HEAD de la página',
+    body: 'Pulsa sobre Archivo -&gt; Propiedades del proyecto -&gt; Código personalizado -&gt; HEAD.'
+  }
+];
 
 /* ─── Icons (inline SVG snippets) ───────────────────────── */
 const IC = {
@@ -138,6 +153,15 @@ function escHtml(str) {
 
 function stripHtml(html) {
   return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function renderWhereInsertHelp(id) {
+  return `
+    <div class="where-help" id="${escHtml(id)}" hidden>
+      ${WHERE_INSERT_HELP.map(item => `
+        <p><strong>${escHtml(item.title)}:</strong> ${item.body}</p>
+      `).join('')}
+    </div>`;
 }
 
 function renderMarkdown(text) {
@@ -580,6 +604,7 @@ function showDetail(script, pushHistory = true) {
   const desc    = renderMarkdown(script['Descripción'] || '');
   const wheres  = parseTags(script['Donde insertar']);
   const fuente  = renderMarkdown(script['Fuente'] || '');
+  const whereHelpId = `whereHelp-${script['ID']}`;
 
   let highlighted = '';
   try {
@@ -637,11 +662,13 @@ function showDetail(script, pushHistory = true) {
         <p class="detail-label">${T.whereInsert}</p>
         <div class="detail-where-list">
           ${wheres.map(w => `
-            <div class="detail-where">
+            <button class="detail-where" type="button" data-where-help-toggle
+              aria-expanded="false" aria-controls="${escHtml(whereHelpId)}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               ${escHtml(w)}
-            </div>`).join('')}
+            </button>`).join('')}
         </div>
+        ${renderWhereInsertHelp(whereHelpId)}
       </div>` : ''}
 
       ${fuente ? `<div class="detail-section">
@@ -701,6 +728,17 @@ function showDetail(script, pushHistory = true) {
       }
     });
   }
+
+  const whereHelp = $(whereHelpId);
+  dom.detailView.querySelectorAll('[data-where-help-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      dom.detailView.querySelectorAll('[data-where-help-toggle]').forEach(toggle => {
+        toggle.setAttribute('aria-expanded', String(!isOpen));
+      });
+      if (whereHelp) whereHelp.hidden = isOpen;
+    });
+  });
 
   dom.detailView.querySelectorAll('.related-link[data-rel-id]').forEach(btn => {
     btn.addEventListener('click', () => {

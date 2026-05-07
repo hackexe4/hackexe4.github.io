@@ -207,7 +207,7 @@ No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- HackeXe4 - http
   </template>
   <img alt="""" src=""data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="" onload=""(function(img){var root=img.closest('[data-exe-fragment=&quot;exe-script-indice-subpaginas&quot;]');if(!root||root._exeB)return;root._exeB=true;var code=root.querySelector('template[data-role=&quot;code&quot;]');if(!code)return;root.setAttribute('data-exe-l','1');var script=document.createElement('script');script.text=code.content.textContent;root.appendChild(script);root.removeAttribute('data-exe-l');})(this)"" onerror=""this.onload&&this.onload()"" style=""position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"" />
 </div>
-",índice; subpáginas; menú local; navegación; niveles,Índices de contenido,exe_0002; exe_0005,Elaboración propia
+",índice; subpáginas; menú local; navegación; niveles,Índices de contenido,exe_0002; exe_0005; exe_0014,Elaboración propia
 exe_0002,Indice de todo el proyecto,Crea un indice con todas las páginas del proyecto. Permite limitar los niveles mostrados con eXeAutoIndex y filtra páginas ocultas marcadas con .oc. en el título. No es compatible con SCORM.,"### Indice de todo el proyecto
 
 Genera un índice global con enlaces a las páginas del proyecto eXeLearning. Sirve para ofrecer una navegación completa desde cualquier iDevice.
@@ -273,7 +273,7 @@ function eXeAutoIndex(levels = 2) {
 $(function() {
     eXeAutoIndex(0);  // Configura aquí el número de niveles que deseas (0 para todos los niveles, 1 para un nivel, 2 para dos niveles, etc.)
 });
-</script>",índice; proyecto completo; menú global; navegación; niveles,Índices de contenido,exe_0001; exe_0005,Elaboración propia a partir del código de Rafael Bueno.
+</script>",índice; proyecto completo; menú global; navegación; niveles,Índices de contenido,exe_0001; exe_0005; exe_0014,Elaboración propia a partir del código de Rafael Bueno.
 exe_0003,Añadir delimitadores de fórmulas $...$,Permite escribir fórmulas en línea con $...$ además de \(...\) mediante MathJax. Solo se ve correctamente en la vista previa y puede causar conflictos si el texto contiene símbolos $ no destinados a fórmulas.,"### Añadir delimitadores de fórmulas `$...$`
 
 Permite usar fórmulas en línea escritas con delimitadores `$...$`, además de los delimitadores habituales `\(...\)` de MathJax.
@@ -441,7 +441,7 @@ Colócalo en el lugar exacto donde debe aparecer el índice, mediante el **botó
             indice.appendChild(li);
         });
     });
-</script>",índice; títulos; encabezados; navegación; página,Índices de contenido,exe_0001; exe_0002,Elaboración propia
+</script>",índice; títulos; encabezados; navegación; página,Índices de contenido,exe_0001; exe_0002; exe_0014,Elaboración propia
 exe_0006,EdEX,"Editor web para crear, modificar y extraer estilos de eXeLearning. Permite trabajar con estilos ZIP y con el estilo incorporado en archivos ELPX.","### EdEX
 
 Editor de estilos para eXeLearning. Permite partir de un estilo base, cargar estilos en formato ZIP o abrir un archivo ELPX para trabajar con el estilo que incorpora. También permite extraer el estilo y volver a guardar el ELPX con los cambios.
@@ -481,3 +481,223 @@ exe_0011,eXeViewer,Visor para abrir paquetes de contenido de eXeLearning directa
 Visor de paquetes de contenido de eXeLearning pensado para abrirlos directamente en el navegador. Está disponible como imagen Docker `exelearning/exeviewer` y se orienta a visualizar contenidos de eXeLearning sin editar el proyecto.
 
 **URL:** https://hub.docker.com/r/exelearning/exeviewer",,,visor; ELPX; ZIP; navegador; Docker,Software y utilidades externas,exe_0008; exe_0010,Docker Hub: https://hub.docker.com/r/exelearning/exeviewer
+exe_0012,Código QR de la página actual,Genera un código QR con la dirección actual de la página. Debe insertarse donde se quiera mostrar el QR y requiere conexión a Internet porque usa QuickChart.,"### Código QR de la página actual
+
+Genera un código QR con la dirección actual de la página.
+
+**Uso**
+
+- Inserta el fragmento en el punto exacto donde quieras mostrar el QR.
+- Al cargar la página, el script toma la URL actual con `window.location.href`.
+- Después genera una imagen QR mediante QuickChart.
+
+**Inserción**
+
+Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+
+**Advertencias**
+
+- Requiere conexión a Internet.
+- La URL de la página se envía a QuickChart para generar la imagen.
+- No incluye texto visible dentro del recurso, solo el QR.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<div data-exe-fragment=""exe-script-qr-pagina"" style=""box-sizing:border-box; margin:1rem 0; text-align:center;"">
+  <div data-role=""qr""></div>
+</div>
+
+<script>
+(function () {
+  function generarQR(root) {
+    var contenedorQR = root.querySelector('[data-role=""qr""]');
+    if (!contenedorQR) return;
+
+    var apiUrl = 'https://quickchart.io/qr?text=' +
+      encodeURIComponent(window.location.href) +
+      '&size=200x200';
+
+    var imagenQR = document.createElement('img');
+    imagenQR.src = apiUrl;
+    imagenQR.alt = 'QR de la página actual';
+    imagenQR.width = 200;
+    imagenQR.height = 200;
+    imagenQR.style.maxWidth = '100%';
+    imagenQR.style.height = 'auto';
+
+    contenedorQR.innerHTML = '';
+    contenedorQR.appendChild(imagenQR);
+  }
+
+  function iniciar() {
+    var roots = document.querySelectorAll('[data-exe-fragment=""exe-script-qr-pagina""]');
+    Array.prototype.forEach.call(roots, generarQR);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', iniciar);
+  } else {
+    iniciar();
+  }
+})();
+</script>",QR; código QR; URL; enlace; página actual; QuickChart,Navegación,,Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com
+exe_0013,"Dificultar copia, selección e impresión","Añade una disuasión básica contra copia, selección, arrastre de imágenes e impresión mediante teclado. No protege realmente el contenido y puede afectar a la accesibilidad.","### Dificultar copia, selección e impresión
+
+Este recurso dificulta algunas acciones habituales de copia o reutilización del contenido de una página o proyecto.
+
+**Qué hace**
+
+- Bloquea el menú contextual del clic derecho.
+- Bloquea combinaciones como `Ctrl+C`, `Ctrl+V`, `Ctrl+A`, `Ctrl+P`, `Ctrl+S` y `Ctrl+U`.
+- Evita la selección de texto.
+- Evita el arrastre de imágenes.
+- Muestra un aviso cuando se intenta imprimir mediante `Ctrl+P` o antes de imprimir.
+
+**Inserción**
+
+- Colócalo en el **pie del proyecto** para aplicarlo a todas las páginas.
+- Colócalo en el **HTML de la página** si solo quieres aplicarlo a una página concreta.
+
+**Advertencias**
+
+- No protege realmente el contenido.
+- No impide capturas de pantalla, desactivar JavaScript, usar herramientas de desarrollador ni copiar desde el código fuente.
+- Puede afectar negativamente a la accesibilidad y a personas que usan teclado, lectores de pantalla o herramientas de apoyo.
+- Debe entenderse como una disuasión suave, no como una medida de seguridad.",Pie del proyecto; HTML de la página,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<script>
+(function () {
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var key = String(e.key || '').toLowerCase();
+
+    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'p', 's', 'u', 'v'].indexOf(key) !== -1) {
+      e.preventDefault();
+
+      if (key === 'p') {
+        alert('La impresión está deshabilitada en esta página.');
+      }
+    }
+  });
+
+  document.addEventListener('selectstart', function (e) {
+    e.preventDefault();
+  });
+
+  document.addEventListener('dragstart', function (e) {
+    e.preventDefault();
+  });
+
+  window.addEventListener('beforeprint', function () {
+    alert('La impresión está deshabilitada en esta página.');
+  });
+})();
+</script>",copia; protección; selección; impresión; clic derecho; teclado; contenido,Protección de contenido,,Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com
+exe_0014,Índice de iDevices de una página,Crea un índice con los iDevices o bloques de la página en eXeLearning 4 y enlaza cada entrada con su actividad. Debe insertarse donde se quiera mostrar el índice.,"### Índice de iDevices de una página
+
+Genera un índice local con los iDevices o bloques de la página actual en eXeLearning 4. El índice toma los títulos de los bloques (`.box-title`) y crea enlaces internos hacia cada uno.
+
+**Uso**
+
+- Inserta el fragmento en el punto donde quieras mostrar el índice.
+- Al cargar la página, el script busca los bloques `article.box` dentro del contenido principal.
+- Omite el bloque donde está insertado el propio índice para no enlazarse a sí mismo.
+- Si un bloque no tiene ID, le asigna uno automáticamente.
+
+**Inserción**
+
+Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+
+**Compatibilidad**
+
+Pensado solo para eXeLearning 4. No usa las clases antiguas `.iDevice_header` ni `.iDeviceTitle` de eXeLearning 2.9.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<div data-exe-fragment=""exe-script-indice-idevices"" style=""box-sizing:border-box; max-width:48rem; margin:1rem 0; padding:1rem; border:1px solid #d7e3f4; border-radius:0.75rem; background:#f8fbff; color:#1f2937; font-family:Arial, sans-serif;"">
+  <p data-role=""title"" style=""margin:0 0 0.75rem 0; font-size:1.1rem; font-weight:700;"">Índice de actividades</p>
+  <p data-role=""message"" style=""margin:0; line-height:1.5;"">Generando índice de actividades...</p>
+  <nav data-role=""nav"" aria-label=""Índice de actividades de esta página"" hidden style=""margin-top:0.75rem;""></nav>
+  <template data-role=""code"">
+(function () {
+  var script = document.currentScript;
+  var root = script
+    ? script.closest('[data-exe-fragment=""exe-script-indice-idevices""]')
+    : document.querySelector('[data-exe-fragment=""exe-script-indice-idevices""][data-exe-l=""1""]');
+  if (!root || root.getAttribute('data-exe-fragment') !== 'exe-script-indice-idevices') return;
+  if (root._exeR) return;
+  root._exeR = true;
+
+  function setMessage(text) {
+    var message = root.querySelector('[data-role=""message""]');
+    if (message) message.textContent = text;
+  }
+
+  function styleList(list) {
+    list.style.boxSizing = 'border-box';
+    list.style.margin = '0';
+    list.style.padding = '0 0 0 1.25rem';
+    list.style.lineHeight = '1.5';
+  }
+
+  function styleItem(item) {
+    item.style.margin = '0.35rem 0';
+  }
+
+  function styleLink(link) {
+    link.style.color = '#145ea8';
+    link.style.textDecoration = 'underline';
+    link.style.textUnderlineOffset = '0.15em';
+  }
+
+  function buildIndex() {
+    var scope = root.closest('main') || document;
+    var boxes = scope.querySelectorAll('article.box');
+    var nav = root.querySelector('[data-role=""nav""]');
+    var list = document.createElement('ul');
+    var count = 0;
+
+    if (!nav) return;
+    styleList(list);
+
+    Array.prototype.forEach.call(boxes, function (box, index) {
+      if (box.contains(root)) return;
+
+      var title = box.querySelector('.box-title');
+      var titleText = title ? title.textContent.replace(/\s+/g, ' ').trim() : '';
+      if (!titleText) return;
+
+      var id = box.id || 'exe-script-idevice-' + index;
+      box.id = id;
+
+      var item = document.createElement('li');
+      var link = document.createElement('a');
+
+      link.href = '#' + id;
+      link.textContent = titleText;
+      styleItem(item);
+      styleLink(link);
+
+      item.appendChild(link);
+      list.appendChild(item);
+      count += 1;
+    });
+
+    while (nav.firstChild) nav.removeChild(nav.firstChild);
+
+    if (!count) {
+      nav.hidden = true;
+      setMessage('No se han encontrado actividades en esta página.');
+      return;
+    }
+
+    nav.appendChild(list);
+    nav.hidden = false;
+    setMessage('');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildIndex, { once: true });
+  } else {
+    buildIndex();
+  }
+})();
+  </template>
+  <img alt="""" src=""data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="" onload=""(function(img){var root=img.closest('[data-exe-fragment=&quot;exe-script-indice-idevices&quot;]');if(!root||root._exeB)return;root._exeB=true;var code=root.querySelector('template[data-role=&quot;code&quot;]');if(!code)return;root.setAttribute('data-exe-l','1');var script=document.createElement('script');script.text=code.content.textContent;root.appendChild(script);root.removeAttribute('data-exe-l');})(this)"" onerror=""this.onload&&this.onload()"" style=""position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"" />
+</div>",índice; iDevices; actividades; bloques; navegación; eXeLearning 4,Índices de contenido,exe_0001; exe_0002; exe_0005,Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com

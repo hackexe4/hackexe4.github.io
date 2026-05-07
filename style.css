@@ -667,7 +667,32 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-weight: 600;
   padding: .5rem .9rem;
   border-radius: var(--radius-sm);
+  text-align: left;
+  transition: filter .15s, box-shadow .15s;
 }
+.detail-where:hover,
+.detail-where[aria-expanded="true"] {
+  filter: brightness(.97);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--where-border) 45%, transparent);
+}
+.detail-where:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.where-help {
+  margin-top: .8rem;
+  padding: .9rem 1rem;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: .88rem;
+  line-height: 1.6;
+}
+.where-help p:not(:last-child) { margin-bottom: .65rem; }
+.where-help strong { color: var(--text); }
+.where-help em { color: var(--text); font-style: italic; }
 
 .detail-related {
   display: flex;
