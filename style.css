@@ -98,6 +98,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .header-inner {
   max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   height: 100%;
   display: flex;
@@ -112,6 +113,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   gap: .5rem;
   flex: 1;
   max-width: 650px;
+  min-width: 0;
 }
 .header-search-wrap[hidden] { display: none; }
 
@@ -177,6 +179,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   align-items: center;
   gap: .5rem;
   padding: 0 .25rem;
+  min-width: 0;
 }
 
 /* Brand */
@@ -222,11 +225,19 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   transition: background .15s, color .15s;
 }
 .btn-icon:hover { background: var(--surface-alt); color: var(--text); }
+[data-theme="dark"] .btn-icon {
+  color: var(--text);
+}
+[data-theme="dark"] .btn-icon:hover {
+  background: var(--border);
+  color: #fff;
+}
 
 /* Theme icons */
-[data-theme="dark"]  .icon-sun  { display: none; }
-[data-theme="light"] .icon-moon { display: none; }
-:not([data-theme])   .icon-moon { display: none; }
+[data-theme="dark"]  .icon-moon { display: none; }
+[data-theme="dark"]  #themeToggle { color: #fde68a; }
+[data-theme="light"] .icon-sun  { display: none; }
+html:not([data-theme]) .icon-sun  { display: none; }
 
 /* ─── App Body ──────────────────────────────────────────── */
 .app-body {
@@ -789,9 +800,84 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ─── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
-  :root { --sidebar-w: 100%; }
+  :root {
+    --sidebar-w: 100%;
+    --header-h: 112px;
+  }
 
   .brand-sub { display: none; }
+
+  .app-header {
+    height: auto;
+    min-height: var(--header-h);
+  }
+
+  .header-inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    height: auto;
+    min-height: var(--header-h);
+    align-content: center;
+    align-items: center;
+    gap: .5rem;
+    padding: .45rem .75rem;
+  }
+
+  .brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    padding-right: 5.25rem;
+  }
+
+  .brand-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brand-name {
+    font-size: .95rem;
+    max-width: 8.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    position: absolute;
+    top: .45rem;
+    right: auto;
+    left: 10rem;
+    margin-left: auto;
+    z-index: 2;
+  }
+
+  .header-actions .btn-icon {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .header-search-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .header-toolbar {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .toolbar-btns {
+    width: 100%;
+    justify-content: flex-start;
+  }
 
   .app-body { flex-direction: column; }
 
@@ -818,8 +904,42 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .about-banner { flex-direction: column; gap: .6rem; }
   .about-icon { display: none; }
 
-  .header-search { flex: 0 1 200px; }
+  .header-search { flex: 1 1 auto; min-width: 0; }
   .results-count { display: none; }
+}
+
+@media (max-width: 420px) {
+  :root { --header-h: 144px; }
+
+  .header-inner {
+    padding-inline: .55rem;
+  }
+
+  .header-search-wrap {
+    gap: .4rem;
+  }
+
+  .btn-toolbar {
+    padding: .35rem .55rem;
+  }
+
+  .search-clear span,
+  #btnSelect,
+  #btnShareView,
+  #btnShareSelected,
+  #btnShareShared {
+    font-size: 0;
+    gap: 0;
+  }
+
+  .search-clear svg,
+  #btnSelect svg,
+  #btnShareView svg,
+  #btnShareSelected svg,
+  #btnShareShared svg {
+    width: 15px;
+    height: 15px;
+  }
 }
 
 @media (min-width: 769px) {
@@ -857,6 +977,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   opacity: .45;
   cursor: not-allowed;
 }
+.search-clear:not(.visible) { display: none; }
 
 .btn-share {
   color: var(--accent-text);
