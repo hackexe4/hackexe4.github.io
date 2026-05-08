@@ -21,7 +21,7 @@ Compatibles con **eXeLearning 4 y superiores**. Para la versión 2.9 visita [hac
 - **Compartir recursos** mediante URL: una vista, un recurso concreto o una selección personalizada
 - **Modo claro/oscuro** automático y manual
 - Los datos se cargan desde una hoja de Google Sheets pública, con `HackeXe4.csv` como copia local de respaldo
-- Estadísticas de uso agregadas mediante sistema propio, sin IP ni cookies de analítica para visitantes
+- Estadísticas de uso agregadas mediante sistema propio, sin IP ni identificadores de visitantes
 
 ## Uso
 

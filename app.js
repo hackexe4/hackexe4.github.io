@@ -862,31 +862,15 @@ function rememberAnalyticsVisit(siteId) {
 
 function requestAnalytics() {
   if (!shouldTrackAnalytics()) return;
+  if (typeof window.fetch !== 'function') return;
   const cfg = getAnalyticsConfig();
   if (!cfg.endpoint) return;
 
-  const callbackName = `__hackexe4Analytics_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
   const query = new URLSearchParams();
   const pageParams = new URLSearchParams(window.location.search || '');
-  const script = document.createElement('script');
-  let finished = false;
-  let timeoutId = 0;
   const shouldCountVisit = shouldCountAnalyticsVisit(cfg.siteId);
 
-  function cleanup() {
-    if (finished) return;
-    finished = true;
-    if (timeoutId) window.clearTimeout(timeoutId);
-    try {
-      delete window[callbackName];
-    } catch {
-      window[callbackName] = undefined;
-    }
-    script.remove();
-  }
-
   query.set('site', cfg.siteId);
-  query.set('callback', callbackName);
   query.set('page_url', window.location.href);
   query.set('referrer', document.referrer || '');
   if (!shouldCountVisit) query.set('summary_only', '1');
@@ -895,19 +879,27 @@ function requestAnalytics() {
     if (value) query.set(key, value);
   });
 
-  window[callbackName] = payload => {
-    try {
-      if (shouldCountVisit && payload && payload.ok) rememberAnalyticsVisit(cfg.siteId);
-    } finally {
-      cleanup();
-    }
-  };
+  const url = `${cfg.endpoint}${cfg.endpoint.includes('?') ? '&' : '?'}${query.toString()}`;
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  const timeoutId = window.setTimeout(() => {
+    if (controller) controller.abort();
+  }, ANALYTICS_TIMEOUT_MS);
 
-  script.async = true;
-  script.src = `${cfg.endpoint}${cfg.endpoint.includes('?') ? '&' : '?'}${query.toString()}`;
-  script.onerror = cleanup;
-  timeoutId = window.setTimeout(cleanup, ANALYTICS_TIMEOUT_MS);
-  document.head.appendChild(script);
+  window.fetch(url, {
+    method: 'GET',
+    mode: 'no-cors',
+    credentials: 'omit',
+    cache: 'no-store',
+    keepalive: true,
+    signal: controller ? controller.signal : undefined,
+  })
+    .then(() => {
+      if (shouldCountVisit) rememberAnalyticsVisit(cfg.siteId);
+    })
+    .catch(() => {})
+    .finally(() => {
+      window.clearTimeout(timeoutId);
+    });
 }
 
 function scheduleAnalyticsLoad() {
