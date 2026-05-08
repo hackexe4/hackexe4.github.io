@@ -902,8 +902,9 @@ function initEvents() {
   });
 
   document.addEventListener('click', e => {
+    const clickedToggle = dom.sidebarToggle.contains(e.target);
     if (window.innerWidth < 769 && dom.sidebar.classList.contains('open') &&
-        !dom.sidebar.contains(e.target) && e.target !== dom.sidebarToggle) {
+        !dom.sidebar.contains(e.target) && !clickedToggle) {
       closeSidebar();
     }
   });
