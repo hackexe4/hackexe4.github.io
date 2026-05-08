@@ -6,6 +6,10 @@ const CSV_URL =
   '2PACX-1vTkmdZbTZ-rLI305yY5IhP7sDJY7ViC2MnCUh1J2muinEjoOT4BT4yLV8I7v0kxdiba_R81vHjBA_b0' +
   '/pub?output=csv';
 const FALLBACK_CSV_URL = 'HackeXe4.csv';
+const ANALYTICS_FALLBACK_ENDPOINT = 'https://bilateria.org/app/estadistica/hackexe4/track.php';
+const ANALYTICS_FALLBACK_STATS_URL = 'https://bilateria.org/app/estadistica/hackexe4/admin-stats.php';
+const ANALYTICS_VISIT_COOLDOWN_MS = 30 * 60 * 1000;
+const ANALYTICS_TIMEOUT_MS = 4000;
 
 /* ─── i18n ──────────────────────────────────────────────── */
 const T = {
@@ -808,6 +812,118 @@ function showError() {
   $('retryBtn')?.addEventListener('click', loadData);
 }
 
+/* ─── Analytics ──────────────────────────────────────────── */
+function getMetaContent(name) {
+  const node = document.querySelector(`meta[name="${name}"]`);
+  return node ? String(node.getAttribute('content') || '').trim() : '';
+}
+
+function getAnalyticsConfig() {
+  return {
+    endpoint: getMetaContent('analytics-endpoint') || ANALYTICS_FALLBACK_ENDPOINT,
+    statsUrl: getMetaContent('analytics-stats-url') || ANALYTICS_FALLBACK_STATS_URL,
+    siteId: getMetaContent('analytics-site-id') || 'hackexe4',
+  };
+}
+
+function shouldTrackAnalytics() {
+  const protocol = String(window.location.protocol || '');
+  const host = String(window.location.hostname || '').toLowerCase();
+  if (protocol !== 'http:' && protocol !== 'https:') return false;
+  if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
+  if (host.endsWith('.local')) return false;
+  return true;
+}
+
+function getAnalyticsStorageKey(siteId) {
+  return `analytics:last-visit:${siteId}`;
+}
+
+function shouldCountAnalyticsVisit(siteId) {
+  try {
+    const rawValue = window.localStorage.getItem(getAnalyticsStorageKey(siteId)) || '';
+    const lastVisit = Number.parseInt(rawValue, 10);
+    if (Number.isFinite(lastVisit) && Date.now() - lastVisit < ANALYTICS_VISIT_COOLDOWN_MS) {
+      return false;
+    }
+  } catch {
+    return true;
+  }
+  return true;
+}
+
+function rememberAnalyticsVisit(siteId) {
+  try {
+    window.localStorage.setItem(getAnalyticsStorageKey(siteId), String(Date.now()));
+  } catch {
+    // Analytics is optional and must never block the app.
+  }
+}
+
+function requestAnalytics() {
+  if (!shouldTrackAnalytics()) return;
+  const cfg = getAnalyticsConfig();
+  if (!cfg.endpoint) return;
+
+  const callbackName = `__hackexe4Analytics_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+  const query = new URLSearchParams();
+  const pageParams = new URLSearchParams(window.location.search || '');
+  const script = document.createElement('script');
+  let finished = false;
+  let timeoutId = 0;
+  const shouldCountVisit = shouldCountAnalyticsVisit(cfg.siteId);
+
+  function cleanup() {
+    if (finished) return;
+    finished = true;
+    if (timeoutId) window.clearTimeout(timeoutId);
+    try {
+      delete window[callbackName];
+    } catch {
+      window[callbackName] = undefined;
+    }
+    script.remove();
+  }
+
+  query.set('site', cfg.siteId);
+  query.set('callback', callbackName);
+  query.set('page_url', window.location.href);
+  query.set('referrer', document.referrer || '');
+  if (!shouldCountVisit) query.set('summary_only', '1');
+  ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].forEach(key => {
+    const value = String(pageParams.get(key) || '').trim();
+    if (value) query.set(key, value);
+  });
+
+  window[callbackName] = payload => {
+    try {
+      if (shouldCountVisit && payload && payload.ok) rememberAnalyticsVisit(cfg.siteId);
+    } finally {
+      cleanup();
+    }
+  };
+
+  script.async = true;
+  script.src = `${cfg.endpoint}${cfg.endpoint.includes('?') ? '&' : '?'}${query.toString()}`;
+  script.onerror = cleanup;
+  timeoutId = window.setTimeout(cleanup, ANALYTICS_TIMEOUT_MS);
+  document.head.appendChild(script);
+}
+
+function scheduleAnalyticsLoad() {
+  if (!shouldTrackAnalytics()) return;
+  const run = () => window.setTimeout(requestAnalytics, 0);
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(run, { timeout: 2500 });
+    return;
+  }
+  if (document.readyState === 'complete') {
+    run();
+    return;
+  }
+  window.addEventListener('load', run, { once: true });
+}
+
 /* ─── Theme ──────────────────────────────────────────────── */
 function initTheme() {
   const saved = localStorage.getItem('hackexe-theme');
@@ -973,6 +1089,7 @@ function init() {
 
   pendingURLState = readURLState();
   loadData();
+  scheduleAnalyticsLoad();
 }
 
 document.addEventListener('DOMContentLoaded', init);
