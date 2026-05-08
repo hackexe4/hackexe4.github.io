@@ -924,6 +924,13 @@ function initEvents() {
     localStorage.setItem('hackexe-about-closed', '1');
   });
 
+  document.getElementById('showAbout').addEventListener('click', e => {
+    e.preventDefault();
+    dom.aboutBanner.classList.remove('hidden');
+    localStorage.removeItem('hackexe-about-closed');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
   document.addEventListener('click', e => {
     const clickedToggle = dom.sidebarToggle.contains(e.target);
     if (window.innerWidth < 769 && dom.sidebar.classList.contains('open') &&
