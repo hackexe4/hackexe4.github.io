@@ -164,11 +164,34 @@ function renderWhereInsertHelp(id, label) {
     </div>`;
 }
 
+function openExternalLinksInNewTab(html) {
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+
+  tpl.content.querySelectorAll('a[href]').forEach(link => {
+    const href = link.getAttribute('href');
+    if (!href) return;
+
+    try {
+      const url = new URL(href, window.location.href);
+      if (['http:', 'https:'].includes(url.protocol) && url.origin !== window.location.origin) {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+      }
+    } catch {
+      // Ignore malformed URLs and leave the generated link untouched.
+    }
+  });
+
+  return tpl.innerHTML;
+}
+
 function renderMarkdown(text) {
   if (typeof marked === 'undefined') {
-    return text.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+    const html = text.split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+    return openExternalLinksInNewTab(html);
   }
-  return marked.parse(text, { breaks: true });
+  return openExternalLinksInNewTab(marked.parse(text, { breaks: true }));
 }
 
 function stripMarkdown(text) {
