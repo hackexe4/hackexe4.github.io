@@ -1111,7 +1111,6 @@ html:not([data-theme]) .icon-sun  { display: none; }
 .visual-node-2 { border-color: color-mix(in srgb, #f59e0b 45%, var(--border)); }
 .visual-node-3 { border-color: color-mix(in srgb, #0ea5e9 45%, var(--border)); }
 .visual-node-related {
-  background: var(--surface-alt);
   border-style: dashed;
 }
 
@@ -1225,6 +1224,32 @@ html:not([data-theme]) .icon-sun  { display: none; }
   color: var(--text);
   border-color: var(--accent);
   background: var(--accent-bg);
+}
+
+.map-tooltip {
+  position: fixed;
+  z-index: 9999;
+  max-width: 280px;
+  padding: .6rem .85rem;
+  border-radius: var(--radius-sm);
+  background: var(--text);
+  color: var(--surface);
+  font-size: .77rem;
+  line-height: 1.55;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 10px));
+  box-shadow: var(--shadow-md);
+  display: none;
+}
+
+.map-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--text);
 }
 
 .visual-results {

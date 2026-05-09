@@ -233,6 +233,17 @@ function parseTags(val) {
   return val.split(/[,;]+/).map(t => t.trim()).filter(Boolean);
 }
 
+function stripMd(text) {
+  return (text || '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/#+\s*/g, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+}
+
 function detectLang(code) {
   const t = code.trim();
   if (t.startsWith('<')) return 'html';
@@ -920,9 +931,10 @@ function renderVisualExplorer() {
                   <span>${escHtml(node.label)}</span>
                 </button>`;
             }
+            const summary = escHtml(stripMd(findById(node.id)?.['Resumen'] || '').slice(0, 220));
             return `
               <button class="visual-node visual-node-${i % 4} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%"
-                data-nav-script-id="${escHtml(node.id)}" title="${escHtml(node.label)}">
+                data-nav-script-id="${escHtml(node.id)}" data-summary="${summary}">
                 <span>${escHtml(node.label)}</span>
                 ${node.direct ? '<small class="visual-node-explore">Explorar</small>' : '<small>Relacionado</small>'}
               </button>`;
@@ -982,6 +994,27 @@ function renderVisualExplorer() {
       const found = findById(btn.dataset.openScriptId);
       if (found) showDetail(found);
     });
+  });
+
+  // Tooltip on hover for script nodes
+  let tooltip = document.getElementById('mapTooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'mapTooltip';
+    tooltip.className = 'map-tooltip';
+    document.body.appendChild(tooltip);
+  }
+  dom.exploreView.querySelectorAll('[data-nav-script-id][data-summary]').forEach(btn => {
+    const summary = btn.dataset.summary;
+    if (!summary) return;
+    btn.addEventListener('mouseenter', () => {
+      tooltip.textContent = summary;
+      const rect = btn.getBoundingClientRect();
+      tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+      tooltip.style.top = rect.top + window.scrollY + 'px';
+      tooltip.style.display = 'block';
+    });
+    btn.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
   });
 }
 
