@@ -767,6 +767,16 @@ function showDetail(script, pushHistory = true) {
       const helpDiv = document.getElementById(controlsId);
       if (!helpDiv) return;
       const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+      dom.detailView.querySelectorAll('[data-where-help-toggle]').forEach(otherBtn => {
+        if (otherBtn === btn) return;
+        const otherControlsId = otherBtn.getAttribute('aria-controls');
+        if (!otherControlsId) return;
+        const otherHelpDiv = document.getElementById(otherControlsId);
+        otherBtn.setAttribute('aria-expanded', 'false');
+        if (otherHelpDiv) otherHelpDiv.hidden = true;
+      });
+
       btn.setAttribute('aria-expanded', String(!isOpen));
       helpDiv.hidden = isOpen;
     });
