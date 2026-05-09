@@ -920,7 +920,7 @@ function renderVisualExplorer() {
           </svg>
           ${hubHtml}
           ${nodes.map((node, i) => {
-            const delay = `animation: mapNodeIn .22s cubic-bezier(.34,1.3,.64,1) both; animation-delay: ${.06 + i * .04}s;`;
+            const delay = `animation: mapNodeIn .4s cubic-bezier(.22,1,.36,1) both; animation-delay: ${.1 + i * .055}s;`;
             if (node.type === 'category' || node.type === 'tag') {
               const cls = node.type === 'category' ? 'visual-node-cat' : 'visual-node-tag';
               const kindLabel = node.type === 'category' ? 'Categoría' : 'Etiqueta';

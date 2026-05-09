@@ -923,11 +923,11 @@ html:not([data-theme]) .icon-sun  { display: none; }
   min-width: 0;
   max-height: 640px;
   overflow: auto;
-  animation: mapPanelIn .22s ease both;
+  animation: mapPanelIn .4s cubic-bezier(.22,1,.36,1) both;
 }
 
 .visual-results {
-  animation-delay: .06s;
+  animation-delay: .08s;
 }
 
 .visual-facet-block + .visual-facet-block {
@@ -1012,11 +1012,11 @@ html:not([data-theme]) .icon-sun  { display: none; }
 }
 
 @keyframes mapHubIn {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(.72); }
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.9); }
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 @keyframes mapNodeIn {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(.78); }
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.88); }
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 @keyframes mapLinesIn {
@@ -1024,7 +1024,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
   to   { opacity: 1; }
 }
 @keyframes mapPanelIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -1068,8 +1068,8 @@ html:not([data-theme]) .icon-sun  { display: none; }
 }
 
 .visual-lines {
-  animation: mapLinesIn .35s ease both;
-  animation-delay: .08s;
+  animation: mapLinesIn .55s ease both;
+  animation-delay: .18s;
 }
 
 .visual-hub {
@@ -1079,7 +1079,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
   min-height: 86px;
   padding: .85rem;
   border-radius: var(--radius);
-  animation: mapHubIn .28s cubic-bezier(.34,1.4,.64,1) both;
+  animation: mapHubIn .45s cubic-bezier(.22,1,.36,1) both;
   background: var(--accent);
   color: #fff;
   text-align: center;
@@ -1200,7 +1200,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
   align-items: center;
   gap: .3rem;
   transition: transform .2s, box-shadow .2s;
-  animation: mapHubIn .28s cubic-bezier(.34,1.4,.64,1) both;
+  animation: mapHubIn .45s cubic-bezier(.22,1,.36,1) both;
 }
 
 .visual-hub-script:hover {
