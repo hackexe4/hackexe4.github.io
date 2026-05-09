@@ -734,6 +734,56 @@ function connectedScriptsForFocus(focus) {
   return { direct, related, scripts: [...direct, ...related] };
 }
 
+function mapNodesForFocus(focus, maxNodes) {
+  if (!focus) {
+    return allScripts.slice(0, maxNodes).map(s => ({
+      type: 'script', id: s['ID'], label: s['Título'], direct: true,
+    }));
+  }
+
+  if (focus.type === 'script') {
+    const script = findById(focus.value);
+    if (!script) return [];
+    const cats = parseTags(script['Categorías']);
+    const scriptTags = parseTags(script['Etiquetas']);
+    const relatedRefs = parseTags(script['Relacionados']);
+    const directScripts = relatedRefs
+      .map(r => findRelatedScript(r))
+      .filter(s => s && s['ID'] !== script['ID'])
+      .slice(0, 5)
+      .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: true }));
+    const catNodes = cats.slice(0, 3).map(c => ({ type: 'category', id: c, label: c, direct: true }));
+    const tagNodes = scriptTags.slice(0, 2).map(t => ({ type: 'tag', id: t, label: t, direct: true }));
+    const used = new Set([script['ID'], ...directScripts.map(n => n.id)]);
+    const remaining = maxNodes - directScripts.length - catNodes.length - tagNodes.length;
+    const nearbyScripts = remaining > 0
+      ? allScripts
+          .filter(s => !used.has(s['ID']) && parseTags(s['Categorías']).some(c => cats.includes(c)))
+          .slice(0, remaining)
+          .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: false }))
+      : [];
+    return [...directScripts, ...catNodes, ...tagNodes, ...nearbyScripts].slice(0, maxNodes);
+  }
+
+  // category or tag focus
+  const focusScripts = scriptsForFocus(focus);
+  const scriptNodes = focusScripts
+    .slice(0, maxNodes - 3)
+    .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: true }));
+  const termCount = new Map();
+  focusScripts.slice(0, 20).forEach(s => {
+    const terms = focus.type === 'category'
+      ? parseTags(s['Categorías']).filter(c => c !== focus.value)
+      : parseTags(s['Etiquetas']).filter(t => t !== focus.value);
+    terms.forEach(t => termCount.set(t, (termCount.get(t) || 0) + 1));
+  });
+  const relatedTermNodes = [...termCount.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name]) => ({ type: focus.type, id: name, label: name, direct: false }));
+  return [...scriptNodes, ...relatedTermNodes].slice(0, maxNodes);
+}
+
 function buildExploreParams() {
   const params = new URLSearchParams({ view: 'map' });
   if (visualFocus) {
@@ -750,8 +800,6 @@ function renderVisualExplorer() {
   const scripts = connected.scripts;
   const directIds = new Set(connected.direct.map(s => s['ID']));
   const categories = countTerms(s => parseTags(s['Categorías'])).slice(0, 14);
-  const maxVisibleNodes = window.innerWidth < 520 ? 8 : 12;
-  const visibleScripts = scripts.slice(0, maxVisibleNodes);
 
   const isScriptFocus = focus?.type === 'script';
   const scriptFocusScript = isScriptFocus ? findById(focus.value) : null;
@@ -768,15 +816,16 @@ function renderVisualExplorer() {
   const hubY = 50;
   const isCompactMap = window.innerWidth < 520;
   const radius = isCompactMap ? 30 : 37;
-  const nodes = visibleScripts.map((script, i) => {
-    const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(visibleScripts.length, 1));
+  const maxVisibleNodes = window.innerWidth < 520 ? 8 : 12;
+  const rawNodes = mapNodesForFocus(focus, maxVisibleNodes);
+  const nodes = rawNodes.map((node, i) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(rawNodes.length, 1));
     const x = hubX + Math.cos(angle) * radius;
     const y = hubY + Math.sin(angle) * radius * .78;
     return {
-      script,
+      ...node,
       x: Math.max(isCompactMap ? 18 : 9, Math.min(isCompactMap ? 82 : 91, x)),
       y: Math.max(isCompactMap ? 18 : 13, Math.min(isCompactMap ? 82 : 87, y)),
-      relatedOnly: !directIds.has(script['ID']),
     };
   });
 
@@ -868,15 +917,28 @@ function renderVisualExplorer() {
         <div class="visual-map" aria-label="Red visual de recursos">
           ${mapHistory.length > 0 ? `<button class="map-nav-back" id="mapNavBack">${IC.back} Atrás</button>` : ''}
           <svg class="visual-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            ${nodes.map(node => `<line class="${node.relatedOnly ? 'related' : ''}" x1="${hubX}" y1="${hubY}" x2="${node.x}" y2="${node.y}"></line>`).join('')}
+            ${nodes.map(node => `<line class="${node.direct ? '' : 'related'}" x1="${hubX}" y1="${hubY}" x2="${node.x}" y2="${node.y}"></line>`).join('')}
           </svg>
           ${hubHtml}
-          ${nodes.map((node, i) => `
-            <button class="visual-node visual-node-${i % 4} ${node.relatedOnly ? 'visual-node-related' : ''}" style="left:${node.x}%; top:${node.y}%"
-              data-nav-script-id="${escHtml(node.script['ID'])}" title="${escHtml(node.script['Título'])}">
-              <span>${escHtml(node.script['Título'])}</span>
-              ${node.relatedOnly ? '<small>Relacionado</small>' : '<small class="visual-node-explore">Explorar</small>'}
-            </button>`).join('')}
+          ${nodes.map((node, i) => {
+            if (node.type === 'category' || node.type === 'tag') {
+              const cls = node.type === 'category' ? 'visual-node-cat' : 'visual-node-tag';
+              const kindLabel = node.type === 'category' ? 'Categoría' : 'Etiqueta';
+              return `
+                <button class="visual-node ${cls} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%"
+                  data-focus-type="${node.type}" data-focus-value="${escHtml(node.label)}"
+                  title="${kindLabel}: ${escHtml(node.label)}">
+                  <small class="visual-node-kind">${kindLabel}</small>
+                  <span>${escHtml(node.label)}</span>
+                </button>`;
+            }
+            return `
+              <button class="visual-node visual-node-${i % 4} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%"
+                data-nav-script-id="${escHtml(node.id)}" title="${escHtml(node.label)}">
+                <span>${escHtml(node.label)}</span>
+                ${node.direct ? '<small class="visual-node-explore">Explorar</small>' : '<small>Relacionado</small>'}
+              </button>`;
+          }).join('')}
         </div>
 
         <aside class="visual-results" aria-label="Recursos del foco seleccionado">
