@@ -157,7 +157,7 @@ function csvToScripts(rows) {
     return obj;
   })
   .filter(s => s['ID'] && s['Título'])
-  .sort((a, b) => a['Título'].localeCompare(b['Título'], 'es'));
+  .sort(compareScriptsByTitle);
 }
 
 /* ─── Helpers ────────────────────────────────────────────── */
@@ -231,6 +231,22 @@ function stripMarkdown(text) {
 function parseTags(val) {
   if (!val) return [];
   return val.split(/[,;]+/).map(t => t.trim()).filter(Boolean);
+}
+
+function compareTextEs(a, b) {
+  return String(a || '').localeCompare(String(b || ''), 'es', { sensitivity: 'base' });
+}
+
+function compareScriptsByTitle(a, b) {
+  return compareTextEs(a?.['Título'], b?.['Título']);
+}
+
+function sortScriptsByTitle(scripts) {
+  return [...scripts].sort(compareScriptsByTitle);
+}
+
+function sortTermEntriesAlpha(entries) {
+  return [...entries].sort((a, b) => compareTextEs(a[0], b[0]));
 }
 
 function stripMd(text) {
@@ -376,7 +392,7 @@ function allCategories() {
   allScripts.forEach(s => {
     parseTags(s['Categorías']).forEach(c => map.set(c, (map.get(c) || 0) + 1));
   });
-  return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0], 'es'));
+  return sortTermEntriesAlpha(map.entries());
 }
 
 function renderCategories() {
@@ -675,7 +691,7 @@ function countTerms(getTerms, scripts = allScripts) {
   scripts.forEach(script => {
     getTerms(script).forEach(term => map.set(term, (map.get(term) || 0) + 1));
   });
-  return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'));
+  return [...map.entries()].sort((a, b) => b[1] - a[1] || compareTextEs(a[0], b[0]));
 }
 
 function pickVisualFocus() {
@@ -686,12 +702,11 @@ function pickVisualFocus() {
     const tag = countTerms(s => parseTags(s['Etiquetas'])).find(([name]) => name.toLowerCase() === q);
     if (tag) return { type: 'tag', value: tag[0] };
   }
-  const [topCategory] = countTerms(s => parseTags(s['Categorías']));
-  return topCategory ? { type: 'category', value: topCategory[0] } : null;
+  return null;
 }
 
 function scriptsForFocus(focus) {
-  if (!focus) return allScripts;
+  if (!focus) return filteredScripts();
   return allScripts.filter(script => {
     const terms = focus.type === 'tag'
       ? parseTags(script['Etiquetas'])
@@ -725,10 +740,12 @@ function connectedScriptsForFocus(focus) {
         seen.add(s['ID']);
       }
     });
-    return { direct, related: related.slice(0, 6), scripts: [...direct, ...related.slice(0, 6)] };
+    const limitedRelated = sortScriptsByTitle(related).slice(0, 6);
+    const sortedDirect = sortScriptsByTitle(direct);
+    return { direct: sortedDirect, related: limitedRelated, scripts: sortScriptsByTitle([...sortedDirect, ...limitedRelated]) };
   }
 
-  const direct = scriptsForFocus(focus);
+  const direct = sortScriptsByTitle(scriptsForFocus(focus));
   const directIds = new Set(direct.map(s => s['ID']));
   const related = [];
   const seenRelated = new Set();
@@ -742,7 +759,8 @@ function connectedScriptsForFocus(focus) {
     });
   });
 
-  return { direct, related, scripts: [...direct, ...related] };
+  const sortedRelated = sortScriptsByTitle(related);
+  return { direct, related: sortedRelated, scripts: sortScriptsByTitle([...direct, ...sortedRelated]) };
 }
 
 // Builds mixed map nodes (scripts + category/tag terms) from the already-computed connected data.
@@ -751,8 +769,8 @@ function mapNodesForFocus(focus, connected, maxNodes) {
 
   if (focus?.type === 'script') {
     const script = findById(focus.value);
-    const cats = script ? parseTags(script['Categorías']) : [];
-    const scriptTags = script ? parseTags(script['Etiquetas']) : [];
+    const cats = script ? parseTags(script['Categorías']).sort(compareTextEs) : [];
+    const scriptTags = script ? parseTags(script['Etiquetas']).sort(compareTextEs) : [];
     const catNodes = cats.slice(0, 3).map(c => ({ type: 'category', id: c, label: c, direct: true }));
     const tagNodes = scriptTags.slice(0, 2).map(t => ({ type: 'tag', id: t, label: t, direct: true }));
     const slotsForScripts = maxNodes - catNodes.length - tagNodes.length;
@@ -760,6 +778,12 @@ function mapNodesForFocus(focus, connected, maxNodes) {
       .slice(0, slotsForScripts)
       .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: directIds.has(s['ID']) }));
     return [...scriptNodes, ...catNodes, ...tagNodes].slice(0, maxNodes);
+  }
+
+  if (!focus) {
+    return sortTermEntriesAlpha(countTerms(s => parseTags(s['Categorías']), connected.direct))
+      .slice(0, maxNodes)
+      .map(([name]) => ({ type: 'category', id: name, label: name, direct: true }));
   }
 
   // category or tag focus: scripts from connected + related co-occurring terms
@@ -772,8 +796,9 @@ function mapNodesForFocus(focus, connected, maxNodes) {
     terms.forEach(t => termCount.set(t, (termCount.get(t) || 0) + 1));
   });
   const relatedTermNodes = [...termCount.entries()]
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => b[1] - a[1] || compareTextEs(a[0], b[0]))
     .slice(0, 3)
+    .sort((a, b) => compareTextEs(a[0], b[0]))
     .map(([name]) => ({ type: focus?.type || 'category', id: name, label: name, direct: false }));
 
   const scriptNodes = connected.scripts
@@ -785,6 +810,8 @@ function mapNodesForFocus(focus, connected, maxNodes) {
 
 function buildExploreParams() {
   const params = new URLSearchParams({ view: 'map' });
+  if (searchQuery) params.set('q', searchQuery);
+  if (activeCategory) params.set('cat', activeCategory);
   if (visualFocus) {
     params.set('focusType', visualFocus.type);
     params.set('focus', visualFocus.value);
@@ -798,18 +825,19 @@ function renderVisualExplorer() {
   const connected = connectedScriptsForFocus(focus);
   const scripts = connected.scripts;
   const directIds = new Set(connected.direct.map(s => s['ID']));
-  const categories = countTerms(s => parseTags(s['Categorías'])).slice(0, 14);
+  const categorySource = focus ? allScripts : connected.direct;
+  const categories = sortTermEntriesAlpha(countTerms(s => parseTags(s['Categorías']), categorySource)).slice(0, 14);
 
   const isScriptFocus = focus?.type === 'script';
   const scriptFocusScript = isScriptFocus ? findById(focus.value) : null;
   const centerLabel = isScriptFocus
     ? (scriptFocusScript?.['Título'] || focus.value)
-    : (focus ? focus.value : T.viewAll);
-  const centerKind = isScriptFocus ? 'Recurso' : (focus?.type === 'tag' ? 'Etiqueta' : 'Categoría');
+    : (focus ? focus.value : T.categories);
+  const centerKind = isScriptFocus ? 'Recurso' : (focus?.type === 'tag' ? 'Etiqueta' : (focus ? 'Categoría' : 'Mapa'));
 
   const tags = isScriptFocus
-    ? countTerms(s => parseTags(s['Etiquetas']), scriptFocusScript ? [scriptFocusScript] : []).slice(0, 18)
-    : countTerms(s => parseTags(s['Etiquetas']), connected.direct).slice(0, 18);
+    ? sortTermEntriesAlpha(countTerms(s => parseTags(s['Etiquetas']), scriptFocusScript ? [scriptFocusScript] : [])).slice(0, 18)
+    : sortTermEntriesAlpha(countTerms(s => parseTags(s['Etiquetas']), connected.direct)).slice(0, 18);
 
   const hubX = 50;
   const hubY = 50;
@@ -828,8 +856,8 @@ function renderVisualExplorer() {
     };
   });
 
-  const scriptCats = scriptFocusScript ? parseTags(scriptFocusScript['Categorías']) : [];
-  const scriptTags = scriptFocusScript ? parseTags(scriptFocusScript['Etiquetas']) : [];
+  const scriptCats = scriptFocusScript ? parseTags(scriptFocusScript['Categorías']).sort(compareTextEs) : [];
+  const scriptTags = scriptFocusScript ? parseTags(scriptFocusScript['Etiquetas']).sort(compareTextEs) : [];
 
   const leftPanelHtml = isScriptFocus ? `
     ${scriptCats.length ? `
@@ -889,10 +917,10 @@ function renderVisualExplorer() {
       <strong>${escHtml(centerLabel)}</strong>
       <button class="visual-hub-open" data-open-script-id="${escHtml(focus.value)}">${IC.next} Ver ficha</button>
     </div>` : `
-    <button class="visual-hub" data-focus-type="${escHtml(focus?.type || 'category')}" data-focus-value="${escHtml(centerLabel)}">
+    ${focus ? `<button class="visual-hub" data-focus-type="${escHtml(focus.type)}" data-focus-value="${escHtml(centerLabel)}">` : '<div class="visual-hub">'}
       <span>${escHtml(centerKind)}</span>
       <strong>${escHtml(centerLabel)}</strong>
-    </button>`;
+    ${focus ? '</button>' : '</div>'}`;
 
   const rightPanelLabel = isScriptFocus ? 'Recursos relacionados' : 'Recursos conectados';
 
