@@ -1,28 +1,27 @@
 ID,Título,Resumen,Descripción,Donde insertar,Script,Etiquetas,Categorías,Relacionados,Fuente
-exe_0001,Indice de subpáginas,Genera un indice con las subpáginas del apartado actual. Permite ajustar la profundidad de navegación con data-depth y muestra un índice local dentro del iDevice. No es compatible con SCORM.,"### Índice de subpáginas
+exe_0001,Indice de subpáginas,Muestra un índice con las subpáginas del apartado actual para facilitar la navegación interna. Se puede elegir cuántos niveles aparecen. No funciona en exportaciones SCORM.,"### Índice de subpáginas
 
-Genera un índice local con las subpáginas del apartado actual en eXeLearning. Es útil para crear navegación interna dentro de una sección concreta del proyecto.
+Muestra dentro del iDevice un listado de las subpáginas que dependen del apartado actual. Es útil cuando una sección tiene varios apartados y se quiere ofrecer al alumnado una navegación más clara.
 
-**Uso**
+**Para qué sirve**
 
-- Inserta el fragmento en el lugar donde quieras mostrar el menú.
-- El script busca la página actual en el menú lateral de eXeLearning.
-- Si encuentra subpáginas, crea una lista de enlaces dentro del iDevice.
+- Facilita el acceso a las páginas de una misma sección.
+- Evita que el alumnado tenga que buscar esas páginas en el menú lateral.
+- Permite mostrar solo las subpáginas directas o incluir también niveles inferiores.
 
-**Configuración**
+**Cómo se usa**
 
-Modifica el atributo `data-depth` del contenedor principal:
+Inserta el fragmento en el lugar donde quieras que aparezca el índice, dentro del **HTML del iDevice**.
 
-- `data-depth=""0""`: muestra todos los niveles disponibles.
-- `data-depth=""1""`: muestra solo las subpáginas directas.
-- `data-depth=""2""`: muestra las subpáginas directas y sus hijas.
-- Cualquier número superior limita el menú hasta ese nivel.
+**Ajuste principal**
 
-**Inserción**
+El valor `data-depth` indica cuántos niveles se muestran:
 
-Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+- `0`: muestra todos los niveles disponibles.
+- `1`: muestra solo las subpáginas directas.
+- `2`: muestra las subpáginas directas y un nivel más.
 
-**Limitación**
+**Advertencia**
 
 No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
 <div data-exe-fragment=""exe-script-indice-subpaginas"" data-page-title="""" data-depth=""0"" style=""box-sizing:border-box; max-width:48rem; margin:1rem 0; padding:1rem; border:1px solid #d7e3f4; border-radius:0.75rem; background:#f8fbff; color:#1f2937; font-family:Arial, sans-serif;"">
@@ -208,31 +207,31 @@ No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- HackeXe4 - http
   <img alt="""" src=""data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="" onload=""(function(img){var root=img.closest('[data-exe-fragment=&quot;exe-script-indice-subpaginas&quot;]');if(!root||root._exeB)return;root._exeB=true;var code=root.querySelector('template[data-role=&quot;code&quot;]');if(!code)return;root.setAttribute('data-exe-l','1');var script=document.createElement('script');script.text=code.content.textContent;root.appendChild(script);root.removeAttribute('data-exe-l');})(this)"" onerror=""this.onload&&this.onload()"" style=""position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"" />
 </div>
 ",índice; subpáginas; menú local; navegación; niveles,Índices de contenido,exe_0002; exe_0005; exe_0014,Elaboración propia
-exe_0002,Indice de todo el proyecto,Crea un indice con todas las páginas del proyecto. Permite limitar los niveles mostrados con eXeAutoIndex y filtra páginas ocultas marcadas con .oc. en el título. No es compatible con SCORM.,"### Indice de todo el proyecto
+exe_0002,Indice de todo el proyecto,Crea un índice con todas las páginas del proyecto para ofrecer una navegación global. Se pueden limitar los niveles visibles y ocultar páginas marcadas como ocultas. No funciona en SCORM.,"### Índice de todo el proyecto
 
-Genera un índice global con enlaces a las páginas del proyecto eXeLearning. Sirve para ofrecer una navegación completa desde cualquier iDevice.
+Crea un índice con enlaces a las páginas del proyecto eXeLearning. Resulta útil cuando el material es amplio y se quiere ofrecer una vista general de todos los apartados.
 
-**Uso**
+**Para qué sirve**
 
-- Inserta el fragmento en el punto donde quieras mostrar el índice.
-- El script lee el menú lateral del proyecto.
-- Construye una lista de enlaces con las páginas disponibles.
-- Omite las páginas cuyo título contiene `.oc.`.
+- Da al alumnado una visión completa de la estructura del recurso.
+- Permite saltar rápidamente a cualquier página incluida en el menú.
+- Puede mostrar todos los niveles o solo los principales.
 
-**Configuración**
+**Cómo se usa**
 
-Modifica la llamada final a `eXeAutoIndex()`:
+Inserta el fragmento en el punto donde quieras que aparezca el índice.
+
+**Ajuste principal**
+
+En la última línea del código puedes cambiar el número de niveles:
 
 - `eXeAutoIndex(0)`: muestra todos los niveles.
 - `eXeAutoIndex(1)`: muestra solo el primer nivel.
 - `eXeAutoIndex(2)`: muestra dos niveles.
-- Cualquier número superior limita la profundidad del índice.
 
-**Inserción**
+Las páginas cuyo título contiene `.oc.` no se incluyen en el índice.
 
-Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
-
-**Limitación**
+**Advertencia**
 
 No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
 <div id=""contentNav"" class=""js-hidden"">Activa JavaScript para ver el índice.</div>
@@ -274,29 +273,27 @@ $(function() {
     eXeAutoIndex(0);  // Configura aquí el número de niveles que deseas (0 para todos los niveles, 1 para un nivel, 2 para dos niveles, etc.)
 });
 </script>",índice; proyecto completo; menú global; navegación; niveles,Índices de contenido,exe_0001; exe_0005; exe_0014,Elaboración propia a partir del código de Rafael Bueno.
-exe_0003,Añadir delimitadores de fórmulas $...$,Permite escribir fórmulas en línea con $...$ además de \(...\) mediante MathJax. Solo se ve correctamente en la vista previa y puede causar conflictos si el texto contiene símbolos $ no destinados a fórmulas.,"### Añadir delimitadores de fórmulas `$...$`
+exe_0003,Añadir delimitadores de fórmulas $...$,"Permite escribir fórmulas en línea entre signos $...$, además del formato habitual de MathJax. Conviene revisar la página si el texto contiene símbolos $ que no sean fórmulas.","### Añadir delimitadores de fórmulas `$...$`
 
-Permite usar fórmulas en línea escritas con delimitadores `$...$`, además de los delimitadores habituales `\(...\)` de MathJax.
+Permite escribir fórmulas matemáticas en línea usando el formato `$...$`, además del formato habitual `\(...\)`.
 
-**Uso**
+**Para qué sirve**
 
-- Inserta el fragmento en una página donde quieras activar esta forma de escribir fórmulas.
-- Al cargar la página, el script modifica la configuración de MathJax.
-- Después fuerza un nuevo procesado para que las fórmulas se muestren correctamente.
+Facilita la escritura de fórmulas cuando se preparan materiales de matemáticas, física, química u otras materias con notación científica.
 
 **Ejemplo**
 
-Puedes escribir una fórmula como `$x^2+y^2=z^2$` y MathJax la interpretará como expresión matemática en línea.
+Si escribes `$x^2+y^2=z^2$`, la página mostrará la expresión como una fórmula matemática.
 
-**Inserción**
+**Cómo se usa**
 
-Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+Coloca el fragmento en el **pie del proyecto** si quieres aplicarlo de forma general, o en una página concreta si solo lo necesitas allí.
 
 **Advertencias**
 
-- Puede causar problemas si el texto contiene símbolos `$` que no delimitan fórmulas.
-- La fórmula solo se verá procesada en la **vista previa** o en la página exportada, no en el editor.
-- Conviene revisar el texto de la página después de insertarlo.",Pie del proyecto,"<!-- HackeXe4 - https://hackexe4.github.io -->
+- La fórmula se verá correctamente en la **vista previa** o en la página exportada, no siempre dentro del editor.
+- Si el texto contiene signos `$` que no son fórmulas, puede haber resultados no deseados.
+- Conviene revisar la página después de insertar el código.",Pie del proyecto,"<!-- HackeXe4 - https://hackexe4.github.io -->
 <script>
 window.MathJax = {
   tex: {
@@ -341,25 +338,31 @@ window.MathJax = {
 })();
 </script>
 ",MathJax; fórmulas; LaTeX; delimitadores; vista previa,Fórmulas,,Elaboración propia
-exe_0004,Cambiar el color de fondo y del texto de acordeón,Cambia el color de fondo y del texto de los títulos del acordeón. Puede aplicarse a todo el proyecto desde el pie o solo a una página desde el botón HTML.,"### Cambiar el color de fondo y del texto de acordeón
+exe_0004,Cambiar el color de fondo y del texto de acordeón,Cambia el color de fondo y el color del texto en los títulos de los acordeones. Puede aplicarse a todo el proyecto o solo a una página.,"### Cambiar el color de fondo y del texto de acordeón
 
-Permite modificar el color de fondo y el color del texto de los títulos del acordeón en eXeLearning.
+Permite modificar el aspecto de los títulos de los acordeones en eXeLearning. Es útil para adaptar el diseño a los colores del recurso o para destacar mejor estos bloques.
 
-**Uso**
+**Para qué sirve**
 
-- Para que afecte a todo el proyecto, coloca el código en el **pie**.
-- Para que afecte solo a una página, colócalo usando el botón **HTML**.
+- Cambia el color de fondo del título del acordeón.
+- Cambia el color del texto.
+- Puede aplicarse a todo el proyecto o solo a una página.
+
+**Cómo se usa**
+
+- Para aplicarlo a todo el proyecto, coloca el código en el **pie del proyecto**.
+- Para aplicarlo solo en una página, insértalo en el **HTML del iDevice**.
 
 **Personalización**
 
-Deben cambiarse los colores de fondo y del texto por los que cada uno quiera. En el script, modifica estos valores:
+En el código hay que sustituir los colores por los que quieras usar:
 
-- `background-color: '#ff0000'`: color de fondo.
-- `color: '#ffffff'`: color del texto.
+- `background-color`: color de fondo.
+- `color`: color del texto.
 
 **Fuente**
 
-[Manuel Narváez](https://t.me/eXeLearning/26649)",Pie del proyecto; HTML de la página,"<!-- HackeXe4 - https://hackexe4.github.io -->
+[Manuel Narváez](https://t.me/eXeLearning/26649)",Pie del proyecto; HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
 <script>
 // HACKeXe - Cambia el color de fondo y del texto del fx acordeón
 $(function(){
@@ -368,31 +371,31 @@ $('.fx-accordion-title, .exe-accordion h2').css({
         'color':'#ffffff' // color del texto
     });
 });
-</script>",acordeón; colores; fondo; texto,Personalización visual,,[Manuel Narváez](https://t.me/eXeLearning/26649)
-exe_0005,Índice de contenido de los títulos de una página,"Crea un índice con los encabezados de la página y enlaza cada entrada con su título. Por defecto incluye h1, h2 y h3, aunque se puede cambiar maxLevel. Debe insertarse justo donde se quiere mostrar el índice.","### Índice de contenido de los títulos de una página
+</script>",acordeón; colores; fondo; texto,Personalización visual,exe_0015,[Manuel Narváez](https://t.me/eXeLearning/26649)
+exe_0005,Índice de contenido de los títulos de una página,Crea un índice con los títulos de la página y enlaza cada entrada con su apartado. Resulta útil en páginas largas con varios bloques o secciones.,"### Índice de contenido de los títulos de una página
 
-Crea un índice automático con los títulos de una página de eXeLearning. El índice se genera a partir de los encabezados presentes en el contenido y enlaza cada entrada con el título correspondiente.
+Crea un índice automático con los títulos de una página de eXeLearning. Cada entrada enlaza con el apartado correspondiente.
 
-**Uso**
+**Para qué sirve**
 
-- Inserta el fragmento en el punto exacto donde quieras que aparezca el índice.
-- Puedes usar el botón **HTML** o el botón **Insertar código**.
-- Al cargar la página, el script recorre los encabezados y crea una lista de enlaces.
-- El primer título encontrado se elimina del índice porque normalmente corresponde al título general de la página.
+- Facilita la navegación dentro de páginas largas.
+- Ayuda al alumnado a localizar rápidamente cada sección.
+- Permite organizar mejor materiales con muchos apartados.
 
-**Configuración**
+**Cómo se usa**
 
-Por defecto se incluyen los tres primeros niveles de encabezado:
+Inserta el fragmento en el lugar exacto donde quieras que aparezca el índice, mediante el **botón HTML** o el botón **Insertar código**.
 
-```javascript
-var maxLevel = 3;
-```
+**Ajuste principal**
 
-Puedes cambiar ese valor para incluir más o menos niveles, por ejemplo `2` para usar solo `h1` y `h2`.
+El valor `maxLevel` indica cuántos niveles de títulos se incluirán. Por ejemplo:
 
-**Inserción**
+- `2`: incluye títulos principales y subtítulos.
+- `3`: incluye un nivel más de subtítulos.
 
-Colócalo en el lugar exacto donde debe aparecer el índice, mediante el **botón HTML** o el botón **Insertar código**.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+**Consejo**
+
+Para la mayoría de páginas, `2` o `3` suele ser suficiente.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
 <ul id=""indice""></ul>
 
 <script>
@@ -442,64 +445,115 @@ Colócalo en el lugar exacto donde debe aparecer el índice, mediante el **botó
         });
     });
 </script>",índice; títulos; encabezados; navegación; página,Índices de contenido,exe_0001; exe_0002; exe_0014,Elaboración propia
-exe_0006,EdEX,"Editor web para crear, modificar y extraer estilos de eXeLearning. Permite trabajar con estilos ZIP y con el estilo incorporado en archivos ELPX.","### EdEX
+exe_0006,EdEX,"Editor web para crear, modificar y extraer estilos de eXeLearning. Ayuda a adaptar la apariencia de un proyecto sin trabajar directamente con los archivos internos.","### EdEX
 
-Editor de estilos para eXeLearning. Permite partir de un estilo base, cargar estilos en formato ZIP o abrir un archivo ELPX para trabajar con el estilo que incorpora. También permite extraer el estilo y volver a guardar el ELPX con los cambios.
+Editor web para trabajar con estilos de eXeLearning. Permite crear o modificar la apariencia de un proyecto a partir de un estilo existente.
 
-**URL:** https://exe-style-editor.github.io/",,,estilos; editor; ELPX; ZIP; diseño,Software y utilidades externas,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://exe-style-editor.github.io/
-exe_0007,eXeConvert,"Convierte proyectos eXeLearning entre ELP, ELPX, DOCX, Markdown y PDF, usando ELPX como formato central.","### eXeConvert
+**Para qué sirve**
 
-Utilidad para convertir entre formatos relacionados con eXeLearning. Permite importar ELP o DOCX para generar ELPX, y exportar ELPX a DOCX, Markdown o PDF. Al trabajar con DOCX y Markdown mantiene la estructura mediante encabezados.
+- Cargar un estilo en formato ZIP.
+- Abrir un archivo ELPX para revisar o modificar el estilo que contiene.
+- Extraer el estilo de un proyecto.
+- Guardar de nuevo el ELPX con los cambios aplicados.
 
-**URL:** https://execonvert.github.io/",,,conversión; ELPX; DOCX; Markdown; PDF,Software y utilidades externas,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://execonvert.github.io/
-exe_0008,Visor Web-ZIP,"Publica y comparte archivos ELPX, ZIP, H5P y otros recursos digitales desde enlaces públicos de servicios en la nube.","### Visor Web-ZIP
+Es una herramienta útil para docentes que quieren adaptar el diseño de sus materiales sin editar manualmente los archivos del estilo.
 
-Aplicación web para publicar y compartir recursos digitales educativos desde un archivo ZIP, ELPX, H5P u otros formatos alojados en Drive, Dropbox, Nextcloud, Box.com u otros servicios con enlace público. Genera un enlace que permite abrir el recurso directamente en el navegador y admite opciones como fechas de disponibilidad.
+**URL:** https://exe-style-editor.github.io/",,,estilos; editor; ELPX; ZIP; diseño,Herramientas externas; Personalización visual,exe_0015; exe_0022,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://exe-style-editor.github.io/
+exe_0007,eXeConvert,"Convierte proyectos de eXeLearning entre ELP, ELPX, DOCX, Markdown y PDF. Resulta útil para reutilizar materiales en distintos formatos.","### eXeConvert
 
-**URL:** https://visor-webzip.github.io/",,,publicación; ELPX; ZIP; nube; visor,Software y utilidades externas,exe_0010; exe_0011,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://visor-webzip.github.io/
-exe_0009,ELPX Translator,Traductor de proyectos ELPX con dos modalidades: una versión de escritorio que funciona en local sin servicios externos y una versión web que utiliza la API aportada por el usuario.,"### ELPX Translator
+Herramienta para convertir materiales de eXeLearning entre varios formatos.
 
-Herramienta para traducir proyectos ELPX. Dispone de dos modalidades:
+**Para qué sirve**
 
-- **ELPX Translator Desktop**, aplicación de escritorio que se ejecuta en local y no necesita servicios externos.
-- **ELPX Translator Web**, versión en línea que requiere que el usuario aporte su propia API para realizar la traducción.
+- Convertir proyectos antiguos ELP a ELPX.
+- Crear un ELPX a partir de un documento DOCX.
+- Exportar un ELPX a DOCX, Markdown o PDF.
+- Mantener la estructura del material mediante los encabezados del documento.
 
-Está pensada para facilitar la traducción de recursos creados con eXeLearning manteniendo la estructura del proyecto ELPX.
+Puede ser útil para reutilizar contenidos, preparar versiones imprimibles o pasar materiales a otros formatos de trabajo.
 
-**URL:** https://elpx-translator-desktop.github.io/",,,traducción; ELPX; IA; escritorio; web,Software y utilidades externas,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/
-exe_0010,eXeReader,Aplicación libre y gratuita para Android e iOS que permite leer contenidos creados con eXeLearning en dispositivos móviles.,"### eXeReader
+**URL:** https://execonvert.github.io/",,,conversión; ELPX; DOCX; Markdown; PDF,Herramientas externas; Conversión de formatos,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://execonvert.github.io/
+exe_0008,Visor Web-ZIP,"Permite publicar y compartir materiales ELPX, ZIP, H5P y otros recursos desde enlaces públicos en la nube, para abrirlos directamente en el navegador.","### Visor Web-ZIP
 
-Aplicación libre y gratuita para visualizar contenidos creados con eXeLearning en dispositivos móviles. Lee sitios web HTML generados con eXeLearning y permite abrir materiales exportados para su lectura, especialmente en Android e iOS.
+Aplicación web para abrir y compartir recursos educativos desde un enlace público en la nube.
 
-**URLs:**
+**Para qué sirve**
+
+- Publicar materiales creados con eXeLearning.
+- Abrir archivos ELPX, ZIP, H5P y otros recursos directamente en el navegador.
+- Compartir materiales alojados en servicios como Drive, Dropbox, Nextcloud o Box.
+- Añadir opciones como fechas de disponibilidad.
+
+Es útil cuando se quiere distribuir un recurso sin instalar nada en el dispositivo del alumnado.
+
+**URL:** https://visor-webzip.github.io/",,,publicación; ELPX; ZIP; nube; visor,Herramientas externas; Publicación y visualización,exe_0010; exe_0011; exe_0024,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://visor-webzip.github.io/
+exe_0009,ELPX Translator,Traduce proyectos ELPX y conserva su estructura. Tiene una versión de escritorio para trabajar en local y una versión web que requiere una API aportada por el usuario.,"### ELPX Translator
+
+Herramienta para traducir proyectos de eXeLearning en formato ELPX.
+
+**Para qué sirve**
+
+- Traducir un proyecto manteniendo su estructura.
+- Trabajar desde una aplicación de escritorio, sin enviar el material a servicios externos.
+- Usar una versión web cuando se dispone de una API propia para realizar la traducción.
+
+Puede ser útil para preparar materiales en varias lenguas o adaptar recursos ya creados.
+
+**Modalidades**
+
+- **ELPX Translator Desktop**: aplicación de escritorio que funciona en local.
+- **ELPX Translator Web**: versión en línea que requiere una API aportada por el usuario.
+
+**URL:** https://elpx-translator-desktop.github.io/",,,traducción; ELPX; IA; escritorio; web,Herramientas externas; Traducción,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/
+exe_0010,eXeReader,Aplicación gratuita para Android e iOS que permite leer en móviles y tabletas contenidos creados con eXeLearning.,"### eXeReader
+
+Aplicación gratuita para leer contenidos creados con eXeLearning en dispositivos móviles.
+
+**Para qué sirve**
+
+- Abrir materiales exportados desde eXeLearning.
+- Facilitar la lectura en móviles y tabletas.
+- Usar recursos educativos sin depender siempre de un ordenador.
+
+Puede ser útil cuando el alumnado accede al contenido desde Android o iOS.
+
+**URLs**
 
 - Android: https://play.google.com/store/apps/details?id=net.exelearning.exereader
 - iOS: https://apps.apple.com/es/app/exereader/id6444196265
-- Código fuente: https://github.com/exelearning/exereader",,,lector; móvil; Android; iOS; HTML,Software y utilidades externas,exe_0008; exe_0011,"Google Play, App Store y GitHub"
-exe_0011,eXeViewer,Visor para abrir paquetes de contenido de eXeLearning directamente en el navegador. Puede usarse como alternativa de publicación para ELPX y ZIP.,"### eXeViewer
+- Código fuente: https://github.com/exelearning/exereader",,,lector; móvil; Android; iOS; HTML,Publicación y visualización; Herramientas externas,exe_0008; exe_0011,"Google Play, App Store y GitHub"
+exe_0011,eXeViewer,Visor para abrir paquetes de contenido de eXeLearning directamente en el navegador. Puede servir como alternativa para publicar o consultar materiales ELPX y ZIP.,"### eXeViewer
 
-Visor de paquetes de contenido de eXeLearning pensado para abrirlos directamente en el navegador. Está disponible como imagen Docker `exelearning/exeviewer` y se orienta a visualizar contenidos de eXeLearning sin editar el proyecto.
+Visor para abrir paquetes de contenido de eXeLearning directamente en el navegador.
 
-**URL:** https://hub.docker.com/r/exelearning/exeviewer",,,visor; ELPX; ZIP; navegador; Docker,Software y utilidades externas,exe_0008; exe_0010,Docker Hub: https://hub.docker.com/r/exelearning/exeviewer
-exe_0012,Código QR de la página actual,Genera un código QR con la dirección actual de la página. Debe insertarse donde se quiera mostrar el QR y requiere conexión a Internet porque usa QuickChart.,"### Código QR de la página actual
+**Para qué sirve**
 
-Genera un código QR con la dirección actual de la página.
+- Visualizar materiales de eXeLearning sin editar el proyecto.
+- Abrir paquetes ELPX o ZIP preparados para su consulta.
+- Servir como opción de publicación cuando se dispone de un entorno preparado para ello.
 
-**Uso**
+Está pensado para mostrar contenidos, no para modificarlos.
 
-- Inserta el fragmento en el punto exacto donde quieras mostrar el QR.
-- Al cargar la página, el script toma la URL actual con `window.location.href`.
-- Después genera una imagen QR mediante QuickChart.
+**URL:** https://exeviewer.intef.es/",,,visor; ELPX; ZIP; navegador; Docker,Publicación y visualización; Herramientas externas,exe_0008; exe_0010; exe_0024,Docker Hub: https://hub.docker.com/r/exelearning/exeviewer
+exe_0012,Código QR de la página actual,Genera un código QR con la dirección de la página actual. Debe insertarse donde se quiera mostrar el QR y necesita conexión a Internet.,"### Código QR de la página actual
 
-**Inserción**
+Genera un código QR con la dirección de la página donde se inserta el recurso.
 
-Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+**Para qué sirve**
+
+- Facilitar que el alumnado abra la página desde un móvil o una tableta.
+- Compartir rápidamente una página concreta del material.
+- Añadir un acceso visual mediante QR dentro del propio recurso.
+
+**Cómo se usa**
+
+Inserta el fragmento en el punto exacto donde quieras mostrar el QR, dentro del **HTML del iDevice**.
 
 **Advertencias**
 
 - Requiere conexión a Internet.
-- La URL de la página se envía a QuickChart para generar la imagen.
-- No incluye texto visible dentro del recurso, solo el QR.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+- La dirección de la página se envía a QuickChart para generar la imagen.
+- El recurso muestra el QR, pero no añade un texto explicativo visible.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
 <div data-exe-fragment=""exe-script-qr-pagina"" style=""box-sizing:border-box; margin:1rem 0; text-align:center;"">
   <div data-role=""qr""></div>
 </div>
@@ -538,29 +592,29 @@ Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botó
   }
 })();
 </script>",QR; código QR; URL; enlace; página actual; QuickChart,Navegación,,Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com
-exe_0013,"Dificultar copia, selección e impresión","Añade una disuasión básica contra copia, selección, arrastre de imágenes e impresión mediante teclado. No protege realmente el contenido y puede afectar a la accesibilidad.","### Dificultar copia, selección e impresión
+exe_0013,"Protección de copia, selección e impresión","Dificulta algunas acciones de copia, selección e impresión. Solo actúa como disuasión básica, no protege realmente el contenido y puede afectar a la accesibilidad.","### Protección de copia, selección e impresión
 
 Este recurso dificulta algunas acciones habituales de copia o reutilización del contenido de una página o proyecto.
 
 **Qué hace**
 
-- Bloquea el menú contextual del clic derecho.
-- Bloquea combinaciones como `Ctrl+C`, `Ctrl+V`, `Ctrl+A`, `Ctrl+P`, `Ctrl+S` y `Ctrl+U`.
+- Bloquea el menú del clic derecho.
+- Bloquea atajos de teclado habituales, como copiar, pegar, seleccionar todo, imprimir o guardar.
 - Evita la selección de texto.
 - Evita el arrastre de imágenes.
-- Muestra un aviso cuando se intenta imprimir mediante `Ctrl+P` o antes de imprimir.
+- Muestra un aviso cuando se intenta imprimir.
 
-**Inserción**
+**Cómo se usa**
 
 - Colócalo en el **pie del proyecto** para aplicarlo a todas las páginas.
-- Colócalo en el **HTML de la página** si solo quieres aplicarlo a una página concreta.
+- Colócalo en el **HTML del iDevice** si solo quieres aplicarlo a una página concreta.
 
-**Advertencias**
+**Advertencias importantes**
 
 - No protege realmente el contenido.
-- No impide capturas de pantalla, desactivar JavaScript, usar herramientas de desarrollador ni copiar desde el código fuente.
-- Puede afectar negativamente a la accesibilidad y a personas que usan teclado, lectores de pantalla o herramientas de apoyo.
-- Debe entenderse como una disuasión suave, no como una medida de seguridad.",Pie del proyecto; HTML de la página,"<!-- HackeXe4 - https://hackexe4.github.io -->
+- No impide capturas de pantalla ni otras formas de copia.
+- Puede afectar a la accesibilidad, especialmente a personas que usan teclado, lectores de pantalla o herramientas de apoyo.
+- Debe entenderse como una disuasión suave, no como una medida de seguridad.",Pie del proyecto; HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
 <script>
 (function () {
   document.addEventListener('contextmenu', function (e) {
@@ -592,24 +646,23 @@ Este recurso dificulta algunas acciones habituales de copia o reutilización del
   });
 })();
 </script>",copia; protección; selección; impresión; clic derecho; teclado; contenido,Protección de contenido,,Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com
-exe_0014,Índice de iDevices de una página,Crea un índice con los iDevices o bloques de la página en eXeLearning 4 y enlaza cada entrada con su actividad. Debe insertarse donde se quiera mostrar el índice.,"### Índice de iDevices de una página
+exe_0014,Índice de iDevices de una página,Crea un índice con los iDevices o bloques de la página y enlaza cada entrada con su actividad. Pensado para eXeLearning 4.,"### Índice de iDevices de una página
 
-Genera un índice local con los iDevices o bloques de la página actual en eXeLearning 4. El índice toma los títulos de los bloques (`.box-title`) y crea enlaces internos hacia cada uno.
+Genera un índice con los iDevices o bloques de la página actual. Cada entrada enlaza con la actividad correspondiente.
 
-**Uso**
+**Para qué sirve**
 
-- Inserta el fragmento en el punto donde quieras mostrar el índice.
-- Al cargar la página, el script busca los bloques `article.box` dentro del contenido principal.
-- Omite el bloque donde está insertado el propio índice para no enlazarse a sí mismo.
-- Si un bloque no tiene ID, le asigna uno automáticamente.
+- Facilita la navegación dentro de páginas largas.
+- Ayuda al alumnado a localizar rápidamente cada actividad.
+- Ofrece una vista ordenada de los bloques de trabajo de una página.
 
-**Inserción**
+**Cómo se usa**
 
-Colócalo en el **HTML del iDevice**, usando **Pegar fragmento HTML** o el botón **HTML**.
+Inserta el fragmento en el punto donde quieras mostrar el índice, dentro del **HTML del iDevice**.
 
 **Compatibilidad**
 
-Pensado solo para eXeLearning 4. No usa las clases antiguas `.iDevice_header` ni `.iDeviceTitle` de eXeLearning 2.9.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+Está pensado para **eXeLearning 4**. No está diseñado para versiones antiguas de eXeLearning.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
 <div data-exe-fragment=""exe-script-indice-idevices"" style=""box-sizing:border-box; max-width:48rem; margin:1rem 0; padding:1rem; border:1px solid #d7e3f4; border-radius:0.75rem; background:#f8fbff; color:#1f2937; font-family:Arial, sans-serif;"">
   <p data-role=""title"" style=""margin:0 0 0.75rem 0; font-size:1.1rem; font-weight:700;"">Índice de actividades</p>
   <p data-role=""message"" style=""margin:0; line-height:1.5;"">Generando índice de actividades...</p>
@@ -701,3 +754,151 @@ Pensado solo para eXeLearning 4. No usa las clases antiguas `.iDevice_header` ni
   </template>
   <img alt="""" src=""data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="" onload=""(function(img){var root=img.closest('[data-exe-fragment=&quot;exe-script-indice-idevices&quot;]');if(!root||root._exeB)return;root._exeB=true;var code=root.querySelector('template[data-role=&quot;code&quot;]');if(!code)return;root.setAttribute('data-exe-l','1');var script=document.createElement('script');script.text=code.content.textContent;root.appendChild(script);root.removeAttribute('data-exe-l');})(this)"" onerror=""this.onload&&this.onload()"" style=""position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"" />
 </div>",índice; iDevices; actividades; bloques; navegación; eXeLearning 4,Índices de contenido,exe_0001; exe_0002; exe_0005,Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com
+exe_0015,Espaciado interlineal,Ajusta el interlineado de los textos para mejorar la lectura. Puede aplicarse a todo el contenido o solo a un párrafo concreto.,"### Espaciado interlineal
+
+Permite cambiar la separación entre las líneas de texto en eXeLearning 4. Es útil cuando un texto queda demasiado apretado y se quiere mejorar la lectura.
+
+**Uso recomendado: aplicarlo a todo el contenido**
+
+1. Abre tu proyecto en eXeLearning.
+2. Ve al lugar donde puedas añadir contenido al **HEAD** del proyecto.
+3. Pega el código indicado.
+4. Guarda los cambios.
+5. Comprueba el resultado en la vista previa o en la exportación.
+
+**Cómo cambiar la separación**
+
+En el código puedes cambiar el valor `1.5`:
+
+- `1.3`: separación ligera.
+- `1.5`: separación cómoda para la mayoría de textos.
+- `2`: separación doble.
+
+**Aplicarlo solo a un párrafo**
+
+Si solo quieres modificar un párrafo concreto, abre el editor HTML del iDevice y añade el interlineado en ese párrafo.
+
+**Consejo**
+
+Empieza con `1.5`. Si el texto aún se ve demasiado junto, prueba con `1.7` o `2`.",HEAD; HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+<style>
+.iDevice_content {
+  line-height: 1.5;
+}
+</style>",interlineado; CSS; legibilidad; texto; estilo,Personalización visual,exe_0004; exe_0006,Elaboración propia a partir de la consulta sobre compatibilidad con eXeLearning 4.
+exe_0016,eXeLearning,"Página oficial de eXeLearning. Presenta el proyecto, sus características principales y el acceso a recursos relacionados con la creación de materiales educativos.","### eXeLearning
+
+Página oficial de eXeLearning, herramienta libre para crear recursos educativos digitales.
+
+**Para qué sirve**
+
+- Conocer el proyecto eXeLearning.
+- Acceder a información general sobre la herramienta.
+- Localizar descargas, documentación y recursos asociados.
+
+Es el enlace de referencia para docentes que quieran empezar a trabajar con eXeLearning o consultar información general del proyecto.
+
+**URL:** https://exelearning.net/",,,eXeLearning; autoría; REA; educación,eXeLearning oficial,exe_0017; exe_0018; exe_0019; exe_0020; exe_0021; exe_0024,[eXeLearning](https://exelearning.net/)
+exe_0017,eXeLearning online,"Versión online de eXeLearning para crear y editar recursos educativos desde el navegador, sin necesidad de instalar el programa.","### eXeLearning online
+
+Versión online de eXeLearning para trabajar desde el navegador sin instalar la aplicación en el ordenador.
+
+**Para qué sirve**
+
+- Crear o editar recursos educativos desde el navegador.
+- Probar eXeLearning sin instalación previa.
+- Trabajar de forma rápida cuando se usa un equipo compartido o temporal.
+
+Conviene guardar el trabajo con frecuencia y comprobar las opciones de exportación disponibles.
+
+**URL:** https://app.exelearning.net/",,,eXeLearning; online; editor; recursos,eXeLearning oficial; Herramientas externas,exe_0016; exe_0018,[eXeLearning online](https://app.exelearning.net/)
+exe_0018,eXeLearning colaborativo demo,"Demo de la versión colaborativa de eXeLearning. Permite entrar como invitado y trabajar entre varias personas, pero los datos se pierden al cerrar si no se guardan.","### eXeLearning colaborativo demo
+
+Demo de la versión colaborativa de eXeLearning. Permite acceder como invitado y probar el trabajo compartido entre varias personas desde el navegador.
+
+**Para qué sirve**
+
+- Probar la edición colaborativa de eXeLearning.
+- Trabajar temporalmente entre varias personas.
+- Experimentar con la versión colaborativa sin crear una instalación propia.
+
+**Advertencia**
+
+Los datos se pierden al cerrar la sesión si no se guardan. Es útil para pruebas o trabajos temporales, siempre que se descargue o guarde el material antes de cerrar.
+
+**URL:** https://cloud-demo.exelearning.net/",,,eXeLearning; colaborativo; online; demo,eXeLearning oficial; Herramientas externas,exe_0016; exe_0020; exe_0023,[eXeLearning colaborativo demo](https://cloud-demo.exelearning.net/)
+exe_0019,Manual de eXeLearning,"Manual oficial de eXeLearning. Explica el uso del programa, la creación de recursos educativos y las principales opciones disponibles para el profesorado.","### Manual de eXeLearning
+
+Manual de referencia para aprender a utilizar eXeLearning y resolver dudas sobre sus herramientas principales.
+
+**Para qué sirve**
+
+- Consultar el uso de eXeLearning paso a paso.
+- Resolver dudas sobre iDevices, edición, estructura y exportación.
+- Servir como apoyo para docentes que empiezan o necesitan revisar alguna función.
+
+**URL:** https://descargas.intef.es/cedec/exe_learning/Manuales/manual_exe/",,,manual; ayuda; eXeLearning; documentación,Documentación y ayuda; eXeLearning oficial,exe_0016; exe_0020; exe_0024,[Manual de eXeLearning](https://descargas.intef.es/cedec/exe_learning/Manuales/manual_exe/)
+exe_0020,Descarga de eXeLearning,Página de descarga de eXeLearning para instalar el programa en distintos sistemas o acceder a las opciones disponibles desde la web oficial.,"### Descarga de eXeLearning
+
+Página oficial para descargar eXeLearning y consultar las opciones disponibles de instalación o acceso.
+
+**Para qué sirve**
+
+- Descargar eXeLearning para el sistema operativo correspondiente.
+- Consultar las versiones disponibles.
+- Acceder desde un punto oficial y actualizado.
+
+Es el enlace recomendado cuando un docente necesita instalar la herramienta en su equipo.
+
+**URL:** https://exelearning.net/descargas/",,,descarga; instalación; eXeLearning; versiones,eXeLearning oficial; Documentación y ayuda,exe_0016; exe_0019; exe_0024,[Descarga de eXeLearning](https://exelearning.net/descargas/)
+exe_0021,Grupo de Telegram eXeLearning,"Grupo de Telegram sobre eXeLearning. Puede servir para plantear dudas, compartir experiencias y seguir conversaciones de la comunidad de usuarios.","### Grupo de Telegram eXeLearning
+
+Grupo de Telegram dedicado a eXeLearning y a su uso educativo.
+
+**Para qué sirve**
+
+- Plantear dudas prácticas sobre eXeLearning.
+- Compartir experiencias y recursos con otros usuarios.
+- Seguir conversaciones de la comunidad docente interesada en la herramienta.
+
+Puede ser útil como apoyo informal para profesorado que trabaja con eXeLearning.
+
+**URL:** https://t.me/eXeLearning",,,Telegram; comunidad; ayuda; eXeLearning,Comunidad y soporte,exe_0016; exe_0023,[Grupo de Telegram eXeLearning](https://t.me/eXeLearning)
+exe_0022,Documentación para crear estilos en eXeLearning,Documentación técnica para crear estilos de eXeLearning. Sirve como referencia para personalizar la apariencia de los proyectos y complementa el uso de EdEX.,"### Documentación para crear estilos en eXeLearning
+
+Documentación del proyecto eXeLearning sobre la creación de estilos propios.
+
+**Para qué sirve**
+
+- Conocer la estructura básica de los estilos de eXeLearning.
+- Preparar o modificar estilos personalizados.
+- Entender mejor qué se puede adaptar antes de trabajar con un editor como EdEX.
+
+Es una referencia útil para quienes quieren ir más allá de los cambios visuales sencillos y comprender cómo se organizan los estilos.
+
+**URL:** https://exelearning.github.io/exelearning/development/styles/",,,estilos; documentación; diseño; eXeLearning,Documentación y ayuda; Personalización visual,exe_0006,[Documentación para crear estilos en eXeLearning](https://exelearning.github.io/exelearning/development/styles/)
+exe_0023,Asistente de IA Karla,"Asistente de IA sobre eXeLearning. Usa conversaciones del grupo de Telegram e información técnica para ayudar con el uso, instalación y problemas del programa.","### Asistente de IA Karla
+
+Asistente de IA orientado a resolver dudas sobre eXeLearning.
+
+**Para qué sirve**
+
+- Ayudar en el uso cotidiano de eXeLearning.
+- Resolver dudas de instalación y configuración.
+- Orientar ante problemas técnicos o errores del programa.
+- Consultar información procedente de conversaciones del grupo de Telegram y documentación técnica relacionada.
+
+**URL:** https://ja.cat/karla",,,IA; ayuda; eXeLearning; Telegram,Documentación y ayuda; Comunidad y soporte,exe_0021; exe_0019,[Asistente de IA Karla](https://ja.cat/karla)
+exe_0024,Subir una web de eXeLearning a GitHub,"Presentación que explica cómo publicar una web exportada desde eXeLearning en GitHub usando GitHub Desktop, el archivo `.nojekyll` y GitHub Pages.","### Subir una web de eXeLearning a GitHub
+
+Presentación paso a paso para publicar una web exportada desde eXeLearning v3 o superior en GitHub sin usar la consola.
+
+**Para qué sirve**
+
+- Explica por qué la subida directa desde la web de GitHub puede fallar con proyectos grandes.
+- Muestra cómo crear un repositorio vacío y clonarlo con GitHub Desktop.
+- Indica cómo añadir los archivos exportados desde eXeLearning.
+- Recuerda crear el archivo `.nojekyll` para evitar problemas de formato.
+- Explica cómo activar GitHub Pages y localizar la URL publicada.
+
+**URL publicada:** https://docs.google.com/presentation/d/e/2PACX-1vQVI95oJ4BI8cnzn8CFTLHv0j-YwVwBAAe1XvolZNrlmMhPyq4GvXVYnoCndXTbdVILms74pKmDObYs/pub?start=false&loop=false&delayms=3000",,,eXeLearning; GitHub; GitHub Pages; publicación; guía,Publicación y visualización; Documentación y ayuda,exe_0008; exe_0016; exe_0019; exe_0020; exe_0011,Elaboración propia.
