@@ -43,6 +43,11 @@ const T = {
   selectHint:     'Selecciona recursos para compartir',
   sharedSet:      n => `${n} recurso${n !== 1 ? 's' : ''} compartido${n !== 1 ? 's' : ''}`,
   viewAll:        'Ver todos',
+  list:           'Lista',
+  map:            'Mapa',
+  exploreTitle:   'Mapa de contenidos',
+  categoriesAndTags: 'Categorías y etiquetas',
+  resourcesInMap: n => `${n} recurso${n !== 1 ? 's' : ''}`,
   linkCopied:     '¡Enlace copiado!',
   linkCopiedFail: 'No se pudo copiar el enlace',
 };
@@ -73,6 +78,7 @@ const IC = {
   where:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
   retry:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
   select: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`,
+  map:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M8.7 7.4 10.9 15"/><path d="M15.3 7.4 13.1 15"/><path d="M9 6h6"/></svg>`,
 };
 
 /* ─── State ─────────────────────────────────────────────── */
@@ -86,6 +92,10 @@ let sharedScripts  = [];        // non-empty = shared-set view
 let debounceTimer  = null;
 let pendingURLState = null;     // URL state to apply after data loads
 let navStack       = [];        // history stack for detail-to-detail navigation
+let activeView     = 'list';    // list | map | detail
+let detailReturnView = 'list';  // list | map
+let visualFocus    = null;      // { type: 'category' | 'tag' | 'script', value: string }
+let mapHistory     = [];        // navigation history within the visual map
 
 /* ─── DOM refs ──────────────────────────────────────────── */
 const $ = id => document.getElementById(id);
@@ -99,7 +109,9 @@ function initDom() {
     statusMsg:     $('statusMsg'),
     cardGrid:      $('cardGrid'),
     listView:      $('listView'),
+    exploreView:   $('exploreView'),
     detailView:    $('detailView'),
+    appBody:       document.querySelector('.app-body'),
     themeToggle:   $('themeToggle'),
     sidebarToggle: $('sidebarToggle'),
     sidebar:       $('sidebar'),
@@ -239,6 +251,9 @@ function readURLState() {
   return {
     q:       params.get('q')       || '',
     cat:     params.get('cat')     || '',
+    view:    params.get('view')    || '',
+    focusType: params.get('focusType') || '',
+    focus:   params.get('focus')   || '',
     script:  params.get('script')  || '',
     scripts: params.get('scripts') || '',
   };
@@ -249,6 +264,11 @@ function updateURL() {
   if (sharedScripts.length > 0) {
     params.set('scripts', sharedScripts.map(s => s['ID']).join(','));
   } else {
+    if (activeView === 'map') params.set('view', 'map');
+    if (activeView === 'map' && visualFocus) {
+      params.set('focusType', visualFocus.type);
+      params.set('focus', visualFocus.value);
+    }
     if (searchQuery)    params.set('q',   searchQuery);
     if (activeCategory) params.set('cat', activeCategory);
     if (currentScript)  params.set('script', currentScript['ID']);
@@ -288,6 +308,14 @@ function applyURLState(state) {
   }
 
   renderList();
+
+  if (state.view === 'map') {
+    if (state.focusType && state.focus) {
+      const t = state.focusType === 'tag' ? 'tag' : state.focusType === 'script' ? 'script' : 'category';
+      visualFocus = { type: t, value: state.focus };
+    }
+    showExplore(true);
+  }
 
   if (state.script) {
     const found = findById(state.script);
@@ -360,9 +388,12 @@ function selectCategory(cat) {
   activeCategory = cat;
   sharedScripts = [];
   currentScript = null;
+  activeView = 'list';
+  detailReturnView = 'list';
   dom.catList.querySelectorAll('.cat-item').forEach(el =>
     el.classList.toggle('active', el.dataset.cat === cat));
   dom.detailView.hidden = true;
+  dom.exploreView.hidden = true;
   dom.listView.hidden   = false;
   renderList();
   updateURL();
@@ -382,6 +413,8 @@ function clearSearch() {
   searchQuery = '';
   activeCategory = '';
   sharedScripts = [];
+  activeView = 'list';
+  detailReturnView = 'list';
   dom.searchInput.value = '';
   dom.catList.querySelectorAll('.cat-item').forEach(el =>
     el.classList.toggle('active', el.dataset.cat === ''));
@@ -395,7 +428,10 @@ function filterByTag(tag) {
   sharedScripts = [];
   currentScript = null;
   navStack = [];
+  activeView = 'list';
+  detailReturnView = 'list';
   dom.detailView.hidden = true;
+  dom.exploreView.hidden = true;
   dom.listView.hidden   = false;
   renderList();
   updateURL();
@@ -462,6 +498,9 @@ function renderToolbar() {
     html = `
       <span class="results-count">${T.scripts(list.length)}</span>
       <div class="toolbar-btns">
+        <button class="btn-toolbar" id="btnExplore" title="Explorar visualmente categorías y etiquetas">
+          ${IC.map} ${T.map}
+        </button>
         <button class="btn-toolbar" id="btnSelect" title="Seleccionar recursos para compartir">
           ${IC.select} ${T.select}
         </button>
@@ -474,6 +513,7 @@ function renderToolbar() {
 
   dom.listToolbar.innerHTML = html;
 
+  $('btnExplore')?.addEventListener('click', () => showExplore());
   $('btnSelect')?.addEventListener('click', enterSelectionMode);
   $('btnCancelSelect')?.addEventListener('click', exitSelectionMode);
   $('btnShareView')?.addEventListener('click', e =>
@@ -618,9 +658,316 @@ function createCard(script) {
   return card;
 }
 
+/* ─── Visual Explorer ────────────────────────────────────── */
+function countTerms(getTerms, scripts = allScripts) {
+  const map = new Map();
+  scripts.forEach(script => {
+    getTerms(script).forEach(term => map.set(term, (map.get(term) || 0) + 1));
+  });
+  return [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'));
+}
+
+function pickVisualFocus() {
+  if (visualFocus) return visualFocus;
+  if (activeCategory) return { type: 'category', value: activeCategory };
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    const tag = countTerms(s => parseTags(s['Etiquetas'])).find(([name]) => name.toLowerCase() === q);
+    if (tag) return { type: 'tag', value: tag[0] };
+  }
+  const [topCategory] = countTerms(s => parseTags(s['Categorías']));
+  return topCategory ? { type: 'category', value: topCategory[0] } : null;
+}
+
+function scriptsForFocus(focus) {
+  if (!focus) return allScripts;
+  return allScripts.filter(script => {
+    const terms = focus.type === 'tag'
+      ? parseTags(script['Etiquetas'])
+      : parseTags(script['Categorías']);
+    return terms.includes(focus.value);
+  });
+}
+
+function findRelatedScript(ref) {
+  const needle = String(ref || '').trim();
+  if (!needle) return null;
+  return allScripts.find(s => s['ID'] === needle || s['Título'].toLowerCase() === needle.toLowerCase()) || null;
+}
+
+function connectedScriptsForFocus(focus) {
+  if (focus?.type === 'script') {
+    const script = findById(focus.value);
+    if (!script) return { direct: [], related: [], scripts: [] };
+    const relatedRefs = parseTags(script['Relacionados']);
+    const direct = relatedRefs.map(r => findRelatedScript(r)).filter(s => s && s['ID'] !== script['ID']);
+    const seen = new Set([script['ID'], ...direct.map(s => s['ID'])]);
+    const cats = parseTags(script['Categorías']);
+    const tags = parseTags(script['Etiquetas']);
+    const related = [];
+    allScripts.forEach(s => {
+      if (seen.has(s['ID'])) return;
+      const sCats = parseTags(s['Categorías']);
+      const sTags = parseTags(s['Etiquetas']);
+      if (cats.some(c => sCats.includes(c)) || tags.some(t => sTags.includes(t))) {
+        related.push(s);
+        seen.add(s['ID']);
+      }
+    });
+    return { direct, related: related.slice(0, 6), scripts: [...direct, ...related.slice(0, 6)] };
+  }
+
+  const direct = scriptsForFocus(focus);
+  const directIds = new Set(direct.map(s => s['ID']));
+  const related = [];
+  const seenRelated = new Set();
+
+  direct.forEach(script => {
+    parseTags(script['Relacionados']).forEach(ref => {
+      const found = findRelatedScript(ref);
+      if (!found || directIds.has(found['ID']) || seenRelated.has(found['ID'])) return;
+      seenRelated.add(found['ID']);
+      related.push(found);
+    });
+  });
+
+  return { direct, related, scripts: [...direct, ...related] };
+}
+
+function buildExploreParams() {
+  const params = new URLSearchParams({ view: 'map' });
+  if (visualFocus) {
+    params.set('focusType', visualFocus.type);
+    params.set('focus', visualFocus.value);
+  }
+  return params;
+}
+
+function renderVisualExplorer() {
+  const focus = pickVisualFocus();
+  visualFocus = focus;
+  const connected = connectedScriptsForFocus(focus);
+  const scripts = connected.scripts;
+  const directIds = new Set(connected.direct.map(s => s['ID']));
+  const categories = countTerms(s => parseTags(s['Categorías'])).slice(0, 14);
+  const maxVisibleNodes = window.innerWidth < 520 ? 8 : 12;
+  const visibleScripts = scripts.slice(0, maxVisibleNodes);
+
+  const isScriptFocus = focus?.type === 'script';
+  const scriptFocusScript = isScriptFocus ? findById(focus.value) : null;
+  const centerLabel = isScriptFocus
+    ? (scriptFocusScript?.['Título'] || focus.value)
+    : (focus ? focus.value : T.viewAll);
+  const centerKind = isScriptFocus ? 'Recurso' : (focus?.type === 'tag' ? 'Etiqueta' : 'Categoría');
+
+  const tags = isScriptFocus
+    ? countTerms(s => parseTags(s['Etiquetas']), scriptFocusScript ? [scriptFocusScript] : []).slice(0, 18)
+    : countTerms(s => parseTags(s['Etiquetas']), connected.direct).slice(0, 18);
+
+  const hubX = 50;
+  const hubY = 50;
+  const isCompactMap = window.innerWidth < 520;
+  const radius = isCompactMap ? 30 : 37;
+  const nodes = visibleScripts.map((script, i) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(visibleScripts.length, 1));
+    const x = hubX + Math.cos(angle) * radius;
+    const y = hubY + Math.sin(angle) * radius * .78;
+    return {
+      script,
+      x: Math.max(isCompactMap ? 18 : 9, Math.min(isCompactMap ? 82 : 91, x)),
+      y: Math.max(isCompactMap ? 18 : 13, Math.min(isCompactMap ? 82 : 87, y)),
+      relatedOnly: !directIds.has(script['ID']),
+    };
+  });
+
+  const scriptCats = scriptFocusScript ? parseTags(scriptFocusScript['Categorías']) : [];
+  const scriptTags = scriptFocusScript ? parseTags(scriptFocusScript['Etiquetas']) : [];
+
+  const leftPanelHtml = isScriptFocus ? `
+    ${scriptCats.length ? `
+    <div class="visual-facet-block">
+      <p class="visual-facet-title">Categorías del recurso</p>
+      <div class="visual-chip-list">
+        ${scriptCats.map(cat => `
+          <button class="visual-chip" data-focus-type="category" data-focus-value="${escHtml(cat)}">
+            <span>${escHtml(cat)}</span>
+          </button>`).join('')}
+      </div>
+    </div>` : ''}
+    ${scriptTags.length ? `
+    <div class="visual-facet-block">
+      <p class="visual-facet-title">Etiquetas del recurso</p>
+      <div class="visual-chip-list">
+        ${scriptTags.map(tag => `
+          <button class="visual-chip visual-chip-tag" data-focus-type="tag" data-focus-value="${escHtml(tag)}">
+            <span>${escHtml(tag)}</span>
+          </button>`).join('')}
+      </div>
+    </div>` : ''}
+    <div class="visual-facet-block">
+      <p class="visual-facet-title">${T.categories}</p>
+      <div class="visual-chip-list">
+        ${categories.slice(0, 8).map(([name, count]) => `
+          <button class="visual-chip" data-focus-type="category" data-focus-value="${escHtml(name)}">
+            <span>${escHtml(name)}</span><strong>${count}</strong>
+          </button>`).join('')}
+      </div>
+    </div>` : `
+    <div class="visual-facet-block">
+      <p class="visual-facet-title">${T.categories}</p>
+      <div class="visual-chip-list">
+        ${categories.map(([name, count]) => `
+          <button class="visual-chip ${focus?.type === 'category' && focus.value === name ? 'active' : ''}"
+            data-focus-type="category" data-focus-value="${escHtml(name)}">
+            <span>${escHtml(name)}</span><strong>${count}</strong>
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="visual-facet-block">
+      <p class="visual-facet-title">Etiquetas del foco</p>
+      <div class="visual-chip-list">
+        ${tags.map(([name, count]) => `
+          <button class="visual-chip visual-chip-tag ${focus?.type === 'tag' && focus.value === name ? 'active' : ''}"
+            data-focus-type="tag" data-focus-value="${escHtml(name)}">
+            <span>${escHtml(name)}</span><strong>${count}</strong>
+          </button>`).join('')}
+      </div>
+    </div>`;
+
+  const hubHtml = isScriptFocus ? `
+    <div class="visual-hub visual-hub-script">
+      <span>${escHtml(centerKind)}</span>
+      <strong>${escHtml(centerLabel)}</strong>
+      <button class="visual-hub-open" data-open-script-id="${escHtml(focus.value)}">${IC.next} Ver ficha</button>
+    </div>` : `
+    <button class="visual-hub" data-focus-type="${escHtml(focus?.type || 'category')}" data-focus-value="${escHtml(centerLabel)}">
+      <span>${escHtml(centerKind)}</span>
+      <strong>${escHtml(centerLabel)}</strong>
+    </button>`;
+
+  const rightPanelLabel = isScriptFocus ? 'Recursos relacionados' : 'Recursos conectados';
+
+  dom.exploreView.innerHTML = `
+    <section class="visual-explorer" aria-labelledby="visualExplorerTitle">
+      <div class="visual-head">
+        <div>
+          <p class="detail-label">${T.categoriesAndTags}</p>
+          <h1 class="visual-title" id="visualExplorerTitle">${T.exploreTitle}</h1>
+        </div>
+        <div class="visual-head-actions">
+          <span class="visual-count">${T.resourcesInMap(scripts.length)}</span>
+          <button class="btn-toolbar" id="btnListFromExplore">${IC.home} ${T.list}</button>
+        </div>
+      </div>
+
+      <div class="visual-layout">
+        <aside class="visual-facets" aria-label="Categorías y etiquetas del mapa">
+          ${leftPanelHtml}
+        </aside>
+
+        <div class="visual-map" aria-label="Red visual de recursos">
+          ${mapHistory.length > 0 ? `<button class="map-nav-back" id="mapNavBack">${IC.back} Atrás</button>` : ''}
+          <svg class="visual-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            ${nodes.map(node => `<line class="${node.relatedOnly ? 'related' : ''}" x1="${hubX}" y1="${hubY}" x2="${node.x}" y2="${node.y}"></line>`).join('')}
+          </svg>
+          ${hubHtml}
+          ${nodes.map((node, i) => `
+            <button class="visual-node visual-node-${i % 4} ${node.relatedOnly ? 'visual-node-related' : ''}" style="left:${node.x}%; top:${node.y}%"
+              data-nav-script-id="${escHtml(node.script['ID'])}" title="${escHtml(node.script['Título'])}">
+              <span>${escHtml(node.script['Título'])}</span>
+              ${node.relatedOnly ? '<small>Relacionado</small>' : '<small class="visual-node-explore">Explorar</small>'}
+            </button>`).join('')}
+        </div>
+
+        <aside class="visual-results" aria-label="Recursos del foco seleccionado">
+          <p class="visual-facet-title">${rightPanelLabel}</p>
+          <div class="visual-result-list">
+            ${scripts.map(script => {
+              const cats = parseTags(script['Categorías']).slice(0, 2);
+              const relatedOnly = !directIds.has(script['ID']);
+              return `
+                <button class="visual-result ${relatedOnly ? 'visual-result-related' : ''}" data-open-script-id="${escHtml(script['ID'])}">
+                  <span>${escHtml(script['Título'])}</span>
+                  <small>${relatedOnly ? 'Relacionado · ' : ''}${cats.map(escHtml).join(' · ')}</small>
+                </button>`;
+            }).join('')}
+          </div>
+        </aside>
+      </div>
+    </section>`;
+
+  $('btnListFromExplore')?.addEventListener('click', () => showList());
+
+  $('mapNavBack')?.addEventListener('click', () => {
+    visualFocus = mapHistory.pop();
+    renderVisualExplorer();
+    updateURL();
+  });
+
+  dom.exploreView.querySelectorAll('[data-focus-type][data-focus-value]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mapHistory.push(visualFocus);
+      visualFocus = {
+        type: btn.dataset.focusType === 'tag' ? 'tag' : 'category',
+        value: btn.dataset.focusValue,
+      };
+      renderVisualExplorer();
+      updateURL();
+      const shareBtn = $('btnShareExplore');
+      if (shareBtn) shareBtn.dataset.url = buildShareURL(buildExploreParams());
+    });
+  });
+
+  dom.exploreView.querySelectorAll('[data-nav-script-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mapHistory.push(visualFocus);
+      visualFocus = { type: 'script', value: btn.dataset.navScriptId };
+      renderVisualExplorer();
+      updateURL();
+    });
+  });
+
+  dom.exploreView.querySelectorAll('[data-open-script-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const found = findById(btn.dataset.openScriptId);
+      if (found) showDetail(found);
+    });
+  });
+}
+
+function showExplore(popHistory = false) {
+  activeView = 'map';
+  detailReturnView = 'map';
+  currentScript = null;
+  selectionMode = false;
+  selectedIds.clear();
+  navStack = [];
+  mapHistory = [];
+  dom.listView.hidden = true;
+  dom.detailView.hidden = true;
+  dom.exploreView.hidden = false;
+  dom.headerSearch.hidden = true;
+  dom.appBody.classList.add('map-mode');
+  renderVisualExplorer();
+  dom.listToolbar.innerHTML = `
+    <div class="toolbar-btns">
+      <button class="btn-toolbar" id="exploreBack">${IC.back} ${T.list}</button>
+      <button class="btn-toolbar btn-share" id="btnShareExplore"
+        data-url="${escHtml(buildShareURL(buildExploreParams()))}" title="Compartir este mapa">
+        ${IC.link} ${T.share}
+      </button>
+    </div>`;
+  $('exploreBack')?.addEventListener('click', () => showList());
+  $('btnShareExplore')?.addEventListener('click', e => shareURL(e.currentTarget.dataset.url));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!popHistory) updateURL();
+}
+
 /* ─── Detail View ────────────────────────────────────────── */
 function showDetail(script, pushHistory = true) {
   if (pushHistory && currentScript) navStack.push(currentScript);
+  if (activeView === 'map') detailReturnView = 'map';
+  activeView = 'detail';
   currentScript = script;
 
   const cats    = parseTags(script['Categorías']);
@@ -725,7 +1072,9 @@ function showDetail(script, pushHistory = true) {
     </div>`;
 
   dom.listView.hidden   = true;
+  dom.exploreView.hidden = true;
   dom.detailView.hidden = false;
+  dom.appBody.classList.remove('map-mode');
   dom.headerSearch.hidden = true;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -737,8 +1086,10 @@ function showDetail(script, pushHistory = true) {
     if (navStack.length > 0) {
       const prev = navStack.pop();
       showDetail(prev, false);
+    } else if (detailReturnView === 'map') {
+      showExplore();
     } else {
-      showList(true);
+      showList();
     }
   });
 
@@ -791,10 +1142,14 @@ function showDetail(script, pushHistory = true) {
 }
 
 function showList(popHistory = false) {
+  activeView = 'list';
+  detailReturnView = 'list';
   currentScript = null;
   navStack = [];
   dom.detailView.hidden = true;
+  dom.exploreView.hidden = true;
   dom.listView.hidden   = false;
+  dom.appBody.classList.remove('map-mode');
   dom.headerSearch.hidden = false;
   renderToolbar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -971,8 +1326,12 @@ async function fetchScriptsFrom(url) {
 
 async function loadData() {
   showLoading();
+  activeView = 'list';
+  detailReturnView = 'list';
   dom.listView.hidden   = false;
+  dom.exploreView.hidden = true;
   dom.detailView.hidden = true;
+  dom.appBody.classList.remove('map-mode');
   currentScript = null;
 
   const errors = [];
@@ -1005,6 +1364,9 @@ function initEvents() {
     activeCategory = '';
     searchQuery = '';
     currentScript = null;
+    visualFocus = null;
+    activeView = 'list';
+    detailReturnView = 'list';
     dom.searchInput.value = '';
     dom.catList.querySelectorAll('.cat-item').forEach(el =>
       el.classList.toggle('active', el.dataset.cat === ''));
@@ -1018,6 +1380,11 @@ function initEvents() {
     debounceTimer = setTimeout(() => {
       searchQuery = dom.searchInput.value.trim();
       sharedScripts = [];
+      if (activeView === 'map') {
+        visualFocus = null;
+        showExplore();
+        return;
+      }
       renderList();
       updateURL();
     }, 200);
@@ -1028,6 +1395,11 @@ function initEvents() {
   dom.inputClear.addEventListener('click', () => {
     searchQuery = '';
     dom.searchInput.value = '';
+    if (activeView === 'map') {
+      visualFocus = null;
+      showExplore();
+      return;
+    }
     renderList();
     updateURL();
     dom.searchInput.focus();
@@ -1062,6 +1434,7 @@ function initEvents() {
       if (dom.sidebar.classList.contains('open')) closeSidebar();
       else if (selectionMode) exitSelectionMode();
       else if (!dom.detailView.hidden) showList();
+      else if (!dom.exploreView.hidden) showList();
     }
     if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
       e.preventDefault();
@@ -1073,6 +1446,12 @@ function initEvents() {
     if (e.state?.scriptId) {
       const found = findById(e.state.scriptId);
       if (found) { showDetail(found, false); return; }
+    }
+    const state = readURLState();
+    if (state.view === 'map') {
+      visualFocus = state.focus ? { type: state.focusType === 'tag' ? 'tag' : 'category', value: state.focus } : null;
+      showExplore(true);
+      return;
     }
     showList(true);
     renderList();
