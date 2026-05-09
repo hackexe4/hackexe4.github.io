@@ -882,8 +882,9 @@ function renderVisualExplorer() {
       </div>
     </div>`;
 
+  const hubSummary = isScriptFocus ? escHtml(stripMd(scriptFocusScript?.['Resumen'] || '').slice(0, 220)) : '';
   const hubHtml = isScriptFocus ? `
-    <div class="visual-hub visual-hub-script">
+    <div class="visual-hub visual-hub-script" data-summary="${hubSummary}">
       <span>${escHtml(centerKind)}</span>
       <strong>${escHtml(centerLabel)}</strong>
       <button class="visual-hub-open" data-open-script-id="${escHtml(focus.value)}">${IC.next} Ver ficha</button>
@@ -1005,17 +1006,17 @@ function renderVisualExplorer() {
     tooltip.className = 'map-tooltip';
     document.body.appendChild(tooltip);
   }
-  dom.exploreView.querySelectorAll('[data-nav-script-id][data-summary]').forEach(btn => {
-    const summary = btn.dataset.summary;
+  dom.exploreView.querySelectorAll('[data-nav-script-id][data-summary], [data-summary].visual-hub-script').forEach(el => {
+    const summary = el.dataset.summary;
     if (!summary) return;
-    btn.addEventListener('mouseenter', () => {
+    el.addEventListener('mouseenter', () => {
       tooltip.textContent = summary;
-      const rect = btn.getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
       tooltip.style.left = (rect.left + rect.width / 2) + 'px';
       tooltip.style.top = rect.top + window.scrollY + 'px';
       tooltip.style.display = 'block';
     });
-    btn.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+    el.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
   });
 }
 
