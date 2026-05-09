@@ -920,11 +920,12 @@ function renderVisualExplorer() {
           </svg>
           ${hubHtml}
           ${nodes.map((node, i) => {
+            const delay = `animation: mapNodeIn .22s cubic-bezier(.34,1.3,.64,1) both; animation-delay: ${.06 + i * .04}s;`;
             if (node.type === 'category' || node.type === 'tag') {
               const cls = node.type === 'category' ? 'visual-node-cat' : 'visual-node-tag';
               const kindLabel = node.type === 'category' ? 'Categoría' : 'Etiqueta';
               return `
-                <button class="visual-node ${cls} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%"
+                <button class="visual-node ${cls} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%; ${delay}"
                   data-focus-type="${node.type}" data-focus-value="${escHtml(node.label)}"
                   title="${kindLabel}: ${escHtml(node.label)}">
                   <small class="visual-node-kind">${kindLabel}</small>
@@ -933,7 +934,7 @@ function renderVisualExplorer() {
             }
             const summary = escHtml(stripMd(findById(node.id)?.['Resumen'] || '').slice(0, 220));
             return `
-              <button class="visual-node visual-node-${i % 4} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%"
+              <button class="visual-node visual-node-${i % 4} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%; ${delay}"
                 data-nav-script-id="${escHtml(node.id)}" data-summary="${summary}">
                 <span>${escHtml(node.label)}</span>
                 ${node.direct ? '<small class="visual-node-explore">Explorar</small>' : '<small>Relacionado</small>'}
