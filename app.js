@@ -734,53 +734,41 @@ function connectedScriptsForFocus(focus) {
   return { direct, related, scripts: [...direct, ...related] };
 }
 
-function mapNodesForFocus(focus, maxNodes) {
-  if (!focus) {
-    return allScripts.slice(0, maxNodes).map(s => ({
-      type: 'script', id: s['ID'], label: s['Título'], direct: true,
-    }));
-  }
+// Builds mixed map nodes (scripts + category/tag terms) from the already-computed connected data.
+function mapNodesForFocus(focus, connected, maxNodes) {
+  const directIds = new Set(connected.direct.map(s => s['ID']));
 
-  if (focus.type === 'script') {
+  if (focus?.type === 'script') {
     const script = findById(focus.value);
-    if (!script) return [];
-    const cats = parseTags(script['Categorías']);
-    const scriptTags = parseTags(script['Etiquetas']);
-    const relatedRefs = parseTags(script['Relacionados']);
-    const directScripts = relatedRefs
-      .map(r => findRelatedScript(r))
-      .filter(s => s && s['ID'] !== script['ID'])
-      .slice(0, 5)
-      .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: true }));
+    const cats = script ? parseTags(script['Categorías']) : [];
+    const scriptTags = script ? parseTags(script['Etiquetas']) : [];
     const catNodes = cats.slice(0, 3).map(c => ({ type: 'category', id: c, label: c, direct: true }));
     const tagNodes = scriptTags.slice(0, 2).map(t => ({ type: 'tag', id: t, label: t, direct: true }));
-    const used = new Set([script['ID'], ...directScripts.map(n => n.id)]);
-    const remaining = maxNodes - directScripts.length - catNodes.length - tagNodes.length;
-    const nearbyScripts = remaining > 0
-      ? allScripts
-          .filter(s => !used.has(s['ID']) && parseTags(s['Categorías']).some(c => cats.includes(c)))
-          .slice(0, remaining)
-          .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: false }))
-      : [];
-    return [...directScripts, ...catNodes, ...tagNodes, ...nearbyScripts].slice(0, maxNodes);
+    const slotsForScripts = maxNodes - catNodes.length - tagNodes.length;
+    const scriptNodes = connected.scripts
+      .slice(0, slotsForScripts)
+      .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: directIds.has(s['ID']) }));
+    return [...scriptNodes, ...catNodes, ...tagNodes].slice(0, maxNodes);
   }
 
-  // category or tag focus
-  const focusScripts = scriptsForFocus(focus);
-  const scriptNodes = focusScripts
-    .slice(0, maxNodes - 3)
-    .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: true }));
+  // category or tag focus: scripts from connected + related co-occurring terms
+  const focusScripts = connected.direct; // all scripts in the focus
   const termCount = new Map();
   focusScripts.slice(0, 20).forEach(s => {
-    const terms = focus.type === 'category'
+    const terms = focus?.type === 'category'
       ? parseTags(s['Categorías']).filter(c => c !== focus.value)
-      : parseTags(s['Etiquetas']).filter(t => t !== focus.value);
+      : parseTags(s['Etiquetas']).filter(t => t !== focus?.value);
     terms.forEach(t => termCount.set(t, (termCount.get(t) || 0) + 1));
   });
   const relatedTermNodes = [...termCount.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
-    .map(([name]) => ({ type: focus.type, id: name, label: name, direct: false }));
+    .map(([name]) => ({ type: focus?.type || 'category', id: name, label: name, direct: false }));
+
+  const scriptNodes = connected.scripts
+    .slice(0, maxNodes - relatedTermNodes.length)
+    .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: directIds.has(s['ID']) }));
+
   return [...scriptNodes, ...relatedTermNodes].slice(0, maxNodes);
 }
 
@@ -817,7 +805,7 @@ function renderVisualExplorer() {
   const isCompactMap = window.innerWidth < 520;
   const radius = isCompactMap ? 30 : 37;
   const maxVisibleNodes = window.innerWidth < 520 ? 8 : 12;
-  const rawNodes = mapNodesForFocus(focus, maxVisibleNodes);
+  const rawNodes = mapNodesForFocus(focus, connected, maxVisibleNodes);
   const nodes = rawNodes.map((node, i) => {
     const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(rawNodes.length, 1));
     const x = hubX + Math.cos(angle) * radius;
