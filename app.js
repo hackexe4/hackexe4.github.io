@@ -1019,6 +1019,7 @@ function renderVisualExplorer() {
 }
 
 function showExplore(popHistory = false) {
+  if (!popHistory) visualFocus = null; // let pickVisualFocus derive from current list state
   activeView = 'map';
   detailReturnView = 'map';
   currentScript = null;
