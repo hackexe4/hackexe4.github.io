@@ -23,9 +23,9 @@ El valor `data-depth` indica cuántos niveles se muestran:
 
 **Advertencia**
 
-No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- Indice de subpáginas -->
+<!-- https://hackexe4.github.io/#script=exe_0001 -->
 <div data-exe-fragment=""exe-script-indice-subpaginas"" data-page-title="""" data-depth=""0"" style=""box-sizing:border-box; max-width:48rem; margin:1rem 0; padding:1rem; border:1px solid #d7e3f4; border-radius:0.75rem; background:#f8fbff; color:#1f2937; font-family:Arial, sans-serif;"">
-  <p data-role=""title"" style=""margin:0 0 0.75rem 0; font-size:1.1rem; font-weight:700;"">Índice de contenidos</p>
   <p data-role=""message"" style=""margin:0; line-height:1.5;"">Generando índice de contenidos...</p>
   <nav data-role=""nav"" aria-label=""Subpáginas de este apartado"" hidden style=""margin-top:0.75rem;""></nav>
   <template data-role=""code"">
@@ -233,44 +233,71 @@ Las páginas cuyo título contiene `.oc.` no se incluyen en el índice.
 
 **Advertencia**
 
-No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- Indice de todo el proyecto -->
+<!-- https://hackexe4.github.io/#script=exe_0002 -->
 <div id=""contentNav"" class=""js-hidden"">Activa JavaScript para ver el índice.</div>
 
 <script>
 // HACKeXe - https://hackexe.tiddlyhost.com
-// Menú de páginas de todo el proyecto con niveles configurables y filtrado de páginas ocultas que contienen .oc. en su título. V2
+// Menú de páginas de todo el proyecto con niveles configurables y filtrado de páginas ocultas que contienen .oc. en su título.
+// V3: limpia clases de navegación de eXeLearning para evitar flechas o ""MORE"".
 
 function eXeAutoIndex(levels = 2) {
     var nav = $(""#siteNav"");
     if (nav.length != 1) return false;
 
-    var navContainer = $(""<ul></ul>"");  // Contenedor principal
+    var navContainer = $(""<ul></ul>"");
+
+    function cleanClone(item) {
+        // Evita duplicar ids del menú original
+        item.removeAttr(""id"");
+        item.find(""[id]"").removeAttr(""id"");
+
+        // Limpia clases que pueden activar indicadores visuales del menú de eXeLearning
+        item.removeClass(""daddy parent active current-page current selected"");
+        item.find(""a"").removeClass(""daddy parent active current-page current selected"");
+
+        return item;
+    }
 
     function appendChildren(element, currentLevel, parentContainer) {
         element.children(""ul"").children(""li"").each(function() {
-            if (!$(this).find(""a"").text().includes("".oc."")) {
-                var liClone = $(this).clone();
-                liClone.children(""ul"").remove();  // Elimina sublistas existentes antes de clonar
+            var linkText = $(this).children(""a"").first().text();
 
-                var newSubList = $(""<ul></ul>"");  // Nueva sublista para niveles adicionales
+            if (!linkText.includes("".oc."")) {
+                var liClone = $(this).clone();
+
+                // Elimina sublistas originales antes de reconstruirlas
+                liClone.children(""ul"").remove();
+
+                // Limpia marcas heredadas del menú original
+                cleanClone(liClone);
+
+                var newSubList = $(""<ul></ul>"");
+
                 if (levels === 0 || currentLevel < levels) {
-                    appendChildren($(this), currentLevel + 1, newSubList);  // Recursión para subniveles
+                    appendChildren($(this), currentLevel + 1, newSubList);
+
                     if (newSubList.children().length > 0) {
-                        liClone.append(newSubList);  // Solo añade la sublista si tiene elementos
+                        liClone.append(newSubList);
                     }
                 }
 
-                parentContainer.append(liClone);  // Añade el elemento clonado al contenedor padre
+                parentContainer.append(liClone);
             }
         });
     }
 
-    appendChildren(nav, 1, navContainer);  // Inicia la recursión desde el primer nivel
-    $(""#contentNav"").html(navContainer).show();  // Muestra el menú
+    appendChildren(nav, 1, navContainer);
+
+    $(""#contentNav"")
+        .removeClass(""js-hidden"")
+        .html(navContainer)
+        .show();
 }
 
 $(function() {
-    eXeAutoIndex(0);  // Configura aquí el número de niveles que deseas (0 para todos los niveles, 1 para un nivel, 2 para dos niveles, etc.)
+    eXeAutoIndex(0);
 });
 </script>",índice; proyecto completo; menú global; navegación; niveles,Índices de contenido,exe_0001; exe_0005; exe_0014,Elaboración propia a partir del código de Rafael Bueno.
 exe_0003,Añadir delimitadores de fórmulas $...$,"Permite escribir fórmulas en línea entre signos $...$, además del formato habitual de MathJax. Conviene revisar la página si el texto contiene símbolos $ que no sean fórmulas.","### Añadir delimitadores de fórmulas `$...$`
@@ -293,7 +320,8 @@ Coloca el fragmento en el **pie del proyecto** si quieres aplicarlo de forma gen
 
 - La fórmula se verá correctamente en la **vista previa** o en la página exportada, no siempre dentro del editor.
 - Si el texto contiene signos `$` que no son fórmulas, puede haber resultados no deseados.
-- Conviene revisar la página después de insertar el código.",Pie del proyecto,"<!-- HackeXe4 - https://hackexe4.github.io -->
+- Conviene revisar la página después de insertar el código.",Pie del proyecto,"<!-- Añadir delimitadores de fórmulas $...$ -->
+<!-- https://hackexe4.github.io/#script=exe_0003 -->
 <script>
 window.MathJax = {
   tex: {
@@ -362,7 +390,8 @@ En el código hay que sustituir los colores por los que quieras usar:
 
 **Fuente**
 
-[Manuel Narváez](https://t.me/eXeLearning/26649)",Pie del proyecto; HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+[Manuel Narváez](https://t.me/eXeLearning/26649)",Pie del proyecto; HTML del iDevice,"<!-- Cambiar el color de fondo y del texto de acordeón -->
+<!-- https://hackexe4.github.io/#script=exe_0004 -->
 <script>
 // HACKeXe - Cambia el color de fondo y del texto del fx acordeón
 $(function(){
@@ -371,7 +400,7 @@ $('.fx-accordion-title, .exe-accordion h2').css({
         'color':'#ffffff' // color del texto
     });
 });
-</script>",acordeón; colores; fondo; texto,Personalización visual,exe_0015,[Manuel Narváez](https://t.me/eXeLearning/26649)
+</script>",acordeón; colores; fondo; texto,Personalización visual,exe_0015; exe_0025,[Manuel Narváez](https://t.me/eXeLearning/26649)
 exe_0005,Índice de contenido de los títulos de una página,Crea un índice con los títulos de la página y enlaza cada entrada con su apartado. Resulta útil en páginas largas con varios bloques o secciones.,"### Índice de contenido de los títulos de una página
 
 Crea un índice automático con los títulos de una página de eXeLearning. Cada entrada enlaza con el apartado correspondiente.
@@ -395,7 +424,8 @@ El valor `maxLevel` indica cuántos niveles de títulos se incluirán. Por ejemp
 
 **Consejo**
 
-Para la mayoría de páginas, `2` o `3` suele ser suficiente.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+Para la mayoría de páginas, `2` o `3` suele ser suficiente.",HTML del iDevice,"<!-- Índice de contenido de los títulos de una página -->
+<!-- https://hackexe4.github.io/#script=exe_0005 -->
 <ul id=""indice""></ul>
 
 <script>
@@ -458,7 +488,7 @@ Editor web para trabajar con estilos de eXeLearning. Permite crear o modificar l
 
 Es una herramienta útil para docentes que quieren adaptar el diseño de sus materiales sin editar manualmente los archivos del estilo.
 
-**URL:** https://exe-style-editor.github.io/",,,estilos; editor; ELPX; ZIP; diseño,Herramientas externas; Personalización visual,exe_0015; exe_0022,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://exe-style-editor.github.io/
+**URL:** https://exe-style-editor.github.io/",,,estilos; editor; ELPX; ZIP; diseño,Herramientas externas; Personalización visual,exe_0015; exe_0022; exe_0025,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://exe-style-editor.github.io/
 exe_0007,eXeConvert,"Convierte proyectos de eXeLearning entre ELP, ELPX, DOCX, Markdown y PDF. Resulta útil para reutilizar materiales en distintos formatos.","### eXeConvert
 
 Herramienta para convertir materiales de eXeLearning entre varios formatos.
@@ -553,7 +583,8 @@ Inserta el fragmento en el punto exacto donde quieras mostrar el QR, dentro del 
 
 - Requiere conexión a Internet.
 - La dirección de la página se envía a QuickChart para generar la imagen.
-- El recurso muestra el QR, pero no añade un texto explicativo visible.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+- El recurso muestra el QR, pero no añade un texto explicativo visible.",HTML del iDevice,"<!-- Código QR de la página actual -->
+<!-- https://hackexe4.github.io/#script=exe_0012 -->
 <div data-exe-fragment=""exe-script-qr-pagina"" style=""box-sizing:border-box; margin:1rem 0; text-align:center;"">
   <div data-role=""qr""></div>
 </div>
@@ -614,7 +645,8 @@ Este recurso dificulta algunas acciones habituales de copia o reutilización del
 - No protege realmente el contenido.
 - No impide capturas de pantalla ni otras formas de copia.
 - Puede afectar a la accesibilidad, especialmente a personas que usan teclado, lectores de pantalla o herramientas de apoyo.
-- Debe entenderse como una disuasión suave, no como una medida de seguridad.",Pie del proyecto; HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+- Debe entenderse como una disuasión suave, no como una medida de seguridad.",Pie del proyecto; HTML del iDevice,"<!-- Protección de copia, selección e impresión -->
+<!-- https://hackexe4.github.io/#script=exe_0013 -->
 <script>
 (function () {
   document.addEventListener('contextmenu', function (e) {
@@ -662,7 +694,8 @@ Inserta el fragmento en el punto donde quieras mostrar el índice, dentro del **
 
 **Compatibilidad**
 
-Está pensado para **eXeLearning 4**. No está diseñado para versiones antiguas de eXeLearning.",HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+Está pensado para **eXeLearning 4**. No está diseñado para versiones antiguas de eXeLearning.",HTML del iDevice,"<!-- Índice de iDevices de una página -->
+<!-- https://hackexe4.github.io/#script=exe_0014 -->
 <div data-exe-fragment=""exe-script-indice-idevices"" style=""box-sizing:border-box; max-width:48rem; margin:1rem 0; padding:1rem; border:1px solid #d7e3f4; border-radius:0.75rem; background:#f8fbff; color:#1f2937; font-family:Arial, sans-serif;"">
   <p data-role=""title"" style=""margin:0 0 0.75rem 0; font-size:1.1rem; font-weight:700;"">Índice de actividades</p>
   <p data-role=""message"" style=""margin:0; line-height:1.5;"">Generando índice de actividades...</p>
@@ -780,12 +813,13 @@ Si solo quieres modificar un párrafo concreto, abre el editor HTML del iDevice 
 
 **Consejo**
 
-Empieza con `1.5`. Si el texto aún se ve demasiado junto, prueba con `1.7` o `2`.",HEAD; HTML del iDevice,"<!-- HackeXe4 - https://hackexe4.github.io -->
+Empieza con `1.5`. Si el texto aún se ve demasiado junto, prueba con `1.7` o `2`.",HEAD; HTML del iDevice,"<!-- Espaciado interlineal -->
+<!-- https://hackexe4.github.io/#script=exe_0015 -->
 <style>
 .iDevice_content {
   line-height: 1.5;
 }
-</style>",interlineado; CSS; legibilidad; texto; estilo,Personalización visual,exe_0004; exe_0006,Elaboración propia a partir de la consulta sobre compatibilidad con eXeLearning 4.
+</style>",interlineado; CSS; legibilidad; texto; estilo,Personalización visual,exe_0004; exe_0006; exe_0025,Elaboración propia a partir de la consulta sobre compatibilidad con eXeLearning 4.
 exe_0016,eXeLearning,"Página oficial de eXeLearning. Presenta el proyecto, sus características principales y el acceso a recursos relacionados con la creación de materiales educativos.","### eXeLearning
 
 Página oficial de eXeLearning, herramienta libre para crear recursos educativos digitales.
@@ -811,7 +845,7 @@ Versión online de eXeLearning para trabajar desde el navegador sin instalar la 
 
 Conviene guardar el trabajo con frecuencia y comprobar las opciones de exportación disponibles.
 
-**URL:** https://app.exelearning.net/",,,eXeLearning; online; editor; recursos,eXeLearning oficial; Herramientas externas,exe_0016; exe_0018,[eXeLearning online](https://app.exelearning.net/)
+**URL:** https://app.exelearning.net/",,,eXeLearning; online; editor; recursos,eXeLearning oficial; Herramientas externas,exe_0016; exe_0018,[eXeLearning online](https://online.exelearning.net/)
 exe_0018,eXeLearning colaborativo demo,"Demo de la versión colaborativa de eXeLearning. Permite entrar como invitado y trabajar entre varias personas, pero los datos se pierden al cerrar si no se guardan.","### eXeLearning colaborativo demo
 
 Demo de la versión colaborativa de eXeLearning. Permite acceder como invitado y probar el trabajo compartido entre varias personas desde el navegador.
@@ -902,3 +936,86 @@ Presentación paso a paso para publicar una web exportada desde eXeLearning v3 o
 - Explica cómo activar GitHub Pages y localizar la URL publicada.
 
 **URL publicada:** https://docs.google.com/presentation/d/e/2PACX-1vQVI95oJ4BI8cnzn8CFTLHv0j-YwVwBAAe1XvolZNrlmMhPyq4GvXVYnoCndXTbdVILms74pKmDObYs/pub?start=false&loop=false&delayms=3000",,,eXeLearning; GitHub; GitHub Pages; publicación; guía,Publicación y visualización; Documentación y ayuda,exe_0008; exe_0016; exe_0019; exe_0020; exe_0011,Elaboración propia.
+exe_0025,Cambiar el favicon del proyecto,Sustituye el favicon de eXeLearning por un icono propio guardado en content/resources o en una subcarpeta. Se puede indicar el nombre del archivo y la carpeta.,"### Cambiar el favicon del proyecto
+
+Permite sustituir el icono `favicon.ico` que aparece en la pestaña del navegador por otro archivo incluido en los recursos del proyecto.
+
+**Para qué sirve**
+
+- Personalizar la identidad visual del material.
+- Usar un icono propio en lugar del favicon por defecto de eXeLearning.
+- Guardar el icono directamente en `content/resources/` o en una subcarpeta del gestor de archivos.
+
+**Cómo se usa**
+
+1. Añade el archivo del icono a los recursos del proyecto.
+2. Cambia en el código el valor de `iconFile` por el nombre del archivo que quieras usar.
+3. Si el icono está dentro de una carpeta, indica esa carpeta en `iconFolder`.
+4. Coloca el fragmento en el **pie del proyecto** para aplicarlo a todo el material.
+
+**Ajustes principales**
+
+```js
+var iconFolder = """";
+var iconFile = ""favicon.ico"";
+```
+
+**Ejemplos**
+
+```js
+// Icono en la carpeta principal de recursos
+var iconFolder = """";
+var iconFile = ""favicon.ico"";
+
+// Icono dentro de una carpeta
+var iconFolder = ""imagenes"";
+var iconFile = ""logo.svg"";
+
+// Icono dentro de una subcarpeta
+var iconFolder = ""imagenes/iconos"";
+var iconFile = ""logo.png"";
+```
+
+**Formatos previstos**
+
+El código reconoce automáticamente archivos `.ico`, `.png` y `.svg` para asignar el tipo adecuado.
+
+El archivo debe quedar disponible en `content/resources/` o en una subcarpeta de esa ruta tras la exportación.",Pie del proyecto,"<!-- Cambiar el favicon del proyecto -->
+<!-- https://hackexe4.github.io/#script=exe_0025 -->
+<script>
+(function () {
+  var iconFolder = """"; // Carpeta dentro de content/resources. Ejemplos: """", ""imagenes"", ""imagenes/iconos""
+  var iconFile = ""favicon.ico""; // Nombre del archivo. Ejemplos: favicon.ico, logo.svg, icono.png
+
+  function cleanPath(value) {
+    return String(value || """")
+      .replace(/^\/+|\/+$/g, """")
+      .replace(/\/+/g, ""/"");
+  }
+
+  var oldIcon = document.querySelector(
+    'link[rel=""icon""][href$=""libs/favicon.ico""], ' +
+    'link[rel=""shortcut icon""][href$=""libs/favicon.ico""], ' +
+    'link[rel=""icon""][href$=""favicon.ico""], ' +
+    'link[rel=""shortcut icon""][href$=""favicon.ico""]'
+  );
+
+  var baseUrl = oldIcon
+    ? oldIcon.href.replace(/(?:libs\/)?favicon\.ico(?:\?.*)?$/, """")
+    : new URL(""."", location.href).href;
+
+  var folder = cleanPath(iconFolder);
+  var file = cleanPath(iconFile);
+  var resourcePath = ""content/resources/"" + (folder ? folder + ""/"" : """") + file;
+
+  var icon = document.createElement(""link"");
+  icon.rel = ""icon"";
+  icon.href = baseUrl + resourcePath;
+
+  if (/\.svg$/i.test(file)) icon.type = ""image/svg+xml"";
+  else if (/\.png$/i.test(file)) icon.type = ""image/png"";
+  else if (/\.ico$/i.test(file)) icon.type = ""image/x-icon"";
+
+  document.head.appendChild(icon);
+}());
+</script>",favicon; icono; personalización; pestaña; recursos,Personalización visual,exe_0004; exe_0015; exe_0006,
