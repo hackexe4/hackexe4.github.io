@@ -213,7 +213,9 @@
       "Herramientas externas",
       "Traducción"
     ],
-    "relacionados": [],
+    "relacionados": [
+      "exe_0026"
+    ],
     "fuente": "[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/"
   },
   {
@@ -397,7 +399,7 @@
     "id": "exe_0017",
     "titulo": "eXeLearning online",
     "resumen": "Versión online de eXeLearning para crear y editar recursos educativos desde el navegador, sin necesidad de instalar el programa.",
-    "descripcion": "### eXeLearning online\n\nVersión online de eXeLearning para trabajar desde el navegador sin instalar la aplicación en el ordenador.\n\n**Para qué sirve**\n\n- Crear o editar recursos educativos desde el navegador.\n- Probar eXeLearning sin instalación previa.\n- Trabajar de forma rápida cuando se usa un equipo compartido o temporal.\n\nConviene guardar el trabajo con frecuencia y comprobar las opciones de exportación disponibles.\n\n**URL:** https://app.exelearning.net/",
+    "descripcion": "### eXeLearning online\n\nVersión online de eXeLearning para trabajar desde el navegador sin instalar la aplicación en el ordenador.\n\n**Para qué sirve**\n\n- Crear o editar recursos educativos desde el navegador.\n- Probar eXeLearning sin instalación previa.\n- Trabajar de forma rápida cuando se usa un equipo compartido o temporal.\n\nConviene guardar el trabajo con frecuencia y comprobar las opciones de exportación disponibles.\n\n**URL:** https://online.exelearning.net/",
     "donde": [],
     "script": "",
     "etiquetas": [
@@ -607,5 +609,30 @@
       "exe_0006"
     ],
     "fuente": ""
+  },
+  {
+    "id": "exe_0026",
+    "titulo": "Activar el traductor de Google en la barra de accesibilidad",
+    "resumen": "Añade el botón de Google Translate a la barra de accesibilidad de eXeLearning. Es necesario activar la barra de accesibilidad en las propiedades del proyecto y añadir el script en la cabecera HTML.",
+    "descripcion": "### Activar el traductor de Google en la barra de accesibilidad\n\nPermite mostrar el botón de **Google Translate** dentro de la barra de accesibilidad de eXeLearning.\n\n**Para qué sirve**\n\n- Añade una opción de traducción automática al recurso.\n- Facilita el acceso a contenidos en otras lenguas.\n- Aprovecha la barra de accesibilidad integrada en eXeLearning.\n\n**Cómo se usa**\n\n1. Abre las **propiedades del proyecto**.\n2. Activa la opción **Barra de accesibilidad** (`addAccessibilityToolbar`).\n3. En el campo **Cabecera HTML**, añade el código indicado.\n4. Guarda el proyecto y comprueba el resultado en la vista previa o en la exportación.\n\n**Por qué es necesario**\n\nLa barra de accesibilidad puede estar activa sin mostrar el traductor. El archivo `exe_atools.js` lee la opción `$exe.options.atools.translator` al inicializarse. Su valor por defecto es `false` en `common.js`; por eso hay que activarlo de forma explícita en la cabecera HTML.\n\n**Advertencia**\n\nEl botón depende de Google Translate y puede requerir conexión a Internet.",
+    "donde": [
+      "Cabecera HTML"
+    ],
+    "script": "<!-- Activar el traductor de Google en la barra de accesibilidad -->\n<!-- https://hackexe4.github.io/#script=exe_0026 -->\n<script>\n$exe.options.atools.translator = true;\n</script>",
+    "etiquetas": [
+      "traducción",
+      "accesibilidad",
+      "Google Translate",
+      "barra",
+      "cabecera HTML"
+    ],
+    "categorias": [
+      "Traducción",
+      "Accesibilidad"
+    ],
+    "relacionados": [
+      "exe_0009"
+    ],
+    "fuente": "Información aportada por Juan José de Haro."
   }
 ]

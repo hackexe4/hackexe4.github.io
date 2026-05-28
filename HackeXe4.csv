@@ -534,7 +534,7 @@ Puede ser útil para preparar materiales en varias lenguas o adaptar recursos ya
 - **ELPX Translator Desktop**: aplicación de escritorio que funciona en local.
 - **ELPX Translator Web**: versión en línea que requiere una API aportada por el usuario.
 
-**URL:** https://elpx-translator-desktop.github.io/",,,traducción; ELPX; IA; escritorio; web,Herramientas externas; Traducción,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/
+**URL:** https://elpx-translator-desktop.github.io/",,,traducción; ELPX; IA; escritorio; web,Herramientas externas; Traducción,exe_0026,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/
 exe_0010,eXeReader,Aplicación gratuita para Android e iOS que permite leer en móviles y tabletas contenidos creados con eXeLearning.,"### eXeReader
 
 Aplicación gratuita para leer contenidos creados con eXeLearning en dispositivos móviles.
@@ -845,7 +845,7 @@ Versión online de eXeLearning para trabajar desde el navegador sin instalar la 
 
 Conviene guardar el trabajo con frecuencia y comprobar las opciones de exportación disponibles.
 
-**URL:** https://app.exelearning.net/",,,eXeLearning; online; editor; recursos,eXeLearning oficial; Herramientas externas,exe_0016; exe_0018,[eXeLearning online](https://online.exelearning.net/)
+**URL:** https://online.exelearning.net/",,,eXeLearning; online; editor; recursos,eXeLearning oficial; Herramientas externas,exe_0016; exe_0018,[eXeLearning online](https://online.exelearning.net/)
 exe_0018,eXeLearning colaborativo demo,"Demo de la versión colaborativa de eXeLearning. Permite entrar como invitado y trabajar entre varias personas, pero los datos se pierden al cerrar si no se guardan.","### eXeLearning colaborativo demo
 
 Demo de la versión colaborativa de eXeLearning. Permite acceder como invitado y probar el trabajo compartido entre varias personas desde el navegador.
@@ -1019,3 +1019,31 @@ El archivo debe quedar disponible en `content/resources/` o en una subcarpeta de
   document.head.appendChild(icon);
 }());
 </script>",favicon; icono; personalización; pestaña; recursos,Personalización visual,exe_0004; exe_0015; exe_0006,
+exe_0026,Activar el traductor de Google en la barra de accesibilidad,Añade el botón de Google Translate a la barra de accesibilidad de eXeLearning. Es necesario activar la barra de accesibilidad en las propiedades del proyecto y añadir el script en la cabecera HTML.,"### Activar el traductor de Google en la barra de accesibilidad
+
+Permite mostrar el botón de **Google Translate** dentro de la barra de accesibilidad de eXeLearning.
+
+**Para qué sirve**
+
+- Añade una opción de traducción automática al recurso.
+- Facilita el acceso a contenidos en otras lenguas.
+- Aprovecha la barra de accesibilidad integrada en eXeLearning.
+
+**Cómo se usa**
+
+1. Abre las **propiedades del proyecto**.
+2. Activa la opción **Barra de accesibilidad** (`addAccessibilityToolbar`).
+3. En el campo **Cabecera HTML**, añade el código indicado.
+4. Guarda el proyecto y comprueba el resultado en la vista previa o en la exportación.
+
+**Por qué es necesario**
+
+La barra de accesibilidad puede estar activa sin mostrar el traductor. El archivo `exe_atools.js` lee la opción `$exe.options.atools.translator` al inicializarse. Su valor por defecto es `false` en `common.js`; por eso hay que activarlo de forma explícita en la cabecera HTML.
+
+**Advertencia**
+
+El botón depende de Google Translate y puede requerir conexión a Internet.",Cabecera HTML,"<!-- Activar el traductor de Google en la barra de accesibilidad -->
+<!-- https://hackexe4.github.io/#script=exe_0026 -->
+<script>
+$exe.options.atools.translator = true;
+</script>",traducción; accesibilidad; Google Translate; barra; cabecera HTML,Traducción; Accesibilidad,exe_0009,Información aportada por Juan José de Haro.
