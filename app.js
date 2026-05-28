@@ -196,6 +196,10 @@ function stripMarkdown(text) {
 }
 
 
+function normalizeStr(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
 function compareTextEs(a, b) {
   return String(a || '').localeCompare(String(b || ''), 'es', { sensitivity: 'base' });
 }
@@ -1020,15 +1024,15 @@ function filteredScripts() {
   let list = allScripts;
   if (activeCategory) list = list.filter(s => (s.categorias || []).includes(activeCategory));
   if (searchQuery) {
-    const q = searchQuery.toLowerCase();
+    const q = normalizeStr(searchQuery);
     list = list.filter(s =>
-      (s.titulo       || '').toLowerCase().includes(q) ||
-      (s.resumen      || '').toLowerCase().includes(q) ||
-      (s.descripcion  || '').toLowerCase().includes(q) ||
-      (s.etiquetas    || []).join(' ').toLowerCase().includes(q) ||
-      (s.categorias   || []).join(' ').toLowerCase().includes(q) ||
-      (s.donde        || []).join(' ').toLowerCase().includes(q) ||
-      (s.id           || '').toLowerCase().includes(q)
+      normalizeStr(s.titulo).includes(q) ||
+      normalizeStr(s.resumen).includes(q) ||
+      normalizeStr(s.descripcion).includes(q) ||
+      normalizeStr((s.etiquetas  || []).join(' ')).includes(q) ||
+      normalizeStr((s.categorias || []).join(' ')).includes(q) ||
+      normalizeStr((s.donde      || []).join(' ')).includes(q) ||
+      normalizeStr(s.id).includes(q)
     );
   }
   return list;
