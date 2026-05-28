@@ -90,6 +90,7 @@ let pendingURLState = null;     // URL state to apply after data loads
 let navStack       = [];        // history stack for detail-to-detail navigation
 let activeView     = 'list';    // list | map | detail
 let detailReturnView = 'list';  // list | map
+let detailMapState   = null;    // { visualFocus, mapHistory } saved when entering detail from map
 let visualFocus    = null;      // { type: 'category' | 'tag' | 'script', value: string }
 let mapHistory     = [];        // navigation history within the visual map
 
@@ -216,6 +217,593 @@ function stripMd(text) {
     .replace(/#+\s*/g, '')
     .replace(/\n+/g, ' ')
     .trim();
+}
+
+/* ─── Graph engine (canvas force-directed) ──────────────── */
+const HG = {
+  REPULSION:  14000,
+  IDEAL_LEN:  115,
+  ATTRACTION: 0.022,
+  DAMPING:    0.80,
+  GRAVITY:    0.0012,
+  COOLING:    0.976,
+  STOP_ALPHA: 0.002,
+  CENTER_R:   24,
+  NODE_R:     19,
+  NODE_R_SM:  13,
+  LABEL_H:    48,
+};
+
+const HPAL = {
+  light: [
+    { bg: '#EFF6FF', edge: '#93C5FD', stroke: '#2563EB', text: '#1D4ED8' },
+    { bg: '#FFF7ED', edge: '#FED7AA', stroke: '#EA580C', text: '#C2410C' },
+    { bg: '#ECFDF5', edge: '#86EFAC', stroke: '#16A34A', text: '#15803D' },
+    { bg: '#FDF2F8', edge: '#F9A8D4', stroke: '#DB2777', text: '#BE185D' },
+    { bg: '#F5F3FF', edge: '#C4B5FD', stroke: '#7C3AED', text: '#6D28D9' },
+    { bg: '#FFFBEB', edge: '#FDE68A', stroke: '#D97706', text: '#B45309' },
+    { bg: '#F0FDFA', edge: '#5EEAD4', stroke: '#0D9488', text: '#0F766E' },
+    { bg: '#FFF1F2', edge: '#FECDD3', stroke: '#E11D48', text: '#BE123C' },
+    { bg: '#F0F9FF', edge: '#7DD3FC', stroke: '#0284C7', text: '#0369A1' },
+    { bg: '#F7F7FF', edge: '#C7D2FE', stroke: '#4F46E5', text: '#4338CA' },
+    { bg: '#FFFBEB', edge: '#FEF3C7', stroke: '#CA8A04', text: '#A16207' },
+    { bg: '#F0FDF4', edge: '#BBF7D0', stroke: '#059669', text: '#047857' },
+  ],
+  dark: [
+    { bg: 'rgba(37,99,235,0.18)',  edge: '#60A5FA', stroke: '#93C5FD', text: '#BFDBFE' },
+    { bg: 'rgba(234,88,12,0.18)',  edge: '#FB923C', stroke: '#FDBA74', text: '#FED7AA' },
+    { bg: 'rgba(22,163,74,0.18)',  edge: '#4ADE80', stroke: '#86EFAC', text: '#BBF7D0' },
+    { bg: 'rgba(219,39,119,0.18)', edge: '#F472B6', stroke: '#F9A8D4', text: '#FBCFE8' },
+    { bg: 'rgba(124,58,237,0.18)', edge: '#A78BFA', stroke: '#C4B5FD', text: '#DDD6FE' },
+    { bg: 'rgba(217,119,6,0.18)',  edge: '#FBBF24', stroke: '#FDE68A', text: '#FEF3C7' },
+    { bg: 'rgba(13,148,136,0.18)', edge: '#2DD4BF', stroke: '#5EEAD4', text: '#99F6E4' },
+    { bg: 'rgba(225,29,72,0.18)',  edge: '#FB7185', stroke: '#FECDD3', text: '#FFE4E6' },
+    { bg: 'rgba(2,132,199,0.18)',  edge: '#38BDF8', stroke: '#7DD3FC', text: '#BAE6FD' },
+    { bg: 'rgba(79,70,229,0.18)',  edge: '#818CF8', stroke: '#A5B4FC', text: '#C7D2FE' },
+    { bg: 'rgba(202,138,4,0.18)',  edge: '#FDE047', stroke: '#FEF08A', text: '#FEFCE8' },
+    { bg: 'rgba(5,150,105,0.18)',  edge: '#34D399', stroke: '#6EE7B7', text: '#A7F3D0' },
+  ],
+};
+
+let catColorMap = new Map();
+
+function buildCatColorMap() {
+  const cats = [...new Set(allScripts.flatMap(s => s.categorias || []))].sort();
+  catColorMap = new Map(cats.map((c, i) => [c, i % HPAL.light.length]));
+}
+
+function hmapNodePal(nd) {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const pal  = dark ? HPAL.dark : HPAL.light;
+  if (nd.type === 'tag') return dark
+    ? { bg: 'rgba(124,58,237,0.18)', edge: '#A78BFA', stroke: '#C4B5FD', text: '#DDD6FE' }
+    : { bg: '#F5F3FF', edge: '#C4B5FD', stroke: '#7C3AED', text: '#6D28D9' };
+  return pal[catColorMap.get(nd.catName || '') ?? 0];
+}
+
+function catDotColor(catName) {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const pal  = dark ? HPAL.dark : HPAL.light;
+  return pal[catColorMap.get(catName) ?? 0].stroke;
+}
+
+const HMAP = {
+  nodes: [], edges: [], hover: -1, alpha: 1, raf: null, canvas: null,
+  camera: { x: 0, y: 0, scale: 1 },
+  isPanning: false, panMoved: false,
+  panStart: { x: 0, y: 0 }, camStart: { x: 0, y: 0 },
+  dragNode: -1,
+};
+
+function hmapStop() {
+  if (HMAP.raf !== null) { cancelAnimationFrame(HMAP.raf); HMAP.raf = null; }
+}
+
+function hmapBuild(focus) {
+  const nodes = [];
+  const edges = [];
+
+  function addEdge(a, b) {
+    if (a !== b && !edges.find(e => (e.a === a && e.b === b) || (e.a === b && e.b === a)))
+      edges.push({ a, b });
+  }
+
+  function spread(i, n, r) {
+    const a = -Math.PI / 2 + (2 * Math.PI * i / Math.max(n, 1));
+    return { x: Math.cos(a) * r + (Math.random() - .5) * 18,
+             y: Math.sin(a) * r + (Math.random() - .5) * 18 };
+  }
+
+  if (!focus) {
+    nodes.push({ id: '__hub__', type: 'hub', label: 'HackeXe4',
+                 x: 0, y: 0, vx: 0, vy: 0, r: HG.CENTER_R, isCenter: true,
+                 catName: '', resumen: allScripts.length + ' recursos' });
+    const cats = [...catColorMap.keys()];
+    cats.forEach((cat, i) => {
+      const pos = spread(i, cats.length, 145);
+      const idx = nodes.length;
+      nodes.push({ id: 'cat:' + cat, type: 'category', label: cat,
+                   x: pos.x, y: pos.y, vx: 0, vy: 0,
+                   r: HG.NODE_R, isCenter: false, catName: cat,
+                   resumen: allScripts.filter(s => (s.categorias || []).includes(cat)).length + ' recursos' });
+      addEdge(0, idx);
+    });
+
+  } else if (focus.type === 'category') {
+    const scripts = allScripts.filter(s => (s.categorias || []).includes(focus.value));
+    nodes.push({ id: 'cat:' + focus.value, type: 'category', label: focus.value,
+                 x: 0, y: 0, vx: 0, vy: 0, r: HG.CENTER_R, isCenter: true,
+                 catName: focus.value, resumen: scripts.length + ' recursos' });
+    const scriptIdxMap = new Map();
+    scripts.forEach((s, i) => {
+      const pos = spread(i, scripts.length, 130);
+      const idx = nodes.length;
+      scriptIdxMap.set(s.id, idx);
+      nodes.push({ id: s.id, type: 'script', label: s.titulo,
+                   x: pos.x, y: pos.y, vx: 0, vy: 0,
+                   r: HG.NODE_R, isCenter: false,
+                   catName: (s.categorias || [])[0] || '', resumen: s.resumen || '' });
+      addEdge(0, idx);
+    });
+    const relCats = new Map();
+    scripts.forEach(s => {
+      (s.categorias || []).forEach(cat => {
+        if (cat === focus.value || relCats.has(cat)) return;
+        const pos = spread(relCats.size, 6, 210);
+        const idx = nodes.length;
+        relCats.set(cat, idx);
+        nodes.push({ id: 'cat:' + cat, type: 'category', label: cat,
+                     x: pos.x, y: pos.y, vx: 0, vy: 0,
+                     r: HG.NODE_R_SM, isCenter: false, catName: cat, resumen: '' });
+      });
+    });
+    scripts.forEach(s => {
+      const sIdx = scriptIdxMap.get(s.id);
+      if (sIdx === undefined) return;
+      (s.categorias || []).forEach(cat => {
+        if (cat === focus.value) return;
+        const cIdx = relCats.get(cat);
+        if (cIdx !== undefined) addEdge(sIdx, cIdx);
+      });
+    });
+
+  } else if (focus.type === 'tag') {
+    const scripts = allScripts.filter(s => (s.etiquetas || []).includes(focus.value));
+    nodes.push({ id: 'tag:' + focus.value, type: 'tag', label: focus.value,
+                 x: 0, y: 0, vx: 0, vy: 0, r: HG.CENTER_R, isCenter: true,
+                 catName: '', resumen: scripts.length + ' recursos' });
+    scripts.forEach((s, i) => {
+      const pos = spread(i, scripts.length, 130);
+      nodes.push({ id: s.id, type: 'script', label: s.titulo,
+                   x: pos.x, y: pos.y, vx: 0, vy: 0,
+                   r: HG.NODE_R, isCenter: false,
+                   catName: (s.categorias || [])[0] || '', resumen: s.resumen || '' });
+      addEdge(0, nodes.length - 1);
+    });
+
+  } else if (focus.type === 'script') {
+    const script = findById(focus.value);
+    if (!script) { HMAP.nodes = []; HMAP.edges = []; return; }
+    nodes.push({ id: script.id, type: 'script', label: script.titulo,
+                 x: 0, y: 0, vx: 0, vy: 0, r: HG.CENTER_R, isCenter: true,
+                 catName: (script.categorias || [])[0] || '', resumen: script.resumen || '' });
+    const seen = new Set([script.id]);
+    const idxMap = new Map([[script.id, 0]]);
+
+    const rels = (script.relacionados || []).map(id => findById(id)).filter(Boolean);
+    rels.forEach((rel, i) => {
+      if (seen.has(rel.id)) return;
+      seen.add(rel.id);
+      const pos = spread(i, rels.length, 110);
+      const idx = nodes.length;
+      idxMap.set(rel.id, idx);
+      nodes.push({ id: rel.id, type: 'script', label: rel.titulo,
+                   x: pos.x, y: pos.y, vx: 0, vy: 0,
+                   r: HG.NODE_R, isCenter: false, isDirect: true,
+                   catName: (rel.categorias || [])[0] || '', resumen: rel.resumen || '' });
+      addEdge(0, idx);
+    });
+
+    (script.categorias || []).forEach((cat, i) => {
+      const pos = spread(i + rels.length, rels.length + (script.categorias || []).length, 135);
+      const idx = nodes.length;
+      idxMap.set('cat:' + cat, idx);
+      nodes.push({ id: 'cat:' + cat, type: 'category', label: cat,
+                   x: pos.x, y: pos.y, vx: 0, vy: 0,
+                   r: HG.NODE_R_SM, isCenter: false, catName: cat, resumen: '' });
+      addEdge(0, idx);
+    });
+
+    allScripts
+      .filter(s => s.id !== script.id && !seen.has(s.id) &&
+        (s.categorias || []).some(c => (script.categorias || []).includes(c)))
+      .slice(0, 7)
+      .forEach((s, i) => {
+        seen.add(s.id);
+        const pos = spread(i, 7, 180);
+        const idx = nodes.length;
+        idxMap.set(s.id, idx);
+        nodes.push({ id: s.id, type: 'script', label: s.titulo,
+                     x: pos.x, y: pos.y, vx: 0, vy: 0,
+                     r: HG.NODE_R_SM, isCenter: false,
+                     catName: (s.categorias || [])[0] || '', resumen: s.resumen || '' });
+        (s.categorias || []).forEach(cat => {
+          const cIdx = idxMap.get('cat:' + cat);
+          if (cIdx !== undefined) addEdge(idx, cIdx);
+        });
+      });
+  }
+
+  HMAP.nodes  = nodes;
+  HMAP.edges  = edges;
+  HMAP.alpha  = 1;
+  HMAP.hover  = -1;
+  HMAP.camera = { x: 0, y: 0, scale: 1 };
+}
+
+function wrapLabel(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (line && ctx.measureText(test).width > maxWidth) { lines.push(line); line = word; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  return lines.slice(0, 2);
+}
+
+function hmapTick() {
+  const { nodes, edges } = HMAP;
+  const n = nodes.length;
+  if (n === 0) return;
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      let dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
+      const d2 = dx * dx + dy * dy || 0.01;
+      const d  = Math.sqrt(d2);
+      const f  = (HG.REPULSION * HMAP.alpha) / d2;
+      dx /= d; dy /= d;
+      nodes[i].vx -= dx * f; nodes[i].vy -= dy * f;
+      nodes[j].vx += dx * f; nodes[j].vy += dy * f;
+    }
+  }
+
+  edges.forEach(({ a, b }) => {
+    const na = nodes[a], nb = nodes[b];
+    if (!na || !nb) return;
+    const dx = nb.x - na.x, dy = nb.y - na.y;
+    const d  = Math.sqrt(dx * dx + dy * dy) || 0.01;
+    const f  = (d - HG.IDEAL_LEN) * HG.ATTRACTION;
+    const ux = dx / d, uy = dy / d;
+    if (!na.isCenter) { na.vx += ux * f; na.vy += uy * f; }
+    if (!nb.isCenter) { nb.vx -= ux * f; nb.vy -= uy * f; }
+  });
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const ni = nodes[i], nj = nodes[j];
+      const dx = nj.x - ni.x, dy = nj.y - ni.y;
+      const d2 = dx * dx + dy * dy || 0.01;
+      const minD = ni.r + nj.r + HG.LABEL_H;
+      if (d2 < minD * minD) {
+        const d    = Math.sqrt(d2);
+        const push = (minD - d) / d * 0.5;
+        if (!ni.isCenter) { ni.vx -= dx * push; ni.vy -= dy * push; }
+        if (!nj.isCenter) { nj.vx += dx * push; nj.vy += dy * push; }
+      }
+    }
+  }
+
+  nodes.forEach(nd => {
+    if (nd.isCenter || nd.fixed) { nd.vx = 0; nd.vy = 0; return; }
+    nd.vx -= nd.x * HG.GRAVITY;
+    nd.vy -= nd.y * HG.GRAVITY;
+    nd.vx *= HG.DAMPING; nd.vy *= HG.DAMPING;
+    nd.x  += nd.vx;     nd.y  += nd.vy;
+  });
+
+  HMAP.alpha *= HG.COOLING;
+}
+
+function hmapDraw() {
+  const canvas = HMAP.canvas;
+  if (!canvas) return;
+  const dpr  = window.devicePixelRatio || 1;
+  const ctx  = canvas.getContext('2d');
+  const cw   = canvas.width, ch = canvas.height;
+  const w    = cw / dpr, h = ch / dpr;
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const cam  = HMAP.camera;
+  const hov  = HMAP.hover;
+
+  ctx.clearRect(0, 0, cw, ch);
+  ctx.save();
+  ctx.scale(dpr, dpr);
+  ctx.translate(w / 2, h / 2);
+  ctx.scale(cam.scale, cam.scale);
+  ctx.translate(-cam.x, -cam.y);
+
+  HMAP.edges.forEach(({ a, b }) => {
+    const na = HMAP.nodes[a], nb = HMAP.nodes[b];
+    if (!na || !nb) return;
+    const col = hmapNodePal(nb.isCenter ? na : nb);
+    ctx.beginPath();
+    ctx.moveTo(na.x, na.y);
+    ctx.lineTo(nb.x, nb.y);
+    ctx.strokeStyle = col.edge + (dark ? '55' : '77');
+    ctx.lineWidth   = 1.5;
+    ctx.stroke();
+  });
+
+  HMAP.nodes.forEach((nd, i) => {
+    const col   = hmapNodePal(nd);
+    const isHov = i === hov && !nd.isCenter;
+    const r     = isHov ? nd.r + 2 : nd.r;
+
+    ctx.beginPath();
+    ctx.arc(nd.x, nd.y, r, 0, Math.PI * 2);
+    ctx.fillStyle   = col.bg;
+    ctx.fill();
+    ctx.lineWidth   = nd.isCenter ? 2.5 : isHov ? 2.2 : 1.5;
+    ctx.strokeStyle = nd.isCenter || isHov ? col.stroke : col.edge;
+    ctx.stroke();
+
+    const fs    = nd.isCenter ? 11 : 10;
+    const maxW  = nd.isCenter ? 140 : nd.r < 15 ? 90 : 110;
+    const lineH = fs + 2;
+    const pad   = 3;
+    ctx.font         = `${nd.isCenter ? 700 : 500} ${fs}px -apple-system,BlinkMacSystemFont,sans-serif`;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'top';
+    const lines = wrapLabel(ctx, nd.label, maxW);
+    lines.forEach((line, li) => {
+      const tw = ctx.measureText(line).width;
+      const tx = nd.x, ty = nd.y + r + 4 + li * lineH;
+      ctx.fillStyle = dark ? 'rgba(10,15,30,0.82)' : 'rgba(255,255,255,0.9)';
+      ctx.fillRect(tx - tw / 2 - pad, ty - 1, tw + pad * 2, fs + 3);
+      ctx.fillStyle = col.text;
+      ctx.fillText(line, tx, ty);
+    });
+  });
+
+  ctx.restore();
+}
+
+function hmapResize() {
+  const canvas = HMAP.canvas;
+  if (!canvas || !canvas.clientWidth) return;
+  const dpr     = window.devicePixelRatio || 1;
+  canvas.width  = Math.round(canvas.clientWidth  * dpr);
+  canvas.height = Math.round(canvas.clientHeight * dpr);
+}
+
+function hmapHit(sx, sy) {
+  const canvas = HMAP.canvas;
+  if (!canvas) return -1;
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width / dpr, h = canvas.height / dpr;
+  const cam = HMAP.camera;
+  const wx = (sx - w / 2) / cam.scale + cam.x;
+  const wy = (sy - h / 2) / cam.scale + cam.y;
+  for (let i = HMAP.nodes.length - 1; i >= 0; i--) {
+    const nd = HMAP.nodes[i];
+    const dx = wx - nd.x, dy = wy - nd.y;
+    if (dx * dx + dy * dy <= (nd.r + 5) * (nd.r + 5)) return i;
+  }
+  return -1;
+}
+
+function hmapLoop() {
+  if (HMAP.alpha > HG.STOP_ALPHA) hmapTick();
+  hmapResize();
+  hmapDraw();
+  HMAP.raf = requestAnimationFrame(hmapLoop);
+}
+
+function hmapNavigate(nd) {
+  if (!nd) return;
+  if (nd.isCenter) {
+    if (nd.type === 'script') { const s = findById(nd.id); if (s) showDetail(s); }
+    return;
+  }
+  mapHistory.push(visualFocus);
+  if (nd.type === 'script') {
+    visualFocus = { type: 'script', value: nd.id };
+  } else if (nd.type === 'category') {
+    visualFocus = { type: 'category', value: nd.id.replace(/^cat:/, '') };
+  } else if (nd.type === 'tag') {
+    visualFocus = { type: 'tag', value: nd.id.replace(/^tag:/, '') };
+  } else {
+    return;
+  }
+  renderVisualExplorer();
+  updateURL();
+}
+
+function hmapStart(focus) {
+  hmapStop();
+  const canvas = document.getElementById('hmap-canvas');
+  if (!canvas) return;
+  HMAP.canvas   = canvas;
+  HMAP.dragNode = -1;
+  HMAP.isPanning = false;
+  hmapBuild(focus);
+  requestAnimationFrame(() => { hmapResize(); hmapLoop(); });
+
+  let touchDist = 0;
+
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const dpr  = window.devicePixelRatio || 1;
+    const cw   = canvas.width / dpr, ch = canvas.height / dpr;
+    const cam  = HMAP.camera;
+    const mx   = e.clientX - rect.left, my = e.clientY - rect.top;
+    const wx   = (mx - cw / 2) / cam.scale + cam.x;
+    const wy   = (my - ch / 2) / cam.scale + cam.y;
+    const f    = e.deltaY < 0 ? 1.14 : 1 / 1.14;
+    cam.scale  = Math.max(0.18, Math.min(6, cam.scale * f));
+    cam.x = wx - (mx - cw / 2) / cam.scale;
+    cam.y = wy - (my - ch / 2) / cam.scale;
+  }, { passive: false });
+
+  canvas.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    const tip = document.getElementById('hmap-tooltip');
+    if (tip) tip.style.display = 'none';
+    const rect = canvas.getBoundingClientRect();
+    const idx  = hmapHit(e.clientX - rect.left, e.clientY - rect.top);
+    if (idx >= 0) {
+      HMAP.dragNode = idx; HMAP.nodes[idx].fixed = true;
+      HMAP.alpha = Math.max(HMAP.alpha, 0.3);
+      HMAP.panMoved = false; HMAP.panStart = { x: e.clientX, y: e.clientY };
+    } else {
+      HMAP.isPanning = true; HMAP.panMoved = false;
+      HMAP.panStart = { x: e.clientX, y: e.clientY };
+      HMAP.camStart = { x: HMAP.camera.x, y: HMAP.camera.y };
+    }
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    if (HMAP.dragNode >= 0) {
+      if (Math.hypot(e.clientX - HMAP.panStart.x, e.clientY - HMAP.panStart.y) > 4) HMAP.panMoved = true;
+      const dpr = window.devicePixelRatio || 1;
+      const cw = canvas.width / dpr, ch = canvas.height / dpr;
+      const nd = HMAP.nodes[HMAP.dragNode];
+      nd.x = (e.clientX - rect.left - cw / 2) / HMAP.camera.scale + HMAP.camera.x;
+      nd.y = (e.clientY - rect.top  - ch / 2) / HMAP.camera.scale + HMAP.camera.y;
+      nd.vx = 0; nd.vy = 0;
+      return;
+    }
+    if (HMAP.isPanning) {
+      const dx = e.clientX - HMAP.panStart.x, dy = e.clientY - HMAP.panStart.y;
+      if (Math.hypot(dx, dy) > 3) HMAP.panMoved = true;
+      HMAP.camera.x = HMAP.camStart.x - dx / HMAP.camera.scale;
+      HMAP.camera.y = HMAP.camStart.y - dy / HMAP.camera.scale;
+      return;
+    }
+    const idx = hmapHit(e.clientX - rect.left, e.clientY - rect.top);
+    HMAP.hover = idx;
+    canvas.style.cursor = idx >= 0 ? 'pointer' : 'grab';
+    const tip = document.getElementById('hmap-tooltip');
+    if (!tip) return;
+    if (idx >= 0) {
+      const nd = HMAP.nodes[idx];
+      tip.innerHTML = `<strong>${escHtml(nd.label)}</strong>${nd.resumen ? `<br><span style="opacity:.85">${escHtml(nd.resumen.slice(0, 110))}</span>` : ''}`;
+      tip.style.left    = e.clientX + 'px';
+      tip.style.top     = e.clientY + 'px';
+      tip.style.display = 'block';
+    } else {
+      tip.style.display = 'none';
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    if (!HMAP.isPanning) {
+      HMAP.hover = -1;
+      canvas.style.cursor = 'grab';
+      const tip = document.getElementById('hmap-tooltip');
+      if (tip) tip.style.display = 'none';
+    }
+  });
+
+  canvas.addEventListener('click', e => {
+    if (HMAP.panMoved) { HMAP.panMoved = false; return; }
+    const rect = canvas.getBoundingClientRect();
+    const idx  = hmapHit(e.clientX - rect.left, e.clientY - rect.top);
+    if (idx >= 0) hmapNavigate(HMAP.nodes[idx]);
+  });
+
+  canvas.addEventListener('dblclick', () => {
+    HMAP.camera = { x: 0, y: 0, scale: 1 };
+  });
+
+  canvas.addEventListener('touchstart', e => {
+    if (!HMAP.nodes.length) return;
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      const idx  = hmapHit(t.clientX - rect.left, t.clientY - rect.top);
+      if (idx >= 0) {
+        HMAP.dragNode = idx; HMAP.nodes[idx].fixed = true;
+        HMAP.alpha = Math.max(HMAP.alpha, 0.3);
+        HMAP.panMoved = false; HMAP.panStart = { x: t.clientX, y: t.clientY };
+      } else {
+        HMAP.isPanning = true; HMAP.panMoved = false;
+        HMAP.panStart = { x: t.clientX, y: t.clientY };
+        HMAP.camStart = { x: HMAP.camera.x, y: HMAP.camera.y };
+      }
+    } else if (e.touches.length === 2) {
+      touchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                             e.touches[0].clientY - e.touches[1].clientY);
+      HMAP.isPanning = false;
+      if (HMAP.dragNode >= 0) { HMAP.nodes[HMAP.dragNode].fixed = false; HMAP.dragNode = -1; }
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', e => {
+    if (!HMAP.nodes.length) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      if (HMAP.dragNode >= 0) {
+        if (Math.hypot(t.clientX - HMAP.panStart.x, t.clientY - HMAP.panStart.y) > 4) HMAP.panMoved = true;
+        const dpr = window.devicePixelRatio || 1;
+        const nd  = HMAP.nodes[HMAP.dragNode];
+        nd.x  = (t.clientX - rect.left - canvas.width  / dpr / 2) / HMAP.camera.scale + HMAP.camera.x;
+        nd.y  = (t.clientY - rect.top  - canvas.height / dpr / 2) / HMAP.camera.scale + HMAP.camera.y;
+        nd.vx = 0; nd.vy = 0;
+        return;
+      }
+      if (HMAP.isPanning) {
+        const dx = t.clientX - HMAP.panStart.x, dy = t.clientY - HMAP.panStart.y;
+        if (Math.hypot(dx, dy) > 3) HMAP.panMoved = true;
+        HMAP.camera.x = HMAP.camStart.x - dx / HMAP.camera.scale;
+        HMAP.camera.y = HMAP.camStart.y - dy / HMAP.camera.scale;
+      }
+    } else if (e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                              e.touches[0].clientY - e.touches[1].clientY);
+      if (touchDist > 0) {
+        const dpr = window.devicePixelRatio || 1;
+        const cw  = canvas.width / dpr, ch = canvas.height / dpr;
+        const cam = HMAP.camera;
+        const mx  = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+        const my  = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+        const wx  = (mx - cw / 2) / cam.scale + cam.x;
+        const wy  = (my - ch / 2) / cam.scale + cam.y;
+        cam.scale = Math.max(0.18, Math.min(6, cam.scale * dist / touchDist));
+        cam.x = wx - (mx - cw / 2) / cam.scale;
+        cam.y = wy - (my - ch / 2) / cam.scale;
+      }
+      touchDist = dist;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    const wasPanning = HMAP.isPanning;
+    if (HMAP.dragNode >= 0) {
+      HMAP.nodes[HMAP.dragNode].fixed = false; HMAP.dragNode = -1;
+      HMAP.alpha = Math.max(HMAP.alpha, 0.1);
+    }
+    HMAP.isPanning = false; touchDist = 0;
+    if (!HMAP.panMoved && wasPanning && e.changedTouches.length === 1) {
+      const t = e.changedTouches[0];
+      const rect = canvas.getBoundingClientRect();
+      const idx  = hmapHit(t.clientX - rect.left, t.clientY - rect.top);
+      if (idx >= 0) hmapNavigate(HMAP.nodes[idx]);
+    }
+    HMAP.panMoved = false;
+  }, { passive: false });
 }
 
 function detectLang(code) {
@@ -785,31 +1373,9 @@ function renderVisualExplorer() {
 
   const isScriptFocus = focus?.type === 'script';
   const scriptFocusScript = isScriptFocus ? findById(focus.value) : null;
-  const centerLabel = isScriptFocus
-    ? (scriptFocusScript?.titulo || focus.value)
-    : (focus ? focus.value : T.categories);
-  const centerKind = isScriptFocus ? 'Recurso' : (focus?.type === 'tag' ? 'Etiqueta' : (focus ? 'Categoría' : 'Mapa'));
-
   const tags = isScriptFocus
     ? sortTermEntriesAlpha(countTerms(s => s.etiquetas || [], scriptFocusScript ? [scriptFocusScript] : [])).slice(0, 18)
     : sortTermEntriesAlpha(countTerms(s => s.etiquetas || [], connected.direct)).slice(0, 18);
-
-  const hubX = 50;
-  const hubY = 50;
-  const isCompactMap = window.innerWidth < 520;
-  const radius = isCompactMap ? 30 : 37;
-  const maxVisibleNodes = window.innerWidth < 520 ? 8 : 12;
-  const rawNodes = mapNodesForFocus(focus, connected, maxVisibleNodes);
-  const nodes = rawNodes.map((node, i) => {
-    const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(rawNodes.length, 1));
-    const x = hubX + Math.cos(angle) * radius;
-    const y = hubY + Math.sin(angle) * radius * .78;
-    return {
-      ...node,
-      x: Math.max(isCompactMap ? 18 : 9, Math.min(isCompactMap ? 82 : 91, x)),
-      y: Math.max(isCompactMap ? 18 : 13, Math.min(isCompactMap ? 82 : 87, y)),
-    };
-  });
 
   const scriptCats = scriptFocusScript ? (scriptFocusScript.categorias || []).slice().sort(compareTextEs) : [];
   const scriptTags = scriptFocusScript ? (scriptFocusScript.etiquetas || []).slice().sort(compareTextEs) : [];
@@ -821,6 +1387,7 @@ function renderVisualExplorer() {
       <div class="visual-chip-list">
         ${scriptCats.map(cat => `
           <button class="visual-chip" data-focus-type="category" data-focus-value="${escHtml(cat)}">
+            <span class="chip-dot" style="background:${catDotColor(cat)}"></span>
             <span>${escHtml(cat)}</span>
           </button>`).join('')}
       </div>
@@ -831,6 +1398,7 @@ function renderVisualExplorer() {
       <div class="visual-chip-list">
         ${scriptTags.map(tag => `
           <button class="visual-chip visual-chip-tag" data-focus-type="tag" data-focus-value="${escHtml(tag)}">
+            <span class="chip-dot chip-dot-tag"></span>
             <span>${escHtml(tag)}</span>
           </button>`).join('')}
       </div>
@@ -840,6 +1408,7 @@ function renderVisualExplorer() {
       <div class="visual-chip-list">
         ${categories.slice(0, 8).map(([name, count]) => `
           <button class="visual-chip" data-focus-type="category" data-focus-value="${escHtml(name)}">
+            <span class="chip-dot" style="background:${catDotColor(name)}"></span>
             <span>${escHtml(name)}</span><strong>${count}</strong>
           </button>`).join('')}
       </div>
@@ -850,6 +1419,7 @@ function renderVisualExplorer() {
         ${categories.map(([name, count]) => `
           <button class="visual-chip ${focus?.type === 'category' && focus.value === name ? 'active' : ''}"
             data-focus-type="category" data-focus-value="${escHtml(name)}">
+            <span class="chip-dot" style="background:${catDotColor(name)}"></span>
             <span>${escHtml(name)}</span><strong>${count}</strong>
           </button>`).join('')}
       </div>
@@ -860,22 +1430,11 @@ function renderVisualExplorer() {
         ${tags.map(([name, count]) => `
           <button class="visual-chip visual-chip-tag ${focus?.type === 'tag' && focus.value === name ? 'active' : ''}"
             data-focus-type="tag" data-focus-value="${escHtml(name)}">
+            <span class="chip-dot chip-dot-tag"></span>
             <span>${escHtml(name)}</span><strong>${count}</strong>
           </button>`).join('')}
       </div>
     </div>`;
-
-  const hubSummary = isScriptFocus ? escHtml(stripMd(scriptFocusScript?.resumen || '').slice(0, 220)) : '';
-  const hubHtml = isScriptFocus ? `
-    <div class="visual-hub visual-hub-script" data-summary="${hubSummary}">
-      <span>${escHtml(centerKind)}</span>
-      <strong>${escHtml(centerLabel)}</strong>
-      <button class="visual-hub-open" data-open-script-id="${escHtml(focus.value)}">${IC.next} Ver ficha</button>
-    </div>` : `
-    ${focus ? `<button class="visual-hub" data-focus-type="${escHtml(focus.type)}" data-focus-value="${escHtml(centerLabel)}">` : '<div class="visual-hub">'}
-      <span>${escHtml(centerKind)}</span>
-      <strong>${escHtml(centerLabel)}</strong>
-    ${focus ? '</button>' : '</div>'}`;
 
   const rightPanelLabel = isScriptFocus ? 'Recursos relacionados' : 'Recursos conectados';
 
@@ -899,31 +1458,9 @@ function renderVisualExplorer() {
 
         <div class="visual-map" aria-label="Red visual de recursos">
           ${mapHistory.length > 0 ? `<button class="map-nav-back" id="mapNavBack">${IC.back} Atrás</button>` : ''}
-          <svg class="visual-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            ${nodes.map(node => `<line class="${node.direct ? '' : 'related'}" x1="${hubX}" y1="${hubY}" x2="${node.x}" y2="${node.y}"></line>`).join('')}
-          </svg>
-          ${hubHtml}
-          ${nodes.map((node, i) => {
-            const delay = `animation: mapNodeIn .4s cubic-bezier(.22,1,.36,1) both; animation-delay: ${.1 + i * .055}s;`;
-            if (node.type === 'category' || node.type === 'tag') {
-              const cls = node.type === 'category' ? 'visual-node-cat' : 'visual-node-tag';
-              const kindLabel = node.type === 'category' ? 'Categoría' : 'Etiqueta';
-              return `
-                <button class="visual-node ${cls} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%; ${delay}"
-                  data-focus-type="${node.type}" data-focus-value="${escHtml(node.label)}"
-                  title="${kindLabel}: ${escHtml(node.label)}">
-                  <small class="visual-node-kind">${kindLabel}</small>
-                  <span>${escHtml(node.label)}</span>
-                </button>`;
-            }
-            const summary = escHtml(stripMd(findById(node.id)?.resumen || '').slice(0, 220));
-            return `
-              <button class="visual-node visual-node-${i % 4} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%; ${delay}"
-                data-nav-script-id="${escHtml(node.id)}" data-summary="${summary}">
-                <span>${escHtml(node.label)}</span>
-                ${node.direct ? '<small class="visual-node-explore">Explorar</small>' : '<small>Relacionado</small>'}
-              </button>`;
-          }).join('')}
+          <canvas id="hmap-canvas" aria-hidden="true"></canvas>
+          <div id="hmap-tooltip" class="map-tooltip" aria-hidden="true"></div>
+          <p class="hmap-hint">Clic: explorar · Doble clic: centrar · Rueda: zoom</p>
         </div>
 
         <aside class="visual-results" aria-label="Recursos del foco seleccionado">
@@ -965,15 +1502,6 @@ function renderVisualExplorer() {
     });
   });
 
-  dom.exploreView.querySelectorAll('[data-nav-script-id]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      mapHistory.push(visualFocus);
-      visualFocus = { type: 'script', value: btn.dataset.navScriptId };
-      renderVisualExplorer();
-      updateURL();
-    });
-  });
-
   dom.exploreView.querySelectorAll('[data-open-script-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       const found = findById(btn.dataset.openScriptId);
@@ -981,29 +1509,11 @@ function renderVisualExplorer() {
     });
   });
 
-  // Tooltip on hover for script nodes
-  let tooltip = document.getElementById('mapTooltip');
-  if (!tooltip) {
-    tooltip = document.createElement('div');
-    tooltip.id = 'mapTooltip';
-    tooltip.className = 'map-tooltip';
-    document.body.appendChild(tooltip);
-  }
-  dom.exploreView.querySelectorAll('[data-nav-script-id][data-summary], [data-summary].visual-hub-script').forEach(el => {
-    const summary = el.dataset.summary;
-    if (!summary) return;
-    el.addEventListener('mouseenter', () => {
-      tooltip.textContent = summary;
-      const rect = el.getBoundingClientRect();
-      tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-      tooltip.style.top = rect.top + window.scrollY + 'px';
-      tooltip.style.display = 'block';
-    });
-    el.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
-  });
+  hmapStart(focus);
 }
 
 function showExplore(popHistory = false) {
+  hmapStop();
   if (!popHistory) visualFocus = null; // let pickVisualFocus derive from current list state
   activeView = 'map';
   detailReturnView = 'map';
@@ -1034,8 +1544,12 @@ function showExplore(popHistory = false) {
 
 /* ─── Detail View ────────────────────────────────────────── */
 function showDetail(script, pushHistory = true) {
+  hmapStop();
   if (pushHistory && currentScript) navStack.push(currentScript);
-  if (activeView === 'map') detailReturnView = 'map';
+  if (activeView === 'map') {
+    detailReturnView = 'map';
+    if (!detailMapState) detailMapState = { visualFocus, mapHistory: [...mapHistory] };
+  }
   activeView = 'detail';
   currentScript = script;
 
@@ -1156,7 +1670,12 @@ function showDetail(script, pushHistory = true) {
       const prev = navStack.pop();
       showDetail(prev, false);
     } else if (detailReturnView === 'map') {
-      showExplore();
+      if (detailMapState) {
+        visualFocus = detailMapState.visualFocus;
+        mapHistory  = detailMapState.mapHistory;
+        detailMapState = null;
+      }
+      showExplore(true);
     } else {
       showList();
     }
@@ -1211,6 +1730,8 @@ function showDetail(script, pushHistory = true) {
 }
 
 function showList(popHistory = false) {
+  hmapStop();
+  detailMapState = null;
   activeView = 'list';
   detailReturnView = 'list';
   currentScript = null;
@@ -1400,6 +1921,7 @@ async function loadData() {
     const data = await resp.json();
     if (!Array.isArray(data) || data.length === 0) throw new Error('JSON sin recursos válidos');
     allScripts = data.filter(s => s.id && s.titulo).sort(compareScriptsByTitle);
+    buildCatColorMap();
     dom.statusMsg.hidden = true;
     renderCategories();
     applyURLState(pendingURLState);
@@ -1411,6 +1933,19 @@ async function loadData() {
 
 /* ─── Events ─────────────────────────────────────────────── */
 function initEvents() {
+  document.addEventListener('mouseup', () => {
+    if (HMAP.dragNode >= 0) {
+      HMAP.nodes[HMAP.dragNode].fixed = false;
+      HMAP.dragNode = -1;
+      HMAP.alpha = Math.max(HMAP.alpha, 0.1);
+      if (HMAP.canvas) HMAP.canvas.style.cursor = 'grab';
+    }
+    if (HMAP.isPanning) {
+      HMAP.isPanning = false;
+      if (HMAP.canvas) HMAP.canvas.style.cursor = 'grab';
+    }
+  });
+
   dom.themeToggle.addEventListener('click', toggleTheme);
   dom.sidebarToggle.addEventListener('click', toggleSidebar);
 
