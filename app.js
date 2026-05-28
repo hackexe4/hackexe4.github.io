@@ -58,6 +58,10 @@ const WHERE_INSERT_HELP = [
     body: 'Pulsa sobre Archivo -&gt; Propiedades del proyecto -&gt; Código personalizado -&gt; Pie de página.'
   },
   {
+    title: 'Cabecera HTML',
+    body: 'Pulsa sobre Archivo -&gt; Propiedades del proyecto -&gt; Código personalizado -&gt; HEAD.'
+  },
+  {
     title: 'HEAD de la página',
     body: 'Pulsa sobre Archivo -&gt; Propiedades del proyecto -&gt; Código personalizado -&gt; HEAD.'
   }
