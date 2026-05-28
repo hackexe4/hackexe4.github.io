@@ -1,11 +1,7 @@
 'use strict';
 
 /* ─── Config ────────────────────────────────────────────── */
-const CSV_URL =
-  'https://docs.google.com/spreadsheets/d/e/' +
-  '2PACX-1vTkmdZbTZ-rLI305yY5IhP7sDJY7ViC2MnCUh1J2muinEjoOT4BT4yLV8I7v0kxdiba_R81vHjBA_b0' +
-  '/pub?output=csv';
-const FALLBACK_CSV_URL = 'HackeXe4.csv';
+const JSON_URL = 'HackeXe4.json';
 const ANALYTICS_FALLBACK_ENDPOINT = 'https://bilateria.org/app/estadistica/hackexe4/track.php';
 const ANALYTICS_FALLBACK_STATS_URL = 'https://bilateria.org/app/estadistica/hackexe4/admin-stats.php';
 const ANALYTICS_VISIT_COOLDOWN_MS = 30 * 60 * 1000;
@@ -125,40 +121,6 @@ function initDom() {
   });
 }
 
-/* ─── CSV Parser (RFC 4180) ─────────────────────────────── */
-function parseCSV(str) {
-  const rows = [];
-  let inQuote = false, col = '', row = [];
-  for (let i = 0; i < str.length; i++) {
-    const ch = str[i], next = str[i + 1];
-    if (!inQuote) {
-      if (ch === '"') { inQuote = true; continue; }
-      if (ch === ',') { row.push(col); col = ''; continue; }
-      if (ch === '\r') continue;
-      if (ch === '\n') { row.push(col); col = ''; rows.push(row); row = []; continue; }
-      col += ch;
-    } else {
-      if (ch === '"' && next === '"') { col += '"'; i++; continue; }
-      if (ch === '"') { inQuote = false; continue; }
-      col += ch;
-    }
-  }
-  row.push(col);
-  if (row.some(c => c !== '')) rows.push(row);
-  return rows;
-}
-
-function csvToScripts(rows) {
-  if (rows.length < 2) return [];
-  const headers = rows[0].map(h => h.trim());
-  return rows.slice(1).map(row => {
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = (row[i] || '').trim(); });
-    return obj;
-  })
-  .filter(s => s['ID'] && s['Título'])
-  .sort(compareScriptsByTitle);
-}
 
 /* ─── Helpers ────────────────────────────────────────────── */
 function escHtml(str) {
@@ -228,17 +190,13 @@ function stripMarkdown(text) {
     .trim();
 }
 
-function parseTags(val) {
-  if (!val) return [];
-  return val.split(/[,;]+/).map(t => t.trim()).filter(Boolean);
-}
 
 function compareTextEs(a, b) {
   return String(a || '').localeCompare(String(b || ''), 'es', { sensitivity: 'base' });
 }
 
 function compareScriptsByTitle(a, b) {
-  return compareTextEs(a?.['Título'], b?.['Título']);
+  return compareTextEs(a?.titulo, b?.titulo);
 }
 
 function sortScriptsByTitle(scripts) {
@@ -268,7 +226,7 @@ function detectLang(code) {
 }
 
 function findById(id) {
-  return allScripts.find(s => s['ID'] === id) || null;
+  return allScripts.find(s => s.id === id) || null;
 }
 
 /* ─── URL State ──────────────────────────────────────────── */
@@ -289,7 +247,7 @@ function readURLState() {
 function updateURL() {
   const params = new URLSearchParams();
   if (sharedScripts.length > 0) {
-    params.set('scripts', sharedScripts.map(s => s['ID']).join(','));
+    params.set('scripts', sharedScripts.map(s => s.id).join(','));
   } else {
     if (activeView === 'map') params.set('view', 'map');
     if (activeView === 'map' && visualFocus) {
@@ -298,7 +256,7 @@ function updateURL() {
     }
     if (searchQuery)    params.set('q',   searchQuery);
     if (activeCategory) params.set('cat', activeCategory);
-    if (currentScript)  params.set('script', currentScript['ID']);
+    if (currentScript)  params.set('script', currentScript.id);
   }
   const str = params.toString();
   history.replaceState(null, '', str ? '#' + str : location.pathname + location.search);
@@ -390,7 +348,7 @@ async function shareURL(url) {
 function allCategories() {
   const map = new Map();
   allScripts.forEach(s => {
-    parseTags(s['Categorías']).forEach(c => map.set(c, (map.get(c) || 0) + 1));
+    (s.categorias || []).forEach(c => map.set(c, (map.get(c) || 0) + 1));
   });
   return sortTermEntriesAlpha(map.entries());
 }
@@ -468,17 +426,17 @@ function filterByTag(tag) {
 function filteredScripts() {
   if (sharedScripts.length > 0) return sharedScripts;
   let list = allScripts;
-  if (activeCategory) list = list.filter(s => parseTags(s['Categorías']).includes(activeCategory));
+  if (activeCategory) list = list.filter(s => (s.categorias || []).includes(activeCategory));
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     list = list.filter(s =>
-      (s['Título']         || '').toLowerCase().includes(q) ||
-      (s['Resumen']        || '').toLowerCase().includes(q) ||
-      (s['Descripción']    || '').toLowerCase().includes(q) ||
-      (s['Etiquetas']      || '').toLowerCase().includes(q) ||
-      (s['Categorías']     || '').toLowerCase().includes(q) ||
-      (s['Donde insertar'] || '').toLowerCase().includes(q) ||
-      (s['ID']             || '').toLowerCase().includes(q)
+      (s.titulo       || '').toLowerCase().includes(q) ||
+      (s.resumen      || '').toLowerCase().includes(q) ||
+      (s.descripcion  || '').toLowerCase().includes(q) ||
+      (s.etiquetas    || []).join(' ').toLowerCase().includes(q) ||
+      (s.categorias   || []).join(' ').toLowerCase().includes(q) ||
+      (s.donde        || []).join(' ').toLowerCase().includes(q) ||
+      (s.id           || '').toLowerCase().includes(q)
     );
   }
   return list;
@@ -491,7 +449,7 @@ function renderToolbar() {
 
   if (sharedScripts.length > 0) {
     const params = new URLSearchParams();
-    params.set('scripts', sharedScripts.map(s => s['ID']).join(','));
+    params.set('scripts', sharedScripts.map(s => s.id).join(','));
     const url = buildShareURL(params);
     html = `
       <span class="results-count">
@@ -615,15 +573,15 @@ function renderList() {
 }
 
 function createCard(script) {
-  const cats     = parseTags(script['Categorías']);
-  const tags     = parseTags(script['Etiquetas']);
-  const related  = parseTags(script['Relacionados']);
-  const fullDesc = stripMarkdown(stripHtml(script['Resumen'] || script['Descripción'] || ''));
-  const id       = script['ID'];
+  const cats     = script.categorias || [];
+  const tags     = script.etiquetas || [];
+  const related  = script.relacionados || [];
+  const fullDesc = stripMarkdown(stripHtml(script.resumen || script.descripcion || ''));
+  const id       = script.id;
   const isSelected = selectedIds.has(id);
 
   const relatedItems = related
-    .map(r => allScripts.find(s => s['ID'] === r || s['Título'].toLowerCase() === r.toLowerCase()))
+    .map(r => allScripts.find(s => s.id === r || s.titulo.toLowerCase() === r.toLowerCase()))
     .filter(Boolean);
 
   const card = document.createElement('article');
@@ -636,14 +594,14 @@ function createCard(script) {
       ${IC.check}
     </div>
     ${cats.length ? `<div class="card-cats">${cats.map(c => `<span class="card-category tag-clickable" data-cat="${escHtml(c)}">${escHtml(c)}</span>`).join('')}</div>` : ''}
-    <h3 class="card-title">${escHtml(script['Título'])}</h3>
+    <h3 class="card-title">${escHtml(script.titulo)}</h3>
     <p class="card-desc">${escHtml(fullDesc)}</p>
     <div class="card-meta">
       ${tags.map(t => `<span class="tag tag-clickable" data-tag="${escHtml(t)}">${escHtml(t)}</span>`).join('')}
     </div>
     ${relatedItems.length ? `<div class="card-related">
       <p class="card-related-label">${T.related}</p>
-      ${relatedItems.map(r => `<button class="card-related-link" data-rel-id="${escHtml(r['ID'])}">${escHtml(r['Título'])}</button>`).join('')}
+      ${relatedItems.map(r => `<button class="card-related-link" data-rel-id="${escHtml(r.id)}">${escHtml(r.titulo)}</button>`).join('')}
     </div>` : ''}
     ${!selectionMode ? `
     <div class="card-footer">
@@ -677,7 +635,7 @@ function createCard(script) {
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggle(); });
   } else {
     card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', `Ver ${script['Título']}`);
+    card.setAttribute('aria-label', `Ver ${script.titulo}`);
     card.addEventListener('click',   () => showDetail(script));
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') showDetail(script); });
   }
@@ -699,7 +657,7 @@ function pickVisualFocus() {
   if (activeCategory) return { type: 'category', value: activeCategory };
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-    const tag = countTerms(s => parseTags(s['Etiquetas'])).find(([name]) => name.toLowerCase() === q);
+    const tag = countTerms(s => s.etiquetas || []).find(([name]) => name.toLowerCase() === q);
     if (tag) return { type: 'tag', value: tag[0] };
   }
   return null;
@@ -708,9 +666,7 @@ function pickVisualFocus() {
 function scriptsForFocus(focus) {
   if (!focus) return filteredScripts();
   return allScripts.filter(script => {
-    const terms = focus.type === 'tag'
-      ? parseTags(script['Etiquetas'])
-      : parseTags(script['Categorías']);
+    const terms = focus.type === 'tag' ? (script.etiquetas || []) : (script.categorias || []);
     return terms.includes(focus.value);
   });
 }
@@ -718,26 +674,26 @@ function scriptsForFocus(focus) {
 function findRelatedScript(ref) {
   const needle = String(ref || '').trim();
   if (!needle) return null;
-  return allScripts.find(s => s['ID'] === needle || s['Título'].toLowerCase() === needle.toLowerCase()) || null;
+  return allScripts.find(s => s.id === needle || s.titulo.toLowerCase() === needle.toLowerCase()) || null;
 }
 
 function connectedScriptsForFocus(focus) {
   if (focus?.type === 'script') {
     const script = findById(focus.value);
     if (!script) return { direct: [], related: [], scripts: [] };
-    const relatedRefs = parseTags(script['Relacionados']);
-    const direct = relatedRefs.map(r => findRelatedScript(r)).filter(s => s && s['ID'] !== script['ID']);
-    const seen = new Set([script['ID'], ...direct.map(s => s['ID'])]);
-    const cats = parseTags(script['Categorías']);
-    const tags = parseTags(script['Etiquetas']);
+    const relatedRefs = script.relacionados || [];
+    const direct = relatedRefs.map(r => findRelatedScript(r)).filter(s => s && s.id !== script.id);
+    const seen = new Set([script.id, ...direct.map(s => s.id)]);
+    const cats = script.categorias || [];
+    const tags = script.etiquetas || [];
     const related = [];
     allScripts.forEach(s => {
-      if (seen.has(s['ID'])) return;
-      const sCats = parseTags(s['Categorías']);
-      const sTags = parseTags(s['Etiquetas']);
+      if (seen.has(s.id)) return;
+      const sCats = s.categorias || [];
+      const sTags = s.etiquetas || [];
       if (cats.some(c => sCats.includes(c)) || tags.some(t => sTags.includes(t))) {
         related.push(s);
-        seen.add(s['ID']);
+        seen.add(s.id);
       }
     });
     const limitedRelated = sortScriptsByTitle(related).slice(0, 6);
@@ -746,15 +702,15 @@ function connectedScriptsForFocus(focus) {
   }
 
   const direct = sortScriptsByTitle(scriptsForFocus(focus));
-  const directIds = new Set(direct.map(s => s['ID']));
+  const directIds = new Set(direct.map(s => s.id));
   const related = [];
   const seenRelated = new Set();
 
   direct.forEach(script => {
-    parseTags(script['Relacionados']).forEach(ref => {
+    (script.relacionados || []).forEach(ref => {
       const found = findRelatedScript(ref);
-      if (!found || directIds.has(found['ID']) || seenRelated.has(found['ID'])) return;
-      seenRelated.add(found['ID']);
+      if (!found || directIds.has(found.id) || seenRelated.has(found.id)) return;
+      seenRelated.add(found.id);
       related.push(found);
     });
   });
@@ -765,34 +721,33 @@ function connectedScriptsForFocus(focus) {
 
 // Builds mixed map nodes (scripts + category/tag terms) from the already-computed connected data.
 function mapNodesForFocus(focus, connected, maxNodes) {
-  const directIds = new Set(connected.direct.map(s => s['ID']));
+  const directIds = new Set(connected.direct.map(s => s.id));
 
   if (focus?.type === 'script') {
     const script = findById(focus.value);
-    const cats = script ? parseTags(script['Categorías']).sort(compareTextEs) : [];
-    const scriptTags = script ? parseTags(script['Etiquetas']).sort(compareTextEs) : [];
+    const cats = script ? (script.categorias || []).slice().sort(compareTextEs) : [];
+    const scriptTags = script ? (script.etiquetas || []).slice().sort(compareTextEs) : [];
     const catNodes = cats.slice(0, 3).map(c => ({ type: 'category', id: c, label: c, direct: true }));
     const tagNodes = scriptTags.slice(0, 2).map(t => ({ type: 'tag', id: t, label: t, direct: true }));
     const slotsForScripts = maxNodes - catNodes.length - tagNodes.length;
     const scriptNodes = connected.scripts
       .slice(0, slotsForScripts)
-      .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: directIds.has(s['ID']) }));
+      .map(s => ({ type: 'script', id: s.id, label: s.titulo, direct: directIds.has(s.id) }));
     return [...scriptNodes, ...catNodes, ...tagNodes].slice(0, maxNodes);
   }
 
   if (!focus) {
-    return sortTermEntriesAlpha(countTerms(s => parseTags(s['Categorías']), connected.direct))
+    return sortTermEntriesAlpha(countTerms(s => s.categorias || [], connected.direct))
       .slice(0, maxNodes)
       .map(([name]) => ({ type: 'category', id: name, label: name, direct: true }));
   }
 
-  // category or tag focus: scripts from connected + related co-occurring terms
-  const focusScripts = connected.direct; // all scripts in the focus
+  const focusScripts = connected.direct;
   const termCount = new Map();
   focusScripts.slice(0, 20).forEach(s => {
     const terms = focus?.type === 'category'
-      ? parseTags(s['Categorías']).filter(c => c !== focus.value)
-      : parseTags(s['Etiquetas']).filter(t => t !== focus?.value);
+      ? (s.categorias || []).filter(c => c !== focus.value)
+      : (s.etiquetas || []).filter(t => t !== focus?.value);
     terms.forEach(t => termCount.set(t, (termCount.get(t) || 0) + 1));
   });
   const relatedTermNodes = [...termCount.entries()]
@@ -803,7 +758,7 @@ function mapNodesForFocus(focus, connected, maxNodes) {
 
   const scriptNodes = connected.scripts
     .slice(0, maxNodes - relatedTermNodes.length)
-    .map(s => ({ type: 'script', id: s['ID'], label: s['Título'], direct: directIds.has(s['ID']) }));
+    .map(s => ({ type: 'script', id: s.id, label: s.titulo, direct: directIds.has(s.id) }));
 
   return [...scriptNodes, ...relatedTermNodes].slice(0, maxNodes);
 }
@@ -824,20 +779,20 @@ function renderVisualExplorer() {
   visualFocus = focus;
   const connected = connectedScriptsForFocus(focus);
   const scripts = connected.scripts;
-  const directIds = new Set(connected.direct.map(s => s['ID']));
+  const directIds = new Set(connected.direct.map(s => s.id));
   const categorySource = focus ? allScripts : connected.direct;
-  const categories = sortTermEntriesAlpha(countTerms(s => parseTags(s['Categorías']), categorySource)).slice(0, 14);
+  const categories = sortTermEntriesAlpha(countTerms(s => s.categorias || [], categorySource)).slice(0, 14);
 
   const isScriptFocus = focus?.type === 'script';
   const scriptFocusScript = isScriptFocus ? findById(focus.value) : null;
   const centerLabel = isScriptFocus
-    ? (scriptFocusScript?.['Título'] || focus.value)
+    ? (scriptFocusScript?.titulo || focus.value)
     : (focus ? focus.value : T.categories);
   const centerKind = isScriptFocus ? 'Recurso' : (focus?.type === 'tag' ? 'Etiqueta' : (focus ? 'Categoría' : 'Mapa'));
 
   const tags = isScriptFocus
-    ? sortTermEntriesAlpha(countTerms(s => parseTags(s['Etiquetas']), scriptFocusScript ? [scriptFocusScript] : [])).slice(0, 18)
-    : sortTermEntriesAlpha(countTerms(s => parseTags(s['Etiquetas']), connected.direct)).slice(0, 18);
+    ? sortTermEntriesAlpha(countTerms(s => s.etiquetas || [], scriptFocusScript ? [scriptFocusScript] : [])).slice(0, 18)
+    : sortTermEntriesAlpha(countTerms(s => s.etiquetas || [], connected.direct)).slice(0, 18);
 
   const hubX = 50;
   const hubY = 50;
@@ -856,8 +811,8 @@ function renderVisualExplorer() {
     };
   });
 
-  const scriptCats = scriptFocusScript ? parseTags(scriptFocusScript['Categorías']).sort(compareTextEs) : [];
-  const scriptTags = scriptFocusScript ? parseTags(scriptFocusScript['Etiquetas']).sort(compareTextEs) : [];
+  const scriptCats = scriptFocusScript ? (scriptFocusScript.categorias || []).slice().sort(compareTextEs) : [];
+  const scriptTags = scriptFocusScript ? (scriptFocusScript.etiquetas || []).slice().sort(compareTextEs) : [];
 
   const leftPanelHtml = isScriptFocus ? `
     ${scriptCats.length ? `
@@ -910,7 +865,7 @@ function renderVisualExplorer() {
       </div>
     </div>`;
 
-  const hubSummary = isScriptFocus ? escHtml(stripMd(scriptFocusScript?.['Resumen'] || '').slice(0, 220)) : '';
+  const hubSummary = isScriptFocus ? escHtml(stripMd(scriptFocusScript?.resumen || '').slice(0, 220)) : '';
   const hubHtml = isScriptFocus ? `
     <div class="visual-hub visual-hub-script" data-summary="${hubSummary}">
       <span>${escHtml(centerKind)}</span>
@@ -961,7 +916,7 @@ function renderVisualExplorer() {
                   <span>${escHtml(node.label)}</span>
                 </button>`;
             }
-            const summary = escHtml(stripMd(findById(node.id)?.['Resumen'] || '').slice(0, 220));
+            const summary = escHtml(stripMd(findById(node.id)?.resumen || '').slice(0, 220));
             return `
               <button class="visual-node visual-node-${i % 4} ${node.direct ? '' : 'visual-node-related'}" style="left:${node.x}%; top:${node.y}%; ${delay}"
                 data-nav-script-id="${escHtml(node.id)}" data-summary="${summary}">
@@ -975,11 +930,11 @@ function renderVisualExplorer() {
           <p class="visual-facet-title">${rightPanelLabel}</p>
           <div class="visual-result-list">
             ${scripts.map(script => {
-              const cats = parseTags(script['Categorías']).slice(0, 2);
-              const relatedOnly = !directIds.has(script['ID']);
+              const cats = (script.categorias || []).slice(0, 2);
+              const relatedOnly = !directIds.has(script.id);
               return `
-                <button class="visual-result ${relatedOnly ? 'visual-result-related' : ''}" data-open-script-id="${escHtml(script['ID'])}">
-                  <span>${escHtml(script['Título'])}</span>
+                <button class="visual-result ${relatedOnly ? 'visual-result-related' : ''}" data-open-script-id="${escHtml(script.id)}">
+                  <span>${escHtml(script.titulo)}</span>
                   <small>${relatedOnly ? 'Relacionado · ' : ''}${cats.map(escHtml).join(' · ')}</small>
                 </button>`;
             }).join('')}
@@ -1084,15 +1039,15 @@ function showDetail(script, pushHistory = true) {
   activeView = 'detail';
   currentScript = script;
 
-  const cats    = parseTags(script['Categorías']);
-  const related = parseTags(script['Relacionados']);
-  const code    = script['Script'] || '';
+  const cats    = script.categorias || [];
+  const related = script.relacionados || [];
+  const code    = script.script || '';
   const lang    = detectLang(code);
-  const resumen = renderMarkdown(script['Resumen'] || '');
-  const desc    = renderMarkdown(script['Descripción'] || '');
-  const wheres  = parseTags(script['Donde insertar']);
-  const fuente  = renderMarkdown(script['Fuente'] || '');
-  const whereHelpId = `whereHelp-${script['ID']}`;
+  const resumen = renderMarkdown(script.resumen || '');
+  const desc    = renderMarkdown(script.descripcion || '');
+  const wheres  = script.donde || [];
+  const fuente  = renderMarkdown(script.fuente || '');
+  const whereHelpId = `whereHelp-${script.id}`;
 
   let highlighted = '';
   try {
@@ -1101,7 +1056,7 @@ function showDetail(script, pushHistory = true) {
       : escHtml(code);
   } catch { highlighted = escHtml(code); }
 
-  const params = new URLSearchParams({ script: script['ID'] });
+  const params = new URLSearchParams({ script: script.id });
   const scriptURL = buildShareURL(params);
 
   const relatedHtml = related.length ? `
@@ -1109,10 +1064,10 @@ function showDetail(script, pushHistory = true) {
       <p class="detail-label">${T.related}</p>
       <div class="detail-related">
         ${related.map(r => {
-          const found = allScripts.find(s => s['ID'] === r || s['Título'].toLowerCase() === r.toLowerCase());
+          const found = allScripts.find(s => s.id === r || s.titulo.toLowerCase() === r.toLowerCase());
           return found
-            ? `<button class="related-link" data-rel-id="${found['ID']}">
-                ${IC.next} ${escHtml(found['Título'])}
+            ? `<button class="related-link" data-rel-id="${found.id}">
+                ${IC.next} ${escHtml(found.titulo)}
                </button>`
             : `<span class="related-link">${escHtml(r)}</span>`;
         }).join('')}
@@ -1132,8 +1087,8 @@ function showDetail(script, pushHistory = true) {
     <div class="detail-view">
       <div class="detail-header">
         ${cats.length ? `<div class="detail-category">${escHtml(cats.join(' · '))}</div>` : ''}
-        <h1 class="detail-title">${escHtml(script['Título'])}</h1>
-        <p class="detail-id">ID: <code>${escHtml(script['ID'])}</code></p>
+        <h1 class="detail-title">${escHtml(script.titulo)}</h1>
+        <p class="detail-id">ID: <code>${escHtml(script.id)}</code></p>
       </div>
 
       ${resumen ? `<div class="detail-section">
@@ -1193,7 +1148,7 @@ function showDetail(script, pushHistory = true) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if (pushHistory) {
-    history.pushState({ scriptId: script['ID'] }, '', '#' + new URLSearchParams({ script: script['ID'] }));
+    history.pushState({ scriptId: script.id }, '', '#' + new URLSearchParams({ script: script.id }));
   }
 
   $('detailBack').addEventListener('click', () => {
@@ -1429,15 +1384,6 @@ function toggleSidebar() {
 }
 
 /* ─── Data loading ───────────────────────────────────────── */
-async function fetchScriptsFrom(url) {
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`${url}: HTTP ${resp.status}`);
-  const rows = parseCSV(await resp.text());
-  const scripts = csvToScripts(rows);
-  if (scripts.length === 0) throw new Error(`${url}: CSV sin recursos válidos`);
-  return scripts;
-}
-
 async function loadData() {
   showLoading();
   activeView = 'list';
@@ -1448,22 +1394,19 @@ async function loadData() {
   dom.appBody.classList.remove('map-mode');
   currentScript = null;
 
-  const errors = [];
-  for (const url of [CSV_URL, FALLBACK_CSV_URL]) {
-    try {
-      allScripts = await fetchScriptsFrom(url);
-      dom.statusMsg.hidden = true;
-      renderCategories();
-      applyURLState(pendingURLState);
-      return;
-    } catch (err) {
-      errors.push(err);
-      console.warn('HackeXe4:', err);
-    }
+  try {
+    const resp = await fetch(JSON_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (!Array.isArray(data) || data.length === 0) throw new Error('JSON sin recursos válidos');
+    allScripts = data.filter(s => s.id && s.titulo).sort(compareScriptsByTitle);
+    dom.statusMsg.hidden = true;
+    renderCategories();
+    applyURLState(pendingURLState);
+  } catch (err) {
+    console.error('HackeXe4:', err);
+    showError();
   }
-
-  console.error('HackeXe4:', errors);
-  showError();
 }
 
 /* ─── Events ─────────────────────────────────────────────── */

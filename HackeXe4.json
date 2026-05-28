@@ -1,0 +1,611 @@
+[
+  {
+    "id": "exe_0001",
+    "titulo": "Indice de subpáginas",
+    "resumen": "Muestra un índice con las subpáginas del apartado actual para facilitar la navegación interna. Se puede elegir cuántos niveles aparecen. No funciona en exportaciones SCORM.",
+    "descripcion": "### Índice de subpáginas\n\nMuestra dentro del iDevice un listado de las subpáginas que dependen del apartado actual. Es útil cuando una sección tiene varios apartados y se quiere ofrecer al alumnado una navegación más clara.\n\n**Para qué sirve**\n\n- Facilita el acceso a las páginas de una misma sección.\n- Evita que el alumnado tenga que buscar esas páginas en el menú lateral.\n- Permite mostrar solo las subpáginas directas o incluir también niveles inferiores.\n\n**Cómo se usa**\n\nInserta el fragmento en el lugar donde quieras que aparezca el índice, dentro del **HTML del iDevice**.\n\n**Ajuste principal**\n\nEl valor `data-depth` indica cuántos niveles se muestran:\n\n- `0`: muestra todos los niveles disponibles.\n- `1`: muestra solo las subpáginas directas.\n- `2`: muestra las subpáginas directas y un nivel más.\n\n**Advertencia**\n\nNo funciona con exportaciones **SCORM**.",
+    "donde": [
+      "HTML del iDevice"
+    ],
+    "script": "<!-- Indice de subpáginas -->\n<!-- https://hackexe4.github.io/#script=exe_0001 -->\n<div data-exe-fragment=\"exe-script-indice-subpaginas\" data-page-title=\"\" data-depth=\"0\" style=\"box-sizing:border-box; max-width:48rem; margin:1rem 0; padding:1rem; border:1px solid #d7e3f4; border-radius:0.75rem; background:#f8fbff; color:#1f2937; font-family:Arial, sans-serif;\">\n  <p data-role=\"message\" style=\"margin:0; line-height:1.5;\">Generando índice de contenidos...</p>\n  <nav data-role=\"nav\" aria-label=\"Subpáginas de este apartado\" hidden style=\"margin-top:0.75rem;\"></nav>\n  <template data-role=\"code\">\n(function () {\n  var script = document.currentScript;\n  var root = script\n    ? script.closest('[data-exe-fragment=\"exe-script-indice-subpaginas\"]')\n    : document.querySelector('[data-exe-fragment=\"exe-script-indice-subpaginas\"][data-exe-l=\"1\"]');\n  if (!root || root.getAttribute('data-exe-fragment') !== 'exe-script-indice-subpaginas') return;\n  if (root._exeR) return;\n  root._exeR = true;\n\n  var maxAttempts = 20;\n  var retryDelay = 100;\n\n  function setMessage(text) {\n    var message = root.querySelector('[data-role=\"message\"]');\n    if (message) message.textContent = text;\n  }\n\n  function getDirectChildUl(listItem) {\n    if (!listItem) return null;\n    for (var i = 0; i < listItem.children.length; i += 1) {\n      if (listItem.children[i].tagName && listItem.children[i].tagName.toLowerCase() === 'ul') {\n        return listItem.children[i];\n      }\n    }\n    return null;\n  }\n\n  function getDirectChildLink(listItem) {\n    if (!listItem) return null;\n    for (var i = 0; i < listItem.children.length; i += 1) {\n      if (listItem.children[i].tagName && listItem.children[i].tagName.toLowerCase() === 'a') {\n        return listItem.children[i];\n      }\n    }\n    return null;\n  }\n\n  function normalizeText(value) {\n    return String(value || '').replace(/\\s+/g, ' ').trim().toLowerCase();\n  }\n\n  function findReferenceItem(siteNav) {\n    var requestedTitle = normalizeText(root.getAttribute('data-page-title'));\n    var links = siteNav.querySelectorAll('a');\n\n    if (requestedTitle) {\n      for (var i = 0; i < links.length; i += 1) {\n        if (normalizeText(links[i].textContent) === requestedTitle) {\n          return links[i].closest('li');\n        }\n      }\n      return null;\n    }\n\n    var activeLink = siteNav.querySelector('a.active');\n    if (activeLink) return activeLink.closest('li');\n\n    var activeItem = siteNav.querySelector('li.active, #active');\n    if (activeItem) return activeItem.closest('li');\n\n    return null;\n  }\n\n  function styleList(list, depth) {\n    list.style.boxSizing = 'border-box';\n    list.style.margin = depth === 0 ? '0' : '0.35rem 0 0 1.25rem';\n    list.style.padding = depth === 0 ? '0 0 0 1.25rem' : '0 0 0 1rem';\n    list.style.lineHeight = '1.5';\n  }\n\n  function styleItem(item) {\n    item.style.margin = '0.35rem 0';\n  }\n\n  function styleLink(link) {\n    link.style.color = '#145ea8';\n    link.style.textDecoration = 'underline';\n    link.style.textUnderlineOffset = '0.15em';\n  }\n\n  function clonePages(sourceList, currentDepth, depthLimit) {\n    var outputList = document.createElement('ul');\n    styleList(outputList, currentDepth);\n\n    Array.prototype.forEach.call(sourceList.children, function (sourceItem) {\n      if (!sourceItem || sourceItem.tagName.toLowerCase() !== 'li') return;\n\n      var sourceLink = getDirectChildLink(sourceItem);\n      if (!sourceLink) return;\n\n      var item = document.createElement('li');\n      var link = document.createElement('a');\n      item.appendChild(link);\n\n      link.href = sourceLink.getAttribute('href') || '#';\n      link.textContent = normalizeVisibleTitle(sourceLink.textContent);\n      if (sourceLink.getAttribute('title')) link.title = sourceLink.getAttribute('title');\n      if (sourceLink.getAttribute('target')) link.target = sourceLink.getAttribute('target');\n      if (sourceLink.getAttribute('rel')) link.rel = sourceLink.getAttribute('rel');\n\n      styleItem(item);\n      styleLink(link);\n\n      var canGoDeeper = depthLimit === 0 || (currentDepth + 1 < depthLimit);\n      if (canGoDeeper) {\n        var nestedSourceList = getDirectChildUl(sourceItem);\n        if (nestedSourceList) {\n          item.appendChild(clonePages(nestedSourceList, currentDepth + 1, depthLimit));\n        }\n      }\n\n      outputList.appendChild(item);\n    });\n\n    return outputList;\n  }\n\n  function normalizeVisibleTitle(text) {\n    return String(text || '').replace(/\\s+/g, ' ').trim();\n  }\n\n  function renderIndex() {\n    var siteNav = document.getElementById('siteNav');\n    if (!siteNav) return false;\n\n    var referenceItem = findReferenceItem(siteNav);\n    if (!referenceItem) {\n      setMessage('No se ha podido localizar la página de referencia en el menú.');\n      return true;\n    }\n\n    var subPagesList = getDirectChildUl(referenceItem);\n    if (!subPagesList || subPagesList.children.length === 0) {\n      setMessage('No hay subsecciones en este apartado.');\n      return true;\n    }\n\n    var depthLimit = parseInt(root.getAttribute('data-depth'), 10);\n    if (isNaN(depthLimit)) depthLimit = 0;\n\n    var nav = root.querySelector('[data-role=\"nav\"]');\n    var generatedList = clonePages(subPagesList, 0, depthLimit);\n\n    if (!nav || generatedList.children.length === 0) {\n      setMessage('No hay subsecciones en este apartado.');\n      return true;\n    }\n\n    while (nav.firstChild) nav.removeChild(nav.firstChild);\n    nav.appendChild(generatedList);\n    nav.hidden = false;\n    setMessage('');\n    return true;\n  }\n\n  function start(attempt) {\n    if (renderIndex()) return;\n    if (attempt >= maxAttempts) {\n      setMessage('No se ha encontrado el menú de navegación de eXeLearning.');\n      return;\n    }\n    window.setTimeout(function () {\n      start(attempt + 1);\n    }, retryDelay);\n  }\n\n  if (document.readyState === 'loading') {\n    document.addEventListener('DOMContentLoaded', function () {\n      start(1);\n    }, { once: true });\n  } else {\n    start(1);\n  }\n})();\n  </template>\n  <img alt=\"\" src=\"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==\" onload=\"(function(img){var root=img.closest('[data-exe-fragment=&quot;exe-script-indice-subpaginas&quot;]');if(!root||root._exeB)return;root._exeB=true;var code=root.querySelector('template[data-role=&quot;code&quot;]');if(!code)return;root.setAttribute('data-exe-l','1');var script=document.createElement('script');script.text=code.content.textContent;root.appendChild(script);root.removeAttribute('data-exe-l');})(this)\" onerror=\"this.onload&&this.onload()\" style=\"position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;\" />\n</div>",
+    "etiquetas": [
+      "índice",
+      "subpáginas",
+      "menú local",
+      "navegación",
+      "niveles"
+    ],
+    "categorias": [
+      "Índices de contenido"
+    ],
+    "relacionados": [
+      "exe_0002",
+      "exe_0005",
+      "exe_0014"
+    ],
+    "fuente": "Elaboración propia"
+  },
+  {
+    "id": "exe_0002",
+    "titulo": "Indice de todo el proyecto",
+    "resumen": "Crea un índice con todas las páginas del proyecto para ofrecer una navegación global. Se pueden limitar los niveles visibles y ocultar páginas marcadas como ocultas. No funciona en SCORM.",
+    "descripcion": "### Índice de todo el proyecto\n\nCrea un índice con enlaces a las páginas del proyecto eXeLearning. Resulta útil cuando el material es amplio y se quiere ofrecer una vista general de todos los apartados.\n\n**Para qué sirve**\n\n- Da al alumnado una visión completa de la estructura del recurso.\n- Permite saltar rápidamente a cualquier página incluida en el menú.\n- Puede mostrar todos los niveles o solo los principales.\n\n**Cómo se usa**\n\nInserta el fragmento en el punto donde quieras que aparezca el índice.\n\n**Ajuste principal**\n\nEn la última línea del código puedes cambiar el número de niveles:\n\n- `eXeAutoIndex(0)`: muestra todos los niveles.\n- `eXeAutoIndex(1)`: muestra solo el primer nivel.\n- `eXeAutoIndex(2)`: muestra dos niveles.\n\nLas páginas cuyo título contiene `.oc.` no se incluyen en el índice.\n\n**Advertencia**\n\nNo funciona con exportaciones **SCORM**.",
+    "donde": [
+      "HTML del iDevice"
+    ],
+    "script": "<!-- Indice de todo el proyecto -->\n<!-- https://hackexe4.github.io/#script=exe_0002 -->\n<div id=\"contentNav\" class=\"js-hidden\">Activa JavaScript para ver el índice.</div>\n\n<script>\n// HACKeXe - https://hackexe.tiddlyhost.com\n// Menú de páginas de todo el proyecto con niveles configurables y filtrado de páginas ocultas que contienen .oc. en su título.\n// V3: limpia clases de navegación de eXeLearning para evitar flechas o \"MORE\".\n\nfunction eXeAutoIndex(levels = 2) {\n    var nav = $(\"#siteNav\");\n    if (nav.length != 1) return false;\n\n    var navContainer = $(\"<ul></ul>\");\n\n    function cleanClone(item) {\n        // Evita duplicar ids del menú original\n        item.removeAttr(\"id\");\n        item.find(\"[id]\").removeAttr(\"id\");\n\n        // Limpia clases que pueden activar indicadores visuales del menú de eXeLearning\n        item.removeClass(\"daddy parent active current-page current selected\");\n        item.find(\"a\").removeClass(\"daddy parent active current-page current selected\");\n\n        return item;\n    }\n\n    function appendChildren(element, currentLevel, parentContainer) {\n        element.children(\"ul\").children(\"li\").each(function() {\n            var linkText = $(this).children(\"a\").first().text();\n\n            if (!linkText.includes(\".oc.\")) {\n                var liClone = $(this).clone();\n\n                // Elimina sublistas originales antes de reconstruirlas\n                liClone.children(\"ul\").remove();\n\n                // Limpia marcas heredadas del menú original\n                cleanClone(liClone);\n\n                var newSubList = $(\"<ul></ul>\");\n\n                if (levels === 0 || currentLevel < levels) {\n                    appendChildren($(this), currentLevel + 1, newSubList);\n\n                    if (newSubList.children().length > 0) {\n                        liClone.append(newSubList);\n                    }\n                }\n\n                parentContainer.append(liClone);\n            }\n        });\n    }\n\n    appendChildren(nav, 1, navContainer);\n\n    $(\"#contentNav\")\n        .removeClass(\"js-hidden\")\n        .html(navContainer)\n        .show();\n}\n\n$(function() {\n    eXeAutoIndex(0);\n});\n</script>",
+    "etiquetas": [
+      "índice",
+      "proyecto completo",
+      "menú global",
+      "navegación",
+      "niveles"
+    ],
+    "categorias": [
+      "Índices de contenido"
+    ],
+    "relacionados": [
+      "exe_0001",
+      "exe_0005",
+      "exe_0014"
+    ],
+    "fuente": "Elaboración propia a partir del código de Rafael Bueno."
+  },
+  {
+    "id": "exe_0003",
+    "titulo": "Añadir delimitadores de fórmulas $...$",
+    "resumen": "Permite escribir fórmulas en línea entre signos $...$, además del formato habitual de MathJax. Conviene revisar la página si el texto contiene símbolos $ que no sean fórmulas.",
+    "descripcion": "### Añadir delimitadores de fórmulas `$...$`\n\nPermite escribir fórmulas matemáticas en línea usando el formato `$...$`, además del formato habitual `\\(...\\)`.\n\n**Para qué sirve**\n\nFacilita la escritura de fórmulas cuando se preparan materiales de matemáticas, física, química u otras materias con notación científica.\n\n**Ejemplo**\n\nSi escribes `$x^2+y^2=z^2$`, la página mostrará la expresión como una fórmula matemática.\n\n**Cómo se usa**\n\nColoca el fragmento en el **pie del proyecto** si quieres aplicarlo de forma general, o en una página concreta si solo lo necesitas allí.\n\n**Advertencias**\n\n- La fórmula se verá correctamente en la **vista previa** o en la página exportada, no siempre dentro del editor.\n- Si el texto contiene signos `$` que no son fórmulas, puede haber resultados no deseados.\n- Conviene revisar la página después de insertar el código.",
+    "donde": [
+      "Pie del proyecto"
+    ],
+    "script": "<!-- Añadir delimitadores de fórmulas $...$ -->\n<!-- https://hackexe4.github.io/#script=exe_0003 -->\n<script>\nwindow.MathJax = {\n  tex: {\n    inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],\n    displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],\n    processEscapes: true,\n    processEnvironments: true\n  },\n  options: {\n    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']\n  },\n  startup: {\n    pageReady: function() {\n      // Cuando MathJax esté listo, procesar la página\n      return MathJax.startup.defaultPageReady().then(function() {\n        console.log('MathJax: Renderizado inicial completo con delimitadores $');\n      });\n    }\n  }\n};\n</script>\n<script>\n(function() {\n  // Intentar cargar MathJax desde la ruta local de eXeLearning (common/mathjax/)\n  // Si no existe, se puede añadir un fallback a CDN.\n  var script = document.createElement('script');\n  script.src = 'common/mathjax/tex-chtml.js';\n  script.async = true;\n  script.id = 'MathJax-script';\n  \n  // Si la carga local falla (por ejemplo, si no se marcó \"Añadir MathJax\" en eXe),\n  // esto intentará cargarlo desde un CDN para que no falle el renderizado.\n  script.onerror = function() {\n    console.warn(\"MathJax local no encontrado. Intentando cargar desde CDN...\");\n    var cdnScript = document.createElement('script');\n    cdnScript.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';\n    cdnScript.async = true;\n    document.head.appendChild(cdnScript);\n  };\n  \n  document.head.appendChild(script);\n})();\n</script>",
+    "etiquetas": [
+      "MathJax",
+      "fórmulas",
+      "LaTeX",
+      "delimitadores",
+      "vista previa"
+    ],
+    "categorias": [
+      "Fórmulas"
+    ],
+    "relacionados": [],
+    "fuente": "Elaboración propia"
+  },
+  {
+    "id": "exe_0004",
+    "titulo": "Cambiar el color de fondo y del texto de acordeón",
+    "resumen": "Cambia el color de fondo y el color del texto en los títulos de los acordeones. Puede aplicarse a todo el proyecto o solo a una página.",
+    "descripcion": "### Cambiar el color de fondo y del texto de acordeón\n\nPermite modificar el aspecto de los títulos de los acordeones en eXeLearning. Es útil para adaptar el diseño a los colores del recurso o para destacar mejor estos bloques.\n\n**Para qué sirve**\n\n- Cambia el color de fondo del título del acordeón.\n- Cambia el color del texto.\n- Puede aplicarse a todo el proyecto o solo a una página.\n\n**Cómo se usa**\n\n- Para aplicarlo a todo el proyecto, coloca el código en el **pie del proyecto**.\n- Para aplicarlo solo en una página, insértalo en el **HTML del iDevice**.\n\n**Personalización**\n\nEn el código hay que sustituir los colores por los que quieras usar:\n\n- `background-color`: color de fondo.\n- `color`: color del texto.\n\n**Fuente**\n\n[Manuel Narváez](https://t.me/eXeLearning/26649)",
+    "donde": [
+      "Pie del proyecto",
+      "HTML del iDevice"
+    ],
+    "script": "<!-- Cambiar el color de fondo y del texto de acordeón -->\n<!-- https://hackexe4.github.io/#script=exe_0004 -->\n<script>\n// HACKeXe - Cambia el color de fondo y del texto del fx acordeón\n$(function(){\n$('.fx-accordion-title, .exe-accordion h2').css({\n        'background-color':'#ff0000', //color de fondo\n        'color':'#ffffff' // color del texto\n    });\n});\n</script>",
+    "etiquetas": [
+      "acordeón",
+      "colores",
+      "fondo",
+      "texto"
+    ],
+    "categorias": [
+      "Personalización visual"
+    ],
+    "relacionados": [
+      "exe_0015",
+      "exe_0025"
+    ],
+    "fuente": "[Manuel Narváez](https://t.me/eXeLearning/26649)"
+  },
+  {
+    "id": "exe_0005",
+    "titulo": "Índice de contenido de los títulos de una página",
+    "resumen": "Crea un índice con los títulos de la página y enlaza cada entrada con su apartado. Resulta útil en páginas largas con varios bloques o secciones.",
+    "descripcion": "### Índice de contenido de los títulos de una página\n\nCrea un índice automático con los títulos de una página de eXeLearning. Cada entrada enlaza con el apartado correspondiente.\n\n**Para qué sirve**\n\n- Facilita la navegación dentro de páginas largas.\n- Ayuda al alumnado a localizar rápidamente cada sección.\n- Permite organizar mejor materiales con muchos apartados.\n\n**Cómo se usa**\n\nInserta el fragmento en el lugar exacto donde quieras que aparezca el índice, mediante el **botón HTML** o el botón **Insertar código**.\n\n**Ajuste principal**\n\nEl valor `maxLevel` indica cuántos niveles de títulos se incluirán. Por ejemplo:\n\n- `2`: incluye títulos principales y subtítulos.\n- `3`: incluye un nivel más de subtítulos.\n\n**Consejo**\n\nPara la mayoría de páginas, `2` o `3` suele ser suficiente.",
+    "donde": [
+      "HTML del iDevice"
+    ],
+    "script": "<!-- Índice de contenido de los títulos de una página -->\n<!-- https://hackexe4.github.io/#script=exe_0005 -->\n<ul id=\"indice\"></ul>\n\n<script>\n// HACKeXe - https://hackexe.tiddlyhost.com\n// Índice de contenido de los títulos de una página. v2 \n\n    document.addEventListener(\"DOMContentLoaded\", function() {\n        // Número de niveles que quieres en el índice (por ejemplo, 3 para incluir h1, h2 y h3)\n        var maxLevel = 3;\n        var indice = document.getElementById(\"indice\");\n        \n        // Crear un contenedor temporal para almacenar los elementos del índice\n        var tempIndice = [];\n\n        // Recorrer todos los elementos del documento\n        document.body.querySelectorAll(\"*\").forEach(function(node, index) {\n            // Comprobar si el nodo es un encabezado y si está dentro del rango de niveles deseado\n            var tagName = node.tagName.toLowerCase();\n            if (tagName.startsWith('h') && parseInt(tagName.charAt(1)) <= maxLevel) {\n                // Asegurar que cada encabezado tenga un ID único\n                if (!node.id) {\n                    node.id = \"header-\" + index;\n                }\n                \n                // Crear un elemento de lista para el índice\n                var li = document.createElement(\"li\");\n                var a = document.createElement(\"a\");\n                a.href = \"#\" + node.id;\n                a.textContent = node.textContent;\n                \n                // Añadir sangría para niveles más profundos\n                li.style.marginLeft = (parseInt(tagName.charAt(1)) - 1) * 20 + \"px\";\n                \n                li.appendChild(a);\n                tempIndice.push(li);\n            }\n        });\n\n        // Eliminar el primer título que corresponde a la página\n        if (tempIndice.length > 0) {\n            tempIndice.shift();\n        }\n\n        // Añadir todos los elementos del índice al contenedor principal\n        tempIndice.forEach(function(li) {\n            indice.appendChild(li);\n        });\n    });\n</script>",
+    "etiquetas": [
+      "índice",
+      "títulos",
+      "encabezados",
+      "navegación",
+      "página"
+    ],
+    "categorias": [
+      "Índices de contenido"
+    ],
+    "relacionados": [
+      "exe_0001",
+      "exe_0002",
+      "exe_0014"
+    ],
+    "fuente": "Elaboración propia"
+  },
+  {
+    "id": "exe_0006",
+    "titulo": "EdEX",
+    "resumen": "Editor web para crear, modificar y extraer estilos de eXeLearning. Ayuda a adaptar la apariencia de un proyecto sin trabajar directamente con los archivos internos.",
+    "descripcion": "### EdEX\n\nEditor web para trabajar con estilos de eXeLearning. Permite crear o modificar la apariencia de un proyecto a partir de un estilo existente.\n\n**Para qué sirve**\n\n- Cargar un estilo en formato ZIP.\n- Abrir un archivo ELPX para revisar o modificar el estilo que contiene.\n- Extraer el estilo de un proyecto.\n- Guardar de nuevo el ELPX con los cambios aplicados.\n\nEs una herramienta útil para docentes que quieren adaptar el diseño de sus materiales sin editar manualmente los archivos del estilo.\n\n**URL:** https://exe-style-editor.github.io/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "editor",
+      "ELPX",
+      "ZIP",
+      "diseño"
+    ],
+    "categorias": [
+      "Herramientas externas",
+      "Personalización visual"
+    ],
+    "relacionados": [
+      "exe_0015",
+      "exe_0022",
+      "exe_0025"
+    ],
+    "fuente": "[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://exe-style-editor.github.io/"
+  },
+  {
+    "id": "exe_0007",
+    "titulo": "eXeConvert",
+    "resumen": "Convierte proyectos de eXeLearning entre ELP, ELPX, DOCX, Markdown y PDF. Resulta útil para reutilizar materiales en distintos formatos.",
+    "descripcion": "### eXeConvert\n\nHerramienta para convertir materiales de eXeLearning entre varios formatos.\n\n**Para qué sirve**\n\n- Convertir proyectos antiguos ELP a ELPX.\n- Crear un ELPX a partir de un documento DOCX.\n- Exportar un ELPX a DOCX, Markdown o PDF.\n- Mantener la estructura del material mediante los encabezados del documento.\n\nPuede ser útil para reutilizar contenidos, preparar versiones imprimibles o pasar materiales a otros formatos de trabajo.\n\n**URL:** https://execonvert.github.io/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "conversión",
+      "ELPX",
+      "DOCX",
+      "Markdown",
+      "PDF"
+    ],
+    "categorias": [
+      "Herramientas externas",
+      "Conversión de formatos"
+    ],
+    "relacionados": [],
+    "fuente": "[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://execonvert.github.io/"
+  },
+  {
+    "id": "exe_0008",
+    "titulo": "Visor Web-ZIP",
+    "resumen": "Permite publicar y compartir materiales ELPX, ZIP, H5P y otros recursos desde enlaces públicos en la nube, para abrirlos directamente en el navegador.",
+    "descripcion": "### Visor Web-ZIP\n\nAplicación web para abrir y compartir recursos educativos desde un enlace público en la nube.\n\n**Para qué sirve**\n\n- Publicar materiales creados con eXeLearning.\n- Abrir archivos ELPX, ZIP, H5P y otros recursos directamente en el navegador.\n- Compartir materiales alojados en servicios como Drive, Dropbox, Nextcloud o Box.\n- Añadir opciones como fechas de disponibilidad.\n\nEs útil cuando se quiere distribuir un recurso sin instalar nada en el dispositivo del alumnado.\n\n**URL:** https://visor-webzip.github.io/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "publicación",
+      "ELPX",
+      "ZIP",
+      "nube",
+      "visor"
+    ],
+    "categorias": [
+      "Herramientas externas",
+      "Publicación y visualización"
+    ],
+    "relacionados": [
+      "exe_0010",
+      "exe_0011",
+      "exe_0024"
+    ],
+    "fuente": "[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://visor-webzip.github.io/"
+  },
+  {
+    "id": "exe_0009",
+    "titulo": "ELPX Translator",
+    "resumen": "Traduce proyectos ELPX y conserva su estructura. Tiene una versión de escritorio para trabajar en local y una versión web que requiere una API aportada por el usuario.",
+    "descripcion": "### ELPX Translator\n\nHerramienta para traducir proyectos de eXeLearning en formato ELPX.\n\n**Para qué sirve**\n\n- Traducir un proyecto manteniendo su estructura.\n- Trabajar desde una aplicación de escritorio, sin enviar el material a servicios externos.\n- Usar una versión web cuando se dispone de una API propia para realizar la traducción.\n\nPuede ser útil para preparar materiales en varias lenguas o adaptar recursos ya creados.\n\n**Modalidades**\n\n- **ELPX Translator Desktop**: aplicación de escritorio que funciona en local.\n- **ELPX Translator Web**: versión en línea que requiere una API aportada por el usuario.\n\n**URL:** https://elpx-translator-desktop.github.io/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "traducción",
+      "ELPX",
+      "IA",
+      "escritorio",
+      "web"
+    ],
+    "categorias": [
+      "Herramientas externas",
+      "Traducción"
+    ],
+    "relacionados": [],
+    "fuente": "[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/"
+  },
+  {
+    "id": "exe_0010",
+    "titulo": "eXeReader",
+    "resumen": "Aplicación gratuita para Android e iOS que permite leer en móviles y tabletas contenidos creados con eXeLearning.",
+    "descripcion": "### eXeReader\n\nAplicación gratuita para leer contenidos creados con eXeLearning en dispositivos móviles.\n\n**Para qué sirve**\n\n- Abrir materiales exportados desde eXeLearning.\n- Facilitar la lectura en móviles y tabletas.\n- Usar recursos educativos sin depender siempre de un ordenador.\n\nPuede ser útil cuando el alumnado accede al contenido desde Android o iOS.\n\n**URLs**\n\n- Android: https://play.google.com/store/apps/details?id=net.exelearning.exereader\n- iOS: https://apps.apple.com/es/app/exereader/id6444196265\n- Código fuente: https://github.com/exelearning/exereader",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "lector",
+      "móvil",
+      "Android",
+      "iOS",
+      "HTML"
+    ],
+    "categorias": [
+      "Publicación y visualización",
+      "Herramientas externas"
+    ],
+    "relacionados": [
+      "exe_0008",
+      "exe_0011"
+    ],
+    "fuente": "Google Play, App Store y GitHub"
+  },
+  {
+    "id": "exe_0011",
+    "titulo": "eXeViewer",
+    "resumen": "Visor para abrir paquetes de contenido de eXeLearning directamente en el navegador. Puede servir como alternativa para publicar o consultar materiales ELPX y ZIP.",
+    "descripcion": "### eXeViewer\n\nVisor para abrir paquetes de contenido de eXeLearning directamente en el navegador.\n\n**Para qué sirve**\n\n- Visualizar materiales de eXeLearning sin editar el proyecto.\n- Abrir paquetes ELPX o ZIP preparados para su consulta.\n- Servir como opción de publicación cuando se dispone de un entorno preparado para ello.\n\nEstá pensado para mostrar contenidos, no para modificarlos.\n\n**URL:** https://exeviewer.intef.es/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "visor",
+      "ELPX",
+      "ZIP",
+      "navegador",
+      "Docker"
+    ],
+    "categorias": [
+      "Publicación y visualización",
+      "Herramientas externas"
+    ],
+    "relacionados": [
+      "exe_0008",
+      "exe_0010",
+      "exe_0024"
+    ],
+    "fuente": "Docker Hub: https://hub.docker.com/r/exelearning/exeviewer"
+  },
+  {
+    "id": "exe_0012",
+    "titulo": "Código QR de la página actual",
+    "resumen": "Genera un código QR con la dirección de la página actual. Debe insertarse donde se quiera mostrar el QR y necesita conexión a Internet.",
+    "descripcion": "### Código QR de la página actual\n\nGenera un código QR con la dirección de la página donde se inserta el recurso.\n\n**Para qué sirve**\n\n- Facilitar que el alumnado abra la página desde un móvil o una tableta.\n- Compartir rápidamente una página concreta del material.\n- Añadir un acceso visual mediante QR dentro del propio recurso.\n\n**Cómo se usa**\n\nInserta el fragmento en el punto exacto donde quieras mostrar el QR, dentro del **HTML del iDevice**.\n\n**Advertencias**\n\n- Requiere conexión a Internet.\n- La dirección de la página se envía a QuickChart para generar la imagen.\n- El recurso muestra el QR, pero no añade un texto explicativo visible.",
+    "donde": [
+      "HTML del iDevice"
+    ],
+    "script": "<!-- Código QR de la página actual -->\n<!-- https://hackexe4.github.io/#script=exe_0012 -->\n<div data-exe-fragment=\"exe-script-qr-pagina\" style=\"box-sizing:border-box; margin:1rem 0; text-align:center;\">\n  <div data-role=\"qr\"></div>\n</div>\n\n<script>\n(function () {\n  function generarQR(root) {\n    var contenedorQR = root.querySelector('[data-role=\"qr\"]');\n    if (!contenedorQR) return;\n\n    var apiUrl = 'https://quickchart.io/qr?text=' +\n      encodeURIComponent(window.location.href) +\n      '&size=200x200';\n\n    var imagenQR = document.createElement('img');\n    imagenQR.src = apiUrl;\n    imagenQR.alt = 'QR de la página actual';\n    imagenQR.width = 200;\n    imagenQR.height = 200;\n    imagenQR.style.maxWidth = '100%';\n    imagenQR.style.height = 'auto';\n\n    contenedorQR.innerHTML = '';\n    contenedorQR.appendChild(imagenQR);\n  }\n\n  function iniciar() {\n    var roots = document.querySelectorAll('[data-exe-fragment=\"exe-script-qr-pagina\"]');\n    Array.prototype.forEach.call(roots, generarQR);\n  }\n\n  if (document.readyState === 'loading') {\n    document.addEventListener('DOMContentLoaded', iniciar);\n  } else {\n    iniciar();\n  }\n})();\n</script>",
+    "etiquetas": [
+      "QR",
+      "código QR",
+      "URL",
+      "enlace",
+      "página actual",
+      "QuickChart"
+    ],
+    "categorias": [
+      "Navegación"
+    ],
+    "relacionados": [],
+    "fuente": "Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com"
+  },
+  {
+    "id": "exe_0013",
+    "titulo": "Protección de copia, selección e impresión",
+    "resumen": "Dificulta algunas acciones de copia, selección e impresión. Solo actúa como disuasión básica, no protege realmente el contenido y puede afectar a la accesibilidad.",
+    "descripcion": "### Protección de copia, selección e impresión\n\nEste recurso dificulta algunas acciones habituales de copia o reutilización del contenido de una página o proyecto.\n\n**Qué hace**\n\n- Bloquea el menú del clic derecho.\n- Bloquea atajos de teclado habituales, como copiar, pegar, seleccionar todo, imprimir o guardar.\n- Evita la selección de texto.\n- Evita el arrastre de imágenes.\n- Muestra un aviso cuando se intenta imprimir.\n\n**Cómo se usa**\n\n- Colócalo en el **pie del proyecto** para aplicarlo a todas las páginas.\n- Colócalo en el **HTML del iDevice** si solo quieres aplicarlo a una página concreta.\n\n**Advertencias importantes**\n\n- No protege realmente el contenido.\n- No impide capturas de pantalla ni otras formas de copia.\n- Puede afectar a la accesibilidad, especialmente a personas que usan teclado, lectores de pantalla o herramientas de apoyo.\n- Debe entenderse como una disuasión suave, no como una medida de seguridad.",
+    "donde": [
+      "Pie del proyecto",
+      "HTML del iDevice"
+    ],
+    "script": "<!-- Protección de copia, selección e impresión -->\n<!-- https://hackexe4.github.io/#script=exe_0013 -->\n<script>\n(function () {\n  document.addEventListener('contextmenu', function (e) {\n    e.preventDefault();\n  });\n\n  document.addEventListener('keydown', function (e) {\n    var key = String(e.key || '').toLowerCase();\n\n    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'p', 's', 'u', 'v'].indexOf(key) !== -1) {\n      e.preventDefault();\n\n      if (key === 'p') {\n        alert('La impresión está deshabilitada en esta página.');\n      }\n    }\n  });\n\n  document.addEventListener('selectstart', function (e) {\n    e.preventDefault();\n  });\n\n  document.addEventListener('dragstart', function (e) {\n    e.preventDefault();\n  });\n\n  window.addEventListener('beforeprint', function () {\n    alert('La impresión está deshabilitada en esta página.');\n  });\n})();\n</script>",
+    "etiquetas": [
+      "copia",
+      "protección",
+      "selección",
+      "impresión",
+      "clic derecho",
+      "teclado",
+      "contenido"
+    ],
+    "categorias": [
+      "Protección de contenido"
+    ],
+    "relacionados": [],
+    "fuente": "Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com"
+  },
+  {
+    "id": "exe_0014",
+    "titulo": "Índice de iDevices de una página",
+    "resumen": "Crea un índice con los iDevices o bloques de la página y enlaza cada entrada con su actividad. Pensado para eXeLearning 4.",
+    "descripcion": "### Índice de iDevices de una página\n\nGenera un índice con los iDevices o bloques de la página actual. Cada entrada enlaza con la actividad correspondiente.\n\n**Para qué sirve**\n\n- Facilita la navegación dentro de páginas largas.\n- Ayuda al alumnado a localizar rápidamente cada actividad.\n- Ofrece una vista ordenada de los bloques de trabajo de una página.\n\n**Cómo se usa**\n\nInserta el fragmento en el punto donde quieras mostrar el índice, dentro del **HTML del iDevice**.\n\n**Compatibilidad**\n\nEstá pensado para **eXeLearning 4**. No está diseñado para versiones antiguas de eXeLearning.",
+    "donde": [
+      "HTML del iDevice"
+    ],
+    "script": "<!-- Índice de iDevices de una página -->\n<!-- https://hackexe4.github.io/#script=exe_0014 -->\n<div data-exe-fragment=\"exe-script-indice-idevices\" style=\"box-sizing:border-box; max-width:48rem; margin:1rem 0; padding:1rem; border:1px solid #d7e3f4; border-radius:0.75rem; background:#f8fbff; color:#1f2937; font-family:Arial, sans-serif;\">\n  <p data-role=\"title\" style=\"margin:0 0 0.75rem 0; font-size:1.1rem; font-weight:700;\">Índice de actividades</p>\n  <p data-role=\"message\" style=\"margin:0; line-height:1.5;\">Generando índice de actividades...</p>\n  <nav data-role=\"nav\" aria-label=\"Índice de actividades de esta página\" hidden style=\"margin-top:0.75rem;\"></nav>\n  <template data-role=\"code\">\n(function () {\n  var script = document.currentScript;\n  var root = script\n    ? script.closest('[data-exe-fragment=\"exe-script-indice-idevices\"]')\n    : document.querySelector('[data-exe-fragment=\"exe-script-indice-idevices\"][data-exe-l=\"1\"]');\n  if (!root || root.getAttribute('data-exe-fragment') !== 'exe-script-indice-idevices') return;\n  if (root._exeR) return;\n  root._exeR = true;\n\n  function setMessage(text) {\n    var message = root.querySelector('[data-role=\"message\"]');\n    if (message) message.textContent = text;\n  }\n\n  function styleList(list) {\n    list.style.boxSizing = 'border-box';\n    list.style.margin = '0';\n    list.style.padding = '0 0 0 1.25rem';\n    list.style.lineHeight = '1.5';\n  }\n\n  function styleItem(item) {\n    item.style.margin = '0.35rem 0';\n  }\n\n  function styleLink(link) {\n    link.style.color = '#145ea8';\n    link.style.textDecoration = 'underline';\n    link.style.textUnderlineOffset = '0.15em';\n  }\n\n  function buildIndex() {\n    var scope = root.closest('main') || document;\n    var boxes = scope.querySelectorAll('article.box');\n    var nav = root.querySelector('[data-role=\"nav\"]');\n    var list = document.createElement('ul');\n    var count = 0;\n\n    if (!nav) return;\n    styleList(list);\n\n    Array.prototype.forEach.call(boxes, function (box, index) {\n      if (box.contains(root)) return;\n\n      var title = box.querySelector('.box-title');\n      var titleText = title ? title.textContent.replace(/\\s+/g, ' ').trim() : '';\n      if (!titleText) return;\n\n      var id = box.id || 'exe-script-idevice-' + index;\n      box.id = id;\n\n      var item = document.createElement('li');\n      var link = document.createElement('a');\n\n      link.href = '#' + id;\n      link.textContent = titleText;\n      styleItem(item);\n      styleLink(link);\n\n      item.appendChild(link);\n      list.appendChild(item);\n      count += 1;\n    });\n\n    while (nav.firstChild) nav.removeChild(nav.firstChild);\n\n    if (!count) {\n      nav.hidden = true;\n      setMessage('No se han encontrado actividades en esta página.');\n      return;\n    }\n\n    nav.appendChild(list);\n    nav.hidden = false;\n    setMessage('');\n  }\n\n  if (document.readyState === 'loading') {\n    document.addEventListener('DOMContentLoaded', buildIndex, { once: true });\n  } else {\n    buildIndex();\n  }\n})();\n  </template>\n  <img alt=\"\" src=\"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==\" onload=\"(function(img){var root=img.closest('[data-exe-fragment=&quot;exe-script-indice-idevices&quot;]');if(!root||root._exeB)return;root._exeB=true;var code=root.querySelector('template[data-role=&quot;code&quot;]');if(!code)return;root.setAttribute('data-exe-l','1');var script=document.createElement('script');script.text=code.content.textContent;root.appendChild(script);root.removeAttribute('data-exe-l');})(this)\" onerror=\"this.onload&&this.onload()\" style=\"position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;\" />\n</div>",
+    "etiquetas": [
+      "índice",
+      "iDevices",
+      "actividades",
+      "bloques",
+      "navegación",
+      "eXeLearning 4"
+    ],
+    "categorias": [
+      "Índices de contenido"
+    ],
+    "relacionados": [
+      "exe_0001",
+      "exe_0002",
+      "exe_0005"
+    ],
+    "fuente": "Elaboración propia a partir del código de HACKeXe: https://hackexe.tiddlyhost.com"
+  },
+  {
+    "id": "exe_0015",
+    "titulo": "Espaciado interlineal",
+    "resumen": "Ajusta el interlineado de los textos para mejorar la lectura. Puede aplicarse a todo el contenido o solo a un párrafo concreto.",
+    "descripcion": "### Espaciado interlineal\n\nPermite cambiar la separación entre las líneas de texto en eXeLearning 4. Es útil cuando un texto queda demasiado apretado y se quiere mejorar la lectura.\n\n**Uso recomendado: aplicarlo a todo el contenido**\n\n1. Abre tu proyecto en eXeLearning.\n2. Ve al lugar donde puedas añadir contenido al **HEAD** del proyecto.\n3. Pega el código indicado.\n4. Guarda los cambios.\n5. Comprueba el resultado en la vista previa o en la exportación.\n\n**Cómo cambiar la separación**\n\nEn el código puedes cambiar el valor `1.5`:\n\n- `1.3`: separación ligera.\n- `1.5`: separación cómoda para la mayoría de textos.\n- `2`: separación doble.\n\n**Aplicarlo solo a un párrafo**\n\nSi solo quieres modificar un párrafo concreto, abre el editor HTML del iDevice y añade el interlineado en ese párrafo.\n\n**Consejo**\n\nEmpieza con `1.5`. Si el texto aún se ve demasiado junto, prueba con `1.7` o `2`.",
+    "donde": [
+      "HEAD",
+      "HTML del iDevice"
+    ],
+    "script": "<!-- Espaciado interlineal -->\n<!-- https://hackexe4.github.io/#script=exe_0015 -->\n<style>\n.iDevice_content {\n  line-height: 1.5;\n}\n</style>",
+    "etiquetas": [
+      "interlineado",
+      "CSS",
+      "legibilidad",
+      "texto",
+      "estilo"
+    ],
+    "categorias": [
+      "Personalización visual"
+    ],
+    "relacionados": [
+      "exe_0004",
+      "exe_0006",
+      "exe_0025"
+    ],
+    "fuente": "Elaboración propia a partir de la consulta sobre compatibilidad con eXeLearning 4."
+  },
+  {
+    "id": "exe_0016",
+    "titulo": "eXeLearning",
+    "resumen": "Página oficial de eXeLearning. Presenta el proyecto, sus características principales y el acceso a recursos relacionados con la creación de materiales educativos.",
+    "descripcion": "### eXeLearning\n\nPágina oficial de eXeLearning, herramienta libre para crear recursos educativos digitales.\n\n**Para qué sirve**\n\n- Conocer el proyecto eXeLearning.\n- Acceder a información general sobre la herramienta.\n- Localizar descargas, documentación y recursos asociados.\n\nEs el enlace de referencia para docentes que quieran empezar a trabajar con eXeLearning o consultar información general del proyecto.\n\n**URL:** https://exelearning.net/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "eXeLearning",
+      "autoría",
+      "REA",
+      "educación"
+    ],
+    "categorias": [
+      "eXeLearning oficial"
+    ],
+    "relacionados": [
+      "exe_0017",
+      "exe_0018",
+      "exe_0019",
+      "exe_0020",
+      "exe_0021",
+      "exe_0024"
+    ],
+    "fuente": "[eXeLearning](https://exelearning.net/)"
+  },
+  {
+    "id": "exe_0017",
+    "titulo": "eXeLearning online",
+    "resumen": "Versión online de eXeLearning para crear y editar recursos educativos desde el navegador, sin necesidad de instalar el programa.",
+    "descripcion": "### eXeLearning online\n\nVersión online de eXeLearning para trabajar desde el navegador sin instalar la aplicación en el ordenador.\n\n**Para qué sirve**\n\n- Crear o editar recursos educativos desde el navegador.\n- Probar eXeLearning sin instalación previa.\n- Trabajar de forma rápida cuando se usa un equipo compartido o temporal.\n\nConviene guardar el trabajo con frecuencia y comprobar las opciones de exportación disponibles.\n\n**URL:** https://app.exelearning.net/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "eXeLearning",
+      "online",
+      "editor",
+      "recursos"
+    ],
+    "categorias": [
+      "eXeLearning oficial",
+      "Herramientas externas"
+    ],
+    "relacionados": [
+      "exe_0016",
+      "exe_0018"
+    ],
+    "fuente": "[eXeLearning online](https://online.exelearning.net/)"
+  },
+  {
+    "id": "exe_0018",
+    "titulo": "eXeLearning colaborativo demo",
+    "resumen": "Demo de la versión colaborativa de eXeLearning. Permite entrar como invitado y trabajar entre varias personas, pero los datos se pierden al cerrar si no se guardan.",
+    "descripcion": "### eXeLearning colaborativo demo\n\nDemo de la versión colaborativa de eXeLearning. Permite acceder como invitado y probar el trabajo compartido entre varias personas desde el navegador.\n\n**Para qué sirve**\n\n- Probar la edición colaborativa de eXeLearning.\n- Trabajar temporalmente entre varias personas.\n- Experimentar con la versión colaborativa sin crear una instalación propia.\n\n**Advertencia**\n\nLos datos se pierden al cerrar la sesión si no se guardan. Es útil para pruebas o trabajos temporales, siempre que se descargue o guarde el material antes de cerrar.\n\n**URL:** https://cloud-demo.exelearning.net/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "eXeLearning",
+      "colaborativo",
+      "online",
+      "demo"
+    ],
+    "categorias": [
+      "eXeLearning oficial",
+      "Herramientas externas"
+    ],
+    "relacionados": [
+      "exe_0016",
+      "exe_0020",
+      "exe_0023"
+    ],
+    "fuente": "[eXeLearning colaborativo demo](https://cloud-demo.exelearning.net/)"
+  },
+  {
+    "id": "exe_0019",
+    "titulo": "Manual de eXeLearning",
+    "resumen": "Manual oficial de eXeLearning. Explica el uso del programa, la creación de recursos educativos y las principales opciones disponibles para el profesorado.",
+    "descripcion": "### Manual de eXeLearning\n\nManual de referencia para aprender a utilizar eXeLearning y resolver dudas sobre sus herramientas principales.\n\n**Para qué sirve**\n\n- Consultar el uso de eXeLearning paso a paso.\n- Resolver dudas sobre iDevices, edición, estructura y exportación.\n- Servir como apoyo para docentes que empiezan o necesitan revisar alguna función.\n\n**URL:** https://descargas.intef.es/cedec/exe_learning/Manuales/manual_exe/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "manual",
+      "ayuda",
+      "eXeLearning",
+      "documentación"
+    ],
+    "categorias": [
+      "Documentación y ayuda",
+      "eXeLearning oficial"
+    ],
+    "relacionados": [
+      "exe_0016",
+      "exe_0020",
+      "exe_0024"
+    ],
+    "fuente": "[Manual de eXeLearning](https://descargas.intef.es/cedec/exe_learning/Manuales/manual_exe/)"
+  },
+  {
+    "id": "exe_0020",
+    "titulo": "Descarga de eXeLearning",
+    "resumen": "Página de descarga de eXeLearning para instalar el programa en distintos sistemas o acceder a las opciones disponibles desde la web oficial.",
+    "descripcion": "### Descarga de eXeLearning\n\nPágina oficial para descargar eXeLearning y consultar las opciones disponibles de instalación o acceso.\n\n**Para qué sirve**\n\n- Descargar eXeLearning para el sistema operativo correspondiente.\n- Consultar las versiones disponibles.\n- Acceder desde un punto oficial y actualizado.\n\nEs el enlace recomendado cuando un docente necesita instalar la herramienta en su equipo.\n\n**URL:** https://exelearning.net/descargas/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "descarga",
+      "instalación",
+      "eXeLearning",
+      "versiones"
+    ],
+    "categorias": [
+      "eXeLearning oficial",
+      "Documentación y ayuda"
+    ],
+    "relacionados": [
+      "exe_0016",
+      "exe_0019",
+      "exe_0024"
+    ],
+    "fuente": "[Descarga de eXeLearning](https://exelearning.net/descargas/)"
+  },
+  {
+    "id": "exe_0021",
+    "titulo": "Grupo de Telegram eXeLearning",
+    "resumen": "Grupo de Telegram sobre eXeLearning. Puede servir para plantear dudas, compartir experiencias y seguir conversaciones de la comunidad de usuarios.",
+    "descripcion": "### Grupo de Telegram eXeLearning\n\nGrupo de Telegram dedicado a eXeLearning y a su uso educativo.\n\n**Para qué sirve**\n\n- Plantear dudas prácticas sobre eXeLearning.\n- Compartir experiencias y recursos con otros usuarios.\n- Seguir conversaciones de la comunidad docente interesada en la herramienta.\n\nPuede ser útil como apoyo informal para profesorado que trabaja con eXeLearning.\n\n**URL:** https://t.me/eXeLearning",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "Telegram",
+      "comunidad",
+      "ayuda",
+      "eXeLearning"
+    ],
+    "categorias": [
+      "Comunidad y soporte"
+    ],
+    "relacionados": [
+      "exe_0016",
+      "exe_0023"
+    ],
+    "fuente": "[Grupo de Telegram eXeLearning](https://t.me/eXeLearning)"
+  },
+  {
+    "id": "exe_0022",
+    "titulo": "Documentación para crear estilos en eXeLearning",
+    "resumen": "Documentación técnica para crear estilos de eXeLearning. Sirve como referencia para personalizar la apariencia de los proyectos y complementa el uso de EdEX.",
+    "descripcion": "### Documentación para crear estilos en eXeLearning\n\nDocumentación del proyecto eXeLearning sobre la creación de estilos propios.\n\n**Para qué sirve**\n\n- Conocer la estructura básica de los estilos de eXeLearning.\n- Preparar o modificar estilos personalizados.\n- Entender mejor qué se puede adaptar antes de trabajar con un editor como EdEX.\n\nEs una referencia útil para quienes quieren ir más allá de los cambios visuales sencillos y comprender cómo se organizan los estilos.\n\n**URL:** https://exelearning.github.io/exelearning/development/styles/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "documentación",
+      "diseño",
+      "eXeLearning"
+    ],
+    "categorias": [
+      "Documentación y ayuda",
+      "Personalización visual"
+    ],
+    "relacionados": [
+      "exe_0006"
+    ],
+    "fuente": "[Documentación para crear estilos en eXeLearning](https://exelearning.github.io/exelearning/development/styles/)"
+  },
+  {
+    "id": "exe_0023",
+    "titulo": "Asistente de IA Karla",
+    "resumen": "Asistente de IA sobre eXeLearning. Usa conversaciones del grupo de Telegram e información técnica para ayudar con el uso, instalación y problemas del programa.",
+    "descripcion": "### Asistente de IA Karla\n\nAsistente de IA orientado a resolver dudas sobre eXeLearning.\n\n**Para qué sirve**\n\n- Ayudar en el uso cotidiano de eXeLearning.\n- Resolver dudas de instalación y configuración.\n- Orientar ante problemas técnicos o errores del programa.\n- Consultar información procedente de conversaciones del grupo de Telegram y documentación técnica relacionada.\n\n**URL:** https://ja.cat/karla",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "IA",
+      "ayuda",
+      "eXeLearning",
+      "Telegram"
+    ],
+    "categorias": [
+      "Documentación y ayuda",
+      "Comunidad y soporte"
+    ],
+    "relacionados": [
+      "exe_0021",
+      "exe_0019"
+    ],
+    "fuente": "[Asistente de IA Karla](https://ja.cat/karla)"
+  },
+  {
+    "id": "exe_0024",
+    "titulo": "Subir una web de eXeLearning a GitHub",
+    "resumen": "Presentación que explica cómo publicar una web exportada desde eXeLearning en GitHub usando GitHub Desktop, el archivo `.nojekyll` y GitHub Pages.",
+    "descripcion": "### Subir una web de eXeLearning a GitHub\n\nPresentación paso a paso para publicar una web exportada desde eXeLearning v3 o superior en GitHub sin usar la consola.\n\n**Para qué sirve**\n\n- Explica por qué la subida directa desde la web de GitHub puede fallar con proyectos grandes.\n- Muestra cómo crear un repositorio vacío y clonarlo con GitHub Desktop.\n- Indica cómo añadir los archivos exportados desde eXeLearning.\n- Recuerda crear el archivo `.nojekyll` para evitar problemas de formato.\n- Explica cómo activar GitHub Pages y localizar la URL publicada.\n\n**URL publicada:** https://docs.google.com/presentation/d/e/2PACX-1vQVI95oJ4BI8cnzn8CFTLHv0j-YwVwBAAe1XvolZNrlmMhPyq4GvXVYnoCndXTbdVILms74pKmDObYs/pub?start=false&loop=false&delayms=3000",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "eXeLearning",
+      "GitHub",
+      "GitHub Pages",
+      "publicación",
+      "guía"
+    ],
+    "categorias": [
+      "Publicación y visualización",
+      "Documentación y ayuda"
+    ],
+    "relacionados": [
+      "exe_0008",
+      "exe_0016",
+      "exe_0019",
+      "exe_0020",
+      "exe_0011"
+    ],
+    "fuente": "Elaboración propia."
+  },
+  {
+    "id": "exe_0025",
+    "titulo": "Cambiar el favicon del proyecto",
+    "resumen": "Sustituye el favicon de eXeLearning por un icono propio guardado en content/resources o en una subcarpeta. Se puede indicar el nombre del archivo y la carpeta.",
+    "descripcion": "### Cambiar el favicon del proyecto\n\nPermite sustituir el icono `favicon.ico` que aparece en la pestaña del navegador por otro archivo incluido en los recursos del proyecto.\n\n**Para qué sirve**\n\n- Personalizar la identidad visual del material.\n- Usar un icono propio en lugar del favicon por defecto de eXeLearning.\n- Guardar el icono directamente en `content/resources/` o en una subcarpeta del gestor de archivos.\n\n**Cómo se usa**\n\n1. Añade el archivo del icono a los recursos del proyecto.\n2. Cambia en el código el valor de `iconFile` por el nombre del archivo que quieras usar.\n3. Si el icono está dentro de una carpeta, indica esa carpeta en `iconFolder`.\n4. Coloca el fragmento en el **pie del proyecto** para aplicarlo a todo el material.\n\n**Ajustes principales**\n\n```js\nvar iconFolder = \"\";\nvar iconFile = \"favicon.ico\";\n```\n\n**Ejemplos**\n\n```js\n// Icono en la carpeta principal de recursos\nvar iconFolder = \"\";\nvar iconFile = \"favicon.ico\";\n\n// Icono dentro de una carpeta\nvar iconFolder = \"imagenes\";\nvar iconFile = \"logo.svg\";\n\n// Icono dentro de una subcarpeta\nvar iconFolder = \"imagenes/iconos\";\nvar iconFile = \"logo.png\";\n```\n\n**Formatos previstos**\n\nEl código reconoce automáticamente archivos `.ico`, `.png` y `.svg` para asignar el tipo adecuado.\n\nEl archivo debe quedar disponible en `content/resources/` o en una subcarpeta de esa ruta tras la exportación.",
+    "donde": [
+      "Pie del proyecto"
+    ],
+    "script": "<!-- Cambiar el favicon del proyecto -->\n<!-- https://hackexe4.github.io/#script=exe_0025 -->\n<script>\n(function () {\n  var iconFolder = \"\"; // Carpeta dentro de content/resources. Ejemplos: \"\", \"imagenes\", \"imagenes/iconos\"\n  var iconFile = \"favicon.ico\"; // Nombre del archivo. Ejemplos: favicon.ico, logo.svg, icono.png\n\n  function cleanPath(value) {\n    return String(value || \"\")\n      .replace(/^\\/+|\\/+$/g, \"\")\n      .replace(/\\/+/g, \"/\");\n  }\n\n  var oldIcon = document.querySelector(\n    'link[rel=\"icon\"][href$=\"libs/favicon.ico\"], ' +\n    'link[rel=\"shortcut icon\"][href$=\"libs/favicon.ico\"], ' +\n    'link[rel=\"icon\"][href$=\"favicon.ico\"], ' +\n    'link[rel=\"shortcut icon\"][href$=\"favicon.ico\"]'\n  );\n\n  var baseUrl = oldIcon\n    ? oldIcon.href.replace(/(?:libs\\/)?favicon\\.ico(?:\\?.*)?$/, \"\")\n    : new URL(\".\", location.href).href;\n\n  var folder = cleanPath(iconFolder);\n  var file = cleanPath(iconFile);\n  var resourcePath = \"content/resources/\" + (folder ? folder + \"/\" : \"\") + file;\n\n  var icon = document.createElement(\"link\");\n  icon.rel = \"icon\";\n  icon.href = baseUrl + resourcePath;\n\n  if (/\\.svg$/i.test(file)) icon.type = \"image/svg+xml\";\n  else if (/\\.png$/i.test(file)) icon.type = \"image/png\";\n  else if (/\\.ico$/i.test(file)) icon.type = \"image/x-icon\";\n\n  document.head.appendChild(icon);\n}());\n</script>",
+    "etiquetas": [
+      "favicon",
+      "icono",
+      "personalización",
+      "pestaña",
+      "recursos"
+    ],
+    "categorias": [
+      "Personalización visual"
+    ],
+    "relacionados": [
+      "exe_0004",
+      "exe_0015",
+      "exe_0006"
+    ],
+    "fuente": ""
+  }
+]
