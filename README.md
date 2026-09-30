@@ -21,7 +21,6 @@ Compatibles con **eXeLearning 4 y superiores**. Para la versión 2.9 visita [hac
 - **Compartir recursos** mediante URL: una vista, un recurso concreto o una selección personalizada
 - **Modo claro/oscuro** automático y manual
 - Los datos se cargan desde una hoja de Google Sheets pública, con `HackeXe4.csv` como copia local de respaldo
-- Estadísticas de uso agregadas mediante sistema propio, sin IP ni identificadores de visitantes
 
 ## Uso
 
@@ -51,3 +50,11 @@ Columnas:
 Aplicación web estática — HTML, CSS y JavaScript vanilla, sin frameworks ni dependencias locales. Resaltado de sintaxis con [highlight.js](https://highlightjs.org/).
 
 Alojada en GitHub Pages.
+
+## Licencia
+
+- Código de la aplicación: [GNU AGPL v3 o posterior](LICENSE).
+- Textos, documentación y recursos del directorio, incluido su código: [CC BY-SA 4.0](LICENSE-CONTENIDOS).
+- Recursos de terceros: [TERCEROS.md](TERCEROS.md).
+
+Las decisiones del proyecto se registran en [docs/adr](docs/adr/README.md).

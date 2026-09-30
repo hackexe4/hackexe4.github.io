@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
 /* ─── Custom Properties ─────────────────────────────────── */
 :root {
   --code-bg:      #f6f8fa;
@@ -1357,7 +1358,6 @@ html:not([data-theme]) .icon-sun  { display: none; }
   gap: .3rem;
 }
 .app-footer a { color: var(--accent); }
-.footer-sub { font-size: .75rem; color: var(--text-xmuted); }
 
 /* ─── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {

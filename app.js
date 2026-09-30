@@ -1,11 +1,8 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 'use strict';
 
 /* ─── Config ────────────────────────────────────────────── */
 const JSON_URL = 'HackeXe4.json';
-const ANALYTICS_FALLBACK_ENDPOINT = 'https://bilateria.org/app/estadistica/hackexe4/track.php';
-const ANALYTICS_FALLBACK_STATS_URL = 'https://bilateria.org/app/estadistica/hackexe4/admin-stats.php';
-const ANALYTICS_VISIT_COOLDOWN_MS = 30 * 60 * 1000;
-const ANALYTICS_TIMEOUT_MS = 4000;
 
 /* ─── i18n ──────────────────────────────────────────────── */
 const T = {
@@ -1775,117 +1772,6 @@ function showError() {
   $('retryBtn')?.addEventListener('click', loadData);
 }
 
-/* ─── Analytics ──────────────────────────────────────────── */
-function getMetaContent(name) {
-  const node = document.querySelector(`meta[name="${name}"]`);
-  return node ? String(node.getAttribute('content') || '').trim() : '';
-}
-
-function getAnalyticsConfig() {
-  return {
-    endpoint: getMetaContent('analytics-endpoint') || ANALYTICS_FALLBACK_ENDPOINT,
-    statsUrl: getMetaContent('analytics-stats-url') || ANALYTICS_FALLBACK_STATS_URL,
-    siteId: getMetaContent('analytics-site-id') || 'hackexe4',
-  };
-}
-
-function shouldTrackAnalytics() {
-  const protocol = String(window.location.protocol || '');
-  const host = String(window.location.hostname || '').toLowerCase();
-  if (protocol !== 'http:' && protocol !== 'https:') return false;
-  if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
-  if (host.endsWith('.local')) return false;
-  return true;
-}
-
-function getAnalyticsStorageKey(siteId) {
-  return `analytics:last-visit:${siteId}`;
-}
-
-function shouldCountAnalyticsVisit(siteId) {
-  try {
-    const rawValue = window.localStorage.getItem(getAnalyticsStorageKey(siteId)) || '';
-    const lastVisit = Number.parseInt(rawValue, 10);
-    if (Number.isFinite(lastVisit) && Date.now() - lastVisit < ANALYTICS_VISIT_COOLDOWN_MS) {
-      return false;
-    }
-  } catch {
-    return true;
-  }
-  return true;
-}
-
-function rememberAnalyticsVisit(siteId) {
-  try {
-    window.localStorage.setItem(getAnalyticsStorageKey(siteId), String(Date.now()));
-  } catch {
-    // Analytics is optional and must never block the app.
-  }
-}
-
-function requestAnalytics() {
-  if (!shouldTrackAnalytics()) return;
-  if (typeof window.fetch !== 'function') return;
-  const cfg = getAnalyticsConfig();
-  if (!cfg.endpoint) return;
-
-  const query = new URLSearchParams();
-  const pageParams = new URLSearchParams(window.location.search || '');
-  const shouldCountVisit = shouldCountAnalyticsVisit(cfg.siteId);
-
-  query.set('site', cfg.siteId);
-  query.set('page_url', window.location.href);
-  query.set('referrer', document.referrer || '');
-  if (!shouldCountVisit) query.set('summary_only', '1');
-  ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].forEach(key => {
-    const value = String(pageParams.get(key) || '').trim();
-    if (value) query.set(key, value);
-  });
-
-  const url = `${cfg.endpoint}${cfg.endpoint.includes('?') ? '&' : '?'}${query.toString()}`;
-  const controller = typeof AbortController === 'function' ? new AbortController() : null;
-  const timeoutId = window.setTimeout(() => {
-    if (controller) controller.abort();
-  }, ANALYTICS_TIMEOUT_MS);
-
-  window.fetch(url, {
-    method: 'GET',
-    mode: 'no-cors',
-    credentials: 'omit',
-    cache: 'no-store',
-    keepalive: true,
-    signal: controller ? controller.signal : undefined,
-  })
-    .then(() => {
-      if (shouldCountVisit) rememberAnalyticsVisit(cfg.siteId);
-    })
-    .catch(() => {})
-    .finally(() => {
-      window.clearTimeout(timeoutId);
-    });
-}
-
-function scheduleAnalyticsLoad() {
-  if (!shouldTrackAnalytics()) return;
-  const run = () => window.setTimeout(requestAnalytics, 0);
-  // Un <script async> inyectado antes de que se dispare «load» retrasa ese
-  // evento hasta que la peticion termina. Si el servidor de estadisticas se
-  // cuelga, «load» no llegaria a dispararse nunca. Por eso se espera siempre
-  // a «load» antes de programar nada.
-  const programar = function () {
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(run, { timeout: 2500 });
-    } else {
-      window.setTimeout(run, 0);
-    }
-  };
-  if (document.readyState === 'complete') {
-    programar();
-    return;
-  }
-  window.addEventListener('load', programar, { once: true });
-}
-
 /* ─── Theme ──────────────────────────────────────────────── */
 function initTheme() {
   const saved = localStorage.getItem('hackexe-theme');
@@ -2077,7 +1963,6 @@ function init() {
 
   pendingURLState = readURLState();
   loadData();
-  scheduleAnalyticsLoad();
 }
 
 document.addEventListener('DOMContentLoaded', init);
