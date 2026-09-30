@@ -205,8 +205,7 @@ No funciona con exportaciones **SCORM**.",HTML del iDevice,"<!-- Indice de subp�
 })();
   </template>
   <img alt="""" src=""data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="" onload=""(function(img){var root=img.closest('[data-exe-fragment=&quot;exe-script-indice-subpaginas&quot;]');if(!root||root._exeB)return;root._exeB=true;var code=root.querySelector('template[data-role=&quot;code&quot;]');if(!code)return;root.setAttribute('data-exe-l','1');var script=document.createElement('script');script.text=code.content.textContent;root.appendChild(script);root.removeAttribute('data-exe-l');})(this)"" onerror=""this.onload&&this.onload()"" style=""position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;"" />
-</div>
-",índice; subpáginas; menú local; navegación; niveles,Índices de contenido,exe_0002; exe_0005; exe_0014,Elaboración propia
+</div>",índice; subpáginas; menú local; navegación; niveles,Índices de contenido,exe_0002; exe_0005; exe_0014,Elaboración propia
 exe_0002,Indice de todo el proyecto,Crea un índice con todas las páginas del proyecto para ofrecer una navegación global. Se pueden limitar los niveles visibles y ocultar páginas marcadas como ocultas. No funciona en SCORM.,"### Índice de todo el proyecto
 
 Crea un índice con enlaces a las páginas del proyecto eXeLearning. Resulta útil cuando el material es amplio y se quiere ofrecer una vista general de todos los apartados.
@@ -364,8 +363,7 @@ window.MathJax = {
   
   document.head.appendChild(script);
 })();
-</script>
-",MathJax; fórmulas; LaTeX; delimitadores; vista previa,Fórmulas,,Elaboración propia
+</script>",MathJax; fórmulas; LaTeX; delimitadores; vista previa,Fórmulas,,Elaboración propia
 exe_0004,Cambiar el color de fondo y del texto de acordeón,Cambia el color de fondo y el color del texto en los títulos de los acordeones. Puede aplicarse a todo el proyecto o solo a una página.,"### Cambiar el color de fondo y del texto de acordeón
 
 Permite modificar el aspecto de los títulos de los acordeones en eXeLearning. Es útil para adaptar el diseño a los colores del recurso o para destacar mejor estos bloques.
@@ -488,7 +486,7 @@ Editor web para trabajar con estilos de eXeLearning. Permite crear o modificar l
 
 Es una herramienta útil para docentes que quieren adaptar el diseño de sus materiales sin editar manualmente los archivos del estilo.
 
-**URL:** https://exe-style-editor.github.io/",,,estilos; editor; ELPX; ZIP; diseño,Herramientas externas; Personalización visual,exe_0015; exe_0022; exe_0025,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://exe-style-editor.github.io/
+**URL:** https://exe-style-editor.github.io/",,,estilos; editor; ELPX; ZIP; diseño,Programas complementarios; Personalización visual,exe_0015; exe_0022; exe_0025,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://exe-style-editor.github.io/
 exe_0007,eXeConvert,"Convierte proyectos de eXeLearning entre ELP, ELPX, DOCX, Markdown y PDF. Resulta útil para reutilizar materiales en distintos formatos.","### eXeConvert
 
 Herramienta para convertir materiales de eXeLearning entre varios formatos.
@@ -502,7 +500,7 @@ Herramienta para convertir materiales de eXeLearning entre varios formatos.
 
 Puede ser útil para reutilizar contenidos, preparar versiones imprimibles o pasar materiales a otros formatos de trabajo.
 
-**URL:** https://execonvert.github.io/",,,conversión; ELPX; DOCX; Markdown; PDF,Herramientas externas; Conversión de formatos,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://execonvert.github.io/
+**URL:** https://execonvert.github.io/",,,conversión; ELPX; DOCX; Markdown; PDF,Programas complementarios; Conversión de formatos,,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://execonvert.github.io/
 exe_0008,Visor Web-ZIP,"Permite publicar y compartir materiales ELPX, ZIP, H5P y otros recursos desde enlaces públicos en la nube, para abrirlos directamente en el navegador.","### Visor Web-ZIP
 
 Aplicación web para abrir y compartir recursos educativos desde un enlace público en la nube.
@@ -516,7 +514,7 @@ Aplicación web para abrir y compartir recursos educativos desde un enlace públ
 
 Es útil cuando se quiere distribuir un recurso sin instalar nada en el dispositivo del alumnado.
 
-**URL:** https://visor-webzip.github.io/",,,publicación; ELPX; ZIP; nube; visor,Herramientas externas; Publicación y visualización,exe_0010; exe_0011; exe_0024,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://visor-webzip.github.io/
+**URL:** https://visor-webzip.github.io/",,,publicación; ELPX; ZIP; nube; visor,Programas complementarios; Publicación y visualización,exe_0010; exe_0011; exe_0024,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://visor-webzip.github.io/
 exe_0009,ELPX Translator,Traduce proyectos ELPX y conserva su estructura. Tiene una versión de escritorio para trabajar en local y una versión web que requiere una API aportada por el usuario.,"### ELPX Translator
 
 Herramienta para traducir proyectos de eXeLearning en formato ELPX.
@@ -534,7 +532,7 @@ Puede ser útil para preparar materiales en varias lenguas o adaptar recursos ya
 - **ELPX Translator Desktop**: aplicación de escritorio que funciona en local.
 - **ELPX Translator Web**: versión en línea que requiere una API aportada por el usuario.
 
-**URL:** https://elpx-translator-desktop.github.io/",,,traducción; ELPX; IA; escritorio; web,Herramientas externas; Traducción,exe_0026,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/
+**URL:** https://elpx-translator-desktop.github.io/",,,traducción; ELPX; IA; escritorio; web,Programas complementarios; Traducción,exe_0026,[Bilateria](https://educacion.bilateria.org/category/software-libre) y https://elpx-translator-desktop.github.io/
 exe_0010,eXeReader,Aplicación gratuita para Android e iOS que permite leer en móviles y tabletas contenidos creados con eXeLearning.,"### eXeReader
 
 Aplicación gratuita para leer contenidos creados con eXeLearning en dispositivos móviles.
@@ -551,7 +549,7 @@ Puede ser útil cuando el alumnado accede al contenido desde Android o iOS.
 
 - Android: https://play.google.com/store/apps/details?id=net.exelearning.exereader
 - iOS: https://apps.apple.com/es/app/exereader/id6444196265
-- Código fuente: https://github.com/exelearning/exereader",,,lector; móvil; Android; iOS; HTML,Publicación y visualización; Herramientas externas,exe_0008; exe_0011,"Google Play, App Store y GitHub"
+- Código fuente: https://github.com/exelearning/exereader",,,lector; móvil; Android; iOS; HTML,Publicación y visualización; Programas complementarios,exe_0008; exe_0011,"Google Play, App Store y GitHub"
 exe_0011,eXeViewer,Visor para abrir paquetes de contenido de eXeLearning directamente en el navegador. Puede servir como alternativa para publicar o consultar materiales ELPX y ZIP.,"### eXeViewer
 
 Visor para abrir paquetes de contenido de eXeLearning directamente en el navegador.
@@ -564,7 +562,7 @@ Visor para abrir paquetes de contenido de eXeLearning directamente en el navegad
 
 Está pensado para mostrar contenidos, no para modificarlos.
 
-**URL:** https://exeviewer.intef.es/",,,visor; ELPX; ZIP; navegador; Docker,Publicación y visualización; Herramientas externas,exe_0008; exe_0010; exe_0024,Docker Hub: https://hub.docker.com/r/exelearning/exeviewer
+**URL:** https://exeviewer.intef.es/",,,visor; ELPX; ZIP; navegador; Docker,Publicación y visualización; Programas complementarios,exe_0008; exe_0010; exe_0024,Docker Hub: https://hub.docker.com/r/exelearning/exeviewer
 exe_0012,Código QR de la página actual,Genera un código QR con la dirección de la página actual. Debe insertarse donde se quiera mostrar el QR y necesita conexión a Internet.,"### Código QR de la página actual
 
 Genera un código QR con la dirección de la página donde se inserta el recurso.
@@ -845,7 +843,7 @@ Versión online de eXeLearning para trabajar desde el navegador sin instalar la 
 
 Conviene guardar el trabajo con frecuencia y comprobar las opciones de exportación disponibles.
 
-**URL:** https://online.exelearning.net/",,,eXeLearning; online; editor; recursos,eXeLearning oficial; Herramientas externas,exe_0016; exe_0018,[eXeLearning online](https://online.exelearning.net/)
+**URL:** https://online.exelearning.net/",,,eXeLearning; online; editor; recursos,eXeLearning oficial,exe_0016; exe_0018,[eXeLearning online](https://online.exelearning.net/)
 exe_0018,eXeLearning colaborativo demo,"Demo de la versión colaborativa de eXeLearning. Permite entrar como invitado y trabajar entre varias personas, pero los datos se pierden al cerrar si no se guardan.","### eXeLearning colaborativo demo
 
 Demo de la versión colaborativa de eXeLearning. Permite acceder como invitado y probar el trabajo compartido entre varias personas desde el navegador.
@@ -860,7 +858,7 @@ Demo de la versión colaborativa de eXeLearning. Permite acceder como invitado y
 
 Los datos se pierden al cerrar la sesión si no se guardan. Es útil para pruebas o trabajos temporales, siempre que se descargue o guarde el material antes de cerrar.
 
-**URL:** https://cloud-demo.exelearning.net/",,,eXeLearning; colaborativo; online; demo,eXeLearning oficial; Herramientas externas,exe_0016; exe_0020; exe_0023,[eXeLearning colaborativo demo](https://cloud-demo.exelearning.net/)
+**URL:** https://cloud-demo.exelearning.net/",,,eXeLearning; colaborativo; online; demo,eXeLearning oficial,exe_0016; exe_0020; exe_0023,[eXeLearning colaborativo demo](https://cloud-demo.exelearning.net/)
 exe_0019,Manual de eXeLearning,"Manual oficial de eXeLearning. Explica el uso del programa, la creación de recursos educativos y las principales opciones disponibles para el profesorado.","### Manual de eXeLearning
 
 Manual de referencia para aprender a utilizar eXeLearning y resolver dudas sobre sus herramientas principales.
@@ -883,6 +881,8 @@ Página oficial para descargar eXeLearning y consultar las opciones disponibles 
 - Acceder desde un punto oficial y actualizado.
 
 Es el enlace recomendado cuando un docente necesita instalar la herramienta en su equipo.
+
+En Linux y macOS también se puede instalar la última versión desde la terminal con una sola orden: `curl -fsSL https://get.exelearning.dev | sh`.
 
 **URL:** https://exelearning.net/descargas/",,,descarga; instalación; eXeLearning; versiones,eXeLearning oficial; Documentación y ayuda,exe_0016; exe_0019; exe_0024,[Descarga de eXeLearning](https://exelearning.net/descargas/)
 exe_0021,Grupo de Telegram eXeLearning,"Grupo de Telegram sobre eXeLearning. Puede servir para plantear dudas, compartir experiencias y seguir conversaciones de la comunidad de usuarios.","### Grupo de Telegram eXeLearning
@@ -1032,7 +1032,7 @@ Permite mostrar el botón de **Google Translate** dentro de la barra de accesibi
 **Cómo se usa**
 
 1. Abre las **propiedades del proyecto**.
-2. Activa la opción **Barra de accesibilidad** (`addAccessibilityToolbar`).
+2. Activa la opción **Barra de accesibilidad**.
 3. En el campo **Cabecera HTML**, añade el código indicado.
 4. Guarda el proyecto y comprueba el resultado en la vista previa o en la exportación.
 
@@ -1068,4 +1068,94 @@ Antes de optimizar muestra qué ocupa cada tipo de archivo, qué va a hacer y el
 
 Completa el optimizador de imágenes que eXeLearning incluye en Utilidades, porque trata también vídeo, audio y PDF y revisa el proyecto entero.
 
-**URL:** https://ateeducacion.github.io/elpx-optimizer/",,,optimización; ELPX; imágenes; vídeo; peso,Herramientas externas; Publicación y visualización,exe_0007; exe_0008; exe_0024,[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/elpx-optimizer/)
+**URL:** https://ateeducacion.github.io/elpx-optimizer/",,,optimización; ELPX; imágenes; vídeo; peso,Programas complementarios; Publicación y visualización,exe_0007; exe_0008; exe_0024,[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/elpx-optimizer/)
+exe_0028,Plugins para Moodle,"Añaden a Moodle actividades de eXeLearning que se crean, editan y muestran dentro del curso, en formato SCORM o como sitio web, sin instalar eXeLearning en el ordenador.","### Plugins para Moodle
+
+Plugins oficiales de eXeLearning que añaden a Moodle dos tipos de actividad. Los recursos se crean o se editan con eXeLearning sin salir de Moodle y sin instalar nada en el ordenador.
+
+**Cuál elegir**
+
+- **eXeLearning (SCORM)** ([mod_exescorm](https://github.com/exelearning/mod_exescorm)): muestra el contenido en el visor SCORM de Moodle y permite hacer seguimiento y recoger calificaciones.
+- **eXeLearning (sitio web)** ([mod_exeweb](https://github.com/exelearning/mod_exeweb)): muestra el contenido como sitio web, con su estilo completo.
+
+**Cómo se instala**
+
+Lo hace la administración de la plataforma. Se descarga el ZIP de la última versión desde la página de cada plugin y se sube desde la instalación de plugins de la administración del sitio. Funcionan con Moodle 4.2 o posterior. El editor puede ir integrado en el propio Moodle, sin otro servidor, o conectarse a una instalación de eXeLearning online.
+
+**Cómo se usa**
+
+1. En el curso, con la edición activada, se añade una actividad **eXeLearning (SCORM)** o **eXeLearning (sitio web)**.
+2. Se elige entre subir un proyecto `.elpx` ya hecho o crearlo con eXeLearning.
+3. Al guardar, se abre el editor de eXeLearning. Al terminar, el contenido vuelve a Moodle y queda publicado en el curso.
+
+Las versiones antiguas de estos plugins no admiten los proyectos de eXeLearning 4. Si la plataforma del centro no los abre, conviene pedir que se actualicen. Los dos se pueden probar en el navegador con Moodle Playground, desde el enlace de la página de cada plugin.
+
+**URL:** https://exelearning.net/descargas/",,,Moodle; plugin; SCORM; calificaciones; ELPX,Integración en plataformas,exe_0029; exe_0030; exe_0017,[eXeLearning](https://exelearning.net/descargas/)
+exe_0029,Plugin para WordPress,"Permite subir, editar e insertar proyectos de eXeLearning en un sitio WordPress, con un bloque para el editor de entradas.","### Plugin para WordPress
+
+Plugin oficial de eXeLearning para gestionar recursos dentro de un sitio WordPress.
+
+**Para qué sirve**
+
+- Subir proyectos `.elpx` a la biblioteca de medios, que los descomprime y los deja listos para mostrarse.
+- Editar los recursos con el editor de eXeLearning sin salir de WordPress.
+- Insertar un recurso en una entrada o una página con un bloque propio o, en el editor clásico, con el código corto `[exelearning id=""…""]`.
+
+**Cómo se instala**
+
+Se descarga el ZIP de la última versión desde la página del plugin, se sube desde la sección de plugins del escritorio de WordPress y se activa. El ZIP ya incluye el editor de eXeLearning.
+
+**Cómo se usa**
+
+1. Se sube el archivo `.elpx` a la biblioteca de medios.
+2. Para mostrarlo, se añade el bloque de eXeLearning en la entrada o la página y se elige el recurso.
+3. Para modificarlo, se abre con el editor integrado desde la biblioteca de medios.
+
+Se puede probar en el navegador con WordPress Playground, desde el enlace de la página del plugin. Lo que se haga allí se pierde al cerrar la ventana.
+
+**URL:** https://github.com/exelearning/wp-exelearning",,,WordPress; plugin; publicación; ELPX,Integración en plataformas; Publicación y visualización,exe_0028; exe_0030; exe_0008,[eXeLearning](https://exelearning.net/descargas/)
+exe_0030,Módulo para Omeka S,"Añade a Omeka S, el gestor de colecciones y repositorios digitales, la posibilidad de subir, ver y editar proyectos de eXeLearning.","### Módulo para Omeka S
+
+Módulo oficial de eXeLearning para [Omeka S](https://omeka.org/s/), un programa libre para publicar colecciones y repositorios digitales. Es útil para quien mantiene un repositorio de recursos educativos.
+
+**Para qué sirve**
+
+- Subir proyectos `.elpx`, que se descomprimen y quedan listos para verse.
+- Editarlos con el editor de eXeLearning sin salir de Omeka S.
+- Crear automáticamente una miniatura a partir de la primera página del recurso.
+
+**Cómo se instala**
+
+Lo hace la administración del servidor. Se descarga la última versión desde la página del módulo, se descomprime en la carpeta de módulos de Omeka S con el nombre `ExeLearning` y se instala desde la sección de módulos del panel de administración. Con Apache no hace falta nada más; con nginx hay que añadir unas reglas que se indican en la página del módulo.
+
+**Cómo se usa**
+
+Se añade el archivo `.elpx` como medio de un elemento de la colección. El recurso se muestra en la ficha del elemento y se puede abrir con el editor para modificarlo.
+
+Se puede probar en el navegador con Omeka S Playground, desde el enlace de la página del módulo.
+
+**URL:** https://github.com/exelearning/omeka-s-exelearning",,,Omeka S; repositorio; módulo; ELPX,Integración en plataformas; Publicación y visualización,exe_0028; exe_0029,[eXeLearning](https://exelearning.net/descargas/)
+exe_0031,h5p2elpx,Convierte actividades H5P en proyectos de eXeLearning editables. Lo que no puede convertir lo mantiene visible y avisa de ello.,"### h5p2elpx
+
+Aplicación web del Área de Tecnología Educativa del Gobierno de Canarias que convierte actividades H5P (`.h5p`) en proyectos de eXeLearning (`.elpx`) que se pueden seguir editando. Reconoce más de 50 tipos de contenido H5P y también los paquetes de Aula Digital Canaria.
+
+**Para qué sirve**
+
+- Reunir en eXeLearning actividades hechas con H5P.
+- Aprovechar materiales antiguos sin rehacerlos desde cero.
+
+La conversión es prudente: lo que no puede convertir no se pierde, sino que queda visible con un aviso. Cada conversión incluye un informe con lo convertido, lo convertido en parte y lo que se ha dejado tal cual.
+
+**Cómo se instala**
+
+No hace falta instalar nada: funciona en el navegador. Para convertir muchos archivos a la vez existe también una versión para la terminal.
+
+**Cómo se usa**
+
+1. Se abre la web y se elige el archivo `.h5p`.
+2. Se descarga el proyecto `.elpx` resultante.
+3. Se abre en eXeLearning para revisarlo y completar lo que haya quedado pendiente.
+
+Está en una versión inicial: conviene revisar siempre el resultado, sobre todo en las actividades más interactivas.
+
+**URL:** https://ateeducacion.github.io/h5p2elpx/",,,H5P; conversión; ELPX; migración,Programas complementarios; Conversión de formatos,exe_0007; exe_0027,[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/h5p2elpx/)

@@ -139,7 +139,7 @@
       "diseño"
     ],
     "categorias": [
-      "Herramientas externas",
+      "Programas complementarios",
       "Personalización visual"
     ],
     "relacionados": [
@@ -164,7 +164,7 @@
       "PDF"
     ],
     "categorias": [
-      "Herramientas externas",
+      "Programas complementarios",
       "Conversión de formatos"
     ],
     "relacionados": [],
@@ -185,7 +185,7 @@
       "visor"
     ],
     "categorias": [
-      "Herramientas externas",
+      "Programas complementarios",
       "Publicación y visualización"
     ],
     "relacionados": [
@@ -210,7 +210,7 @@
       "web"
     ],
     "categorias": [
-      "Herramientas externas",
+      "Programas complementarios",
       "Traducción"
     ],
     "relacionados": [
@@ -234,7 +234,7 @@
     ],
     "categorias": [
       "Publicación y visualización",
-      "Herramientas externas"
+      "Programas complementarios"
     ],
     "relacionados": [
       "exe_0008",
@@ -258,7 +258,7 @@
     ],
     "categorias": [
       "Publicación y visualización",
-      "Herramientas externas"
+      "Programas complementarios"
     ],
     "relacionados": [
       "exe_0008",
@@ -409,8 +409,7 @@
       "recursos"
     ],
     "categorias": [
-      "eXeLearning oficial",
-      "Herramientas externas"
+      "eXeLearning oficial"
     ],
     "relacionados": [
       "exe_0016",
@@ -432,8 +431,7 @@
       "demo"
     ],
     "categorias": [
-      "eXeLearning oficial",
-      "Herramientas externas"
+      "eXeLearning oficial"
     ],
     "relacionados": [
       "exe_0016",
@@ -470,7 +468,7 @@
     "id": "exe_0020",
     "titulo": "Descarga de eXeLearning",
     "resumen": "Página de descarga de eXeLearning para instalar el programa en distintos sistemas o acceder a las opciones disponibles desde la web oficial.",
-    "descripcion": "### Descarga de eXeLearning\n\nPágina oficial para descargar eXeLearning y consultar las opciones disponibles de instalación o acceso.\n\n**Para qué sirve**\n\n- Descargar eXeLearning para el sistema operativo correspondiente.\n- Consultar las versiones disponibles.\n- Acceder desde un punto oficial y actualizado.\n\nEs el enlace recomendado cuando un docente necesita instalar la herramienta en su equipo.\n\n**URL:** https://exelearning.net/descargas/",
+    "descripcion": "### Descarga de eXeLearning\n\nPágina oficial para descargar eXeLearning y consultar las opciones disponibles de instalación o acceso.\n\n**Para qué sirve**\n\n- Descargar eXeLearning para el sistema operativo correspondiente.\n- Consultar las versiones disponibles.\n- Acceder desde un punto oficial y actualizado.\n\nEs el enlace recomendado cuando un docente necesita instalar la herramienta en su equipo.\n\nEn Linux y macOS también se puede instalar la última versión desde la terminal con una sola orden: `curl -fsSL https://get.exelearning.dev | sh`.\n\n**URL:** https://exelearning.net/descargas/",
     "donde": [],
     "script": "",
     "etiquetas": [
@@ -650,7 +648,7 @@
       "peso"
     ],
     "categorias": [
-      "Herramientas externas",
+      "Programas complementarios",
       "Publicación y visualización"
     ],
     "relacionados": [
@@ -659,5 +657,99 @@
       "exe_0024"
     ],
     "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/elpx-optimizer/)"
+  },
+  {
+    "id": "exe_0028",
+    "titulo": "Plugins para Moodle",
+    "resumen": "Añaden a Moodle actividades de eXeLearning que se crean, editan y muestran dentro del curso, en formato SCORM o como sitio web, sin instalar eXeLearning en el ordenador.",
+    "descripcion": "### Plugins para Moodle\n\nPlugins oficiales de eXeLearning que añaden a Moodle dos tipos de actividad. Los recursos se crean o se editan con eXeLearning sin salir de Moodle y sin instalar nada en el ordenador.\n\n**Cuál elegir**\n\n- **eXeLearning (SCORM)** ([mod_exescorm](https://github.com/exelearning/mod_exescorm)): muestra el contenido en el visor SCORM de Moodle y permite hacer seguimiento y recoger calificaciones.\n- **eXeLearning (sitio web)** ([mod_exeweb](https://github.com/exelearning/mod_exeweb)): muestra el contenido como sitio web, con su estilo completo.\n\n**Cómo se instala**\n\nLo hace la administración de la plataforma. Se descarga el ZIP de la última versión desde la página de cada plugin y se sube desde la instalación de plugins de la administración del sitio. Funcionan con Moodle 4.2 o posterior. El editor puede ir integrado en el propio Moodle, sin otro servidor, o conectarse a una instalación de eXeLearning online.\n\n**Cómo se usa**\n\n1. En el curso, con la edición activada, se añade una actividad **eXeLearning (SCORM)** o **eXeLearning (sitio web)**.\n2. Se elige entre subir un proyecto `.elpx` ya hecho o crearlo con eXeLearning.\n3. Al guardar, se abre el editor de eXeLearning. Al terminar, el contenido vuelve a Moodle y queda publicado en el curso.\n\nLas versiones antiguas de estos plugins no admiten los proyectos de eXeLearning 4. Si la plataforma del centro no los abre, conviene pedir que se actualicen. Los dos se pueden probar en el navegador con Moodle Playground, desde el enlace de la página de cada plugin.\n\n**URL:** https://exelearning.net/descargas/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "Moodle",
+      "plugin",
+      "SCORM",
+      "calificaciones",
+      "ELPX"
+    ],
+    "categorias": [
+      "Integración en plataformas"
+    ],
+    "relacionados": [
+      "exe_0029",
+      "exe_0030",
+      "exe_0017"
+    ],
+    "fuente": "[eXeLearning](https://exelearning.net/descargas/)"
+  },
+  {
+    "id": "exe_0029",
+    "titulo": "Plugin para WordPress",
+    "resumen": "Permite subir, editar e insertar proyectos de eXeLearning en un sitio WordPress, con un bloque para el editor de entradas.",
+    "descripcion": "### Plugin para WordPress\n\nPlugin oficial de eXeLearning para gestionar recursos dentro de un sitio WordPress.\n\n**Para qué sirve**\n\n- Subir proyectos `.elpx` a la biblioteca de medios, que los descomprime y los deja listos para mostrarse.\n- Editar los recursos con el editor de eXeLearning sin salir de WordPress.\n- Insertar un recurso en una entrada o una página con un bloque propio o, en el editor clásico, con el código corto `[exelearning id=\"…\"]`.\n\n**Cómo se instala**\n\nSe descarga el ZIP de la última versión desde la página del plugin, se sube desde la sección de plugins del escritorio de WordPress y se activa. El ZIP ya incluye el editor de eXeLearning.\n\n**Cómo se usa**\n\n1. Se sube el archivo `.elpx` a la biblioteca de medios.\n2. Para mostrarlo, se añade el bloque de eXeLearning en la entrada o la página y se elige el recurso.\n3. Para modificarlo, se abre con el editor integrado desde la biblioteca de medios.\n\nSe puede probar en el navegador con WordPress Playground, desde el enlace de la página del plugin. Lo que se haga allí se pierde al cerrar la ventana.\n\n**URL:** https://github.com/exelearning/wp-exelearning",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "WordPress",
+      "plugin",
+      "publicación",
+      "ELPX"
+    ],
+    "categorias": [
+      "Integración en plataformas",
+      "Publicación y visualización"
+    ],
+    "relacionados": [
+      "exe_0028",
+      "exe_0030",
+      "exe_0008"
+    ],
+    "fuente": "[eXeLearning](https://exelearning.net/descargas/)"
+  },
+  {
+    "id": "exe_0030",
+    "titulo": "Módulo para Omeka S",
+    "resumen": "Añade a Omeka S, el gestor de colecciones y repositorios digitales, la posibilidad de subir, ver y editar proyectos de eXeLearning.",
+    "descripcion": "### Módulo para Omeka S\n\nMódulo oficial de eXeLearning para [Omeka S](https://omeka.org/s/), un programa libre para publicar colecciones y repositorios digitales. Es útil para quien mantiene un repositorio de recursos educativos.\n\n**Para qué sirve**\n\n- Subir proyectos `.elpx`, que se descomprimen y quedan listos para verse.\n- Editarlos con el editor de eXeLearning sin salir de Omeka S.\n- Crear automáticamente una miniatura a partir de la primera página del recurso.\n\n**Cómo se instala**\n\nLo hace la administración del servidor. Se descarga la última versión desde la página del módulo, se descomprime en la carpeta de módulos de Omeka S con el nombre `ExeLearning` y se instala desde la sección de módulos del panel de administración. Con Apache no hace falta nada más; con nginx hay que añadir unas reglas que se indican en la página del módulo.\n\n**Cómo se usa**\n\nSe añade el archivo `.elpx` como medio de un elemento de la colección. El recurso se muestra en la ficha del elemento y se puede abrir con el editor para modificarlo.\n\nSe puede probar en el navegador con Omeka S Playground, desde el enlace de la página del módulo.\n\n**URL:** https://github.com/exelearning/omeka-s-exelearning",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "Omeka S",
+      "repositorio",
+      "módulo",
+      "ELPX"
+    ],
+    "categorias": [
+      "Integración en plataformas",
+      "Publicación y visualización"
+    ],
+    "relacionados": [
+      "exe_0028",
+      "exe_0029"
+    ],
+    "fuente": "[eXeLearning](https://exelearning.net/descargas/)"
+  },
+  {
+    "id": "exe_0031",
+    "titulo": "h5p2elpx",
+    "resumen": "Convierte actividades H5P en proyectos de eXeLearning editables. Lo que no puede convertir lo mantiene visible y avisa de ello.",
+    "descripcion": "### h5p2elpx\n\nAplicación web del Área de Tecnología Educativa del Gobierno de Canarias que convierte actividades H5P (`.h5p`) en proyectos de eXeLearning (`.elpx`) que se pueden seguir editando. Reconoce más de 50 tipos de contenido H5P y también los paquetes de Aula Digital Canaria.\n\n**Para qué sirve**\n\n- Reunir en eXeLearning actividades hechas con H5P.\n- Aprovechar materiales antiguos sin rehacerlos desde cero.\n\nLa conversión es prudente: lo que no puede convertir no se pierde, sino que queda visible con un aviso. Cada conversión incluye un informe con lo convertido, lo convertido en parte y lo que se ha dejado tal cual.\n\n**Cómo se instala**\n\nNo hace falta instalar nada: funciona en el navegador. Para convertir muchos archivos a la vez existe también una versión para la terminal.\n\n**Cómo se usa**\n\n1. Se abre la web y se elige el archivo `.h5p`.\n2. Se descarga el proyecto `.elpx` resultante.\n3. Se abre en eXeLearning para revisarlo y completar lo que haya quedado pendiente.\n\nEstá en una versión inicial: conviene revisar siempre el resultado, sobre todo en las actividades más interactivas.\n\n**URL:** https://ateeducacion.github.io/h5p2elpx/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "H5P",
+      "conversión",
+      "ELPX",
+      "migración"
+    ],
+    "categorias": [
+      "Programas complementarios",
+      "Conversión de formatos"
+    ],
+    "relacionados": [
+      "exe_0007",
+      "exe_0027"
+    ],
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/h5p2elpx/)"
   }
 ]
