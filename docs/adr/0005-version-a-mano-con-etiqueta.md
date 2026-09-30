@@ -16,6 +16,10 @@ Se elimina el workflow. Al publicar una versión se cambia a mano el número del
 pie de `index.html`, enlazado a sus notas, se crea la etiqueta `vX.Y.Z` y la
 release con las notas. Una etiqueta publicada no se mueve ni se reutiliza.
 
+La versión cambia cuando cambia la aplicación, no cuando se amplía o se corrige
+la base de datos. Añadir o retocar recursos en `HackeXe4.json` se publica con un
+push, sin versión nueva.
+
 ## Alternativas descartadas
 
 - **Arreglar el workflow**: seguiría creando una versión por push, sin notas y
@@ -26,7 +30,8 @@ release con las notas. Una etiqueta publicada no se mueve ni se reutiliza.
 ## Consecuencias
 
 La versión del pie, la etiqueta y la release siempre coinciden. Publicar exige
-acordarse de cambiar el pie.
+acordarse de cambiar el pie. Los recursos nuevos no aparecen en las notas de
+ninguna versión; el historial de `HackeXe4.json` los recoge.
 
 ## Evidencia
 
