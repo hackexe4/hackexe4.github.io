@@ -20,7 +20,7 @@ Compatibles con **eXeLearning 4 y superiores**. Para la versión 2.9 visita [hac
 - **Copiar con un clic** para pegar directamente en eXeLearning
 - **Compartir recursos** mediante URL: una vista, un recurso concreto o una selección personalizada
 - **Modo claro/oscuro** automático y manual
-- Los datos se cargan desde una hoja de Google Sheets pública, con `HackeXe4.csv` como copia local de respaldo
+- Los recursos se guardan en `HackeXe4.json`, dentro del propio repositorio
 
 ## Uso
 
@@ -30,20 +30,22 @@ Para compartir un recurso o una selección, usa el botón **Compartir** — gene
 
 ## Datos
 
-Los recursos se gestionan en una hoja de Google Sheets. Si la hoja pública no responde, la aplicación usa el archivo local `HackeXe4.csv` como fallback.
+Los recursos están en `HackeXe4.json`, una lista con un objeto por recurso. La aplicación solo lee este archivo. `HackeXe4.csv` es una copia con las mismas columnas para abrirla en una hoja de cálculo; la aplicación no la usa.
 
-Columnas:
+Campos:
 
-| Columna | Descripción |
+| Campo | Descripción |
 |---|---|
-| ID | Identificador único (`exe_0001`) |
-| Título | Nombre del recurso |
-| Descripción | Explicación y modo de uso |
-| Donde insertar | Lugar de eXeLearning donde se pega |
-| Script | Código listo para copiar |
-| Etiquetas | Palabras clave separadas por comas |
-| Categorías | Categoría o categorías separadas por comas |
-| Relacionados | IDs de recursos relacionados separados por comas |
+| `id` | Identificador único (`exe_0001`) |
+| `titulo` | Nombre del recurso |
+| `resumen` | Texto breve de la tarjeta |
+| `descripcion` | Explicación y modo de uso, en Markdown |
+| `donde` | Lugares de eXeLearning donde se pega (lista) |
+| `script` | Código listo para copiar; vacío si el recurso es una herramienta o un enlace |
+| `etiquetas` | Palabras clave (lista) |
+| `categorias` | Categorías (lista) |
+| `relacionados` | IDs de recursos relacionados (lista) |
+| `fuente` | Autoría y procedencia, en Markdown |
 
 ## Tecnología
 

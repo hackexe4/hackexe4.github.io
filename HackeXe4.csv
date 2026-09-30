@@ -1047,3 +1047,19 @@ El botón depende de Google Translate y puede requerir conexión a Internet.",Ca
 <script>
 $exe.options.atools.translator = true;
 </script>",traducción; accesibilidad; Google Translate; barra; cabecera HTML,Traducción; Accesibilidad,exe_0009,Información aportada por Juan José de Haro.
+exe_0027,elpx-optimizer,"Reduce el peso de los proyectos de eXeLearning recomprimiendo vídeos, imágenes, audio y PDF, y quitando los archivos que no se usan. El resultado se sigue pudiendo editar.","### elpx-optimizer
+
+Aplicación web del Área de Tecnología Educativa del Gobierno de Canarias para aligerar proyectos de eXeLearning (`.elpx`). Todo ocurre en el navegador: el proyecto no se sube a ningún servidor y el original no se modifica.
+
+**Para qué sirve**
+
+- Recomprimir vídeos, imágenes, audio y PDF. Si un archivo no mejora, se conserva el original.
+- Localizar archivos que no se usan, repetidos o que faltan: quita los sobrantes, unifica los repetidos y retira las referencias rotas.
+- Dar nombres limpios a los archivos: minúsculas, sin espacios ni tildes.
+- Crear la miniatura del proyecto a partir de su primera página o de una imagen propia.
+
+Antes de optimizar muestra qué ocupa cada tipo de archivo, qué va a hacer y el ahorro estimado, con tres niveles de calidad. El proyecto optimizado se descarga como un `.elpx` nuevo que se abre en eXeLearning como cualquier otro.
+
+Es útil cuando un proyecto supera el tamaño que admite la plataforma donde se publica. Completa el optimizador de imágenes que eXeLearning incluye en Utilidades, porque trata también vídeo, audio y PDF y revisa el proyecto entero. También puede usarse desde la terminal o con Docker para procesar varios proyectos.
+
+**URL:** https://ateeducacion.github.io/elpx-optimizer/",,,optimización; ELPX; imágenes; vídeo; peso,Herramientas externas; Publicación y visualización,exe_0007; exe_0008; exe_0024,[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/elpx-optimizer/)

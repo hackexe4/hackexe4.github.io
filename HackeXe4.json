@@ -634,5 +634,30 @@
       "exe_0009"
     ],
     "fuente": "Información aportada por Juan José de Haro."
+  },
+  {
+    "id": "exe_0027",
+    "titulo": "elpx-optimizer",
+    "resumen": "Reduce el peso de los proyectos de eXeLearning recomprimiendo vídeos, imágenes, audio y PDF, y quitando los archivos que no se usan. El resultado se sigue pudiendo editar.",
+    "descripcion": "### elpx-optimizer\n\nAplicación web del Área de Tecnología Educativa del Gobierno de Canarias para aligerar proyectos de eXeLearning (`.elpx`). Todo ocurre en el navegador: el proyecto no se sube a ningún servidor y el original no se modifica.\n\n**Para qué sirve**\n\n- Recomprimir vídeos, imágenes, audio y PDF. Si un archivo no mejora, se conserva el original.\n- Localizar archivos que no se usan, repetidos o que faltan: quita los sobrantes, unifica los repetidos y retira las referencias rotas.\n- Dar nombres limpios a los archivos: minúsculas, sin espacios ni tildes.\n- Crear la miniatura del proyecto a partir de su primera página o de una imagen propia.\n\nAntes de optimizar muestra qué ocupa cada tipo de archivo, qué va a hacer y el ahorro estimado, con tres niveles de calidad. El proyecto optimizado se descarga como un `.elpx` nuevo que se abre en eXeLearning como cualquier otro.\n\nEs útil cuando un proyecto supera el tamaño que admite la plataforma donde se publica. Completa el optimizador de imágenes que eXeLearning incluye en Utilidades, porque trata también vídeo, audio y PDF y revisa el proyecto entero. También puede usarse desde la terminal o con Docker para procesar varios proyectos.\n\n**URL:** https://ateeducacion.github.io/elpx-optimizer/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "optimización",
+      "ELPX",
+      "imágenes",
+      "vídeo",
+      "peso"
+    ],
+    "categorias": [
+      "Herramientas externas",
+      "Publicación y visualización"
+    ],
+    "relacionados": [
+      "exe_0007",
+      "exe_0008",
+      "exe_0024"
+    ],
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/elpx-optimizer/)"
   }
 ]

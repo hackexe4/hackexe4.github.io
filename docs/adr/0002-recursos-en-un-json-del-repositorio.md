@@ -16,31 +16,26 @@ CSV en el navegador, con campos de lista escritos como texto separado por comas.
 - La aplicación lee solo `HackeXe4.json`, servido desde el propio repositorio.
 - Las etiquetas, categorías, recursos relacionados y lugares de inserción son
   listas reales en el JSON, no texto que haya que partir.
-- La hoja de cálculo sigue siendo el lugar donde se editan los recursos. Al
-  cambiarla, se regeneran `HackeXe4.json` y la copia `HackeXe4.csv`, y se suben
-  al repositorio.
+- Los recursos se añaden y se corrigen en `HackeXe4.json`. `HackeXe4.csv` es una
+  copia con las mismas columnas, para consultarla en una hoja de cálculo; la
+  aplicación no la usa.
 
 ## Alternativas descartadas
 
 - **Seguir leyendo la hoja en cada visita**: dependencia de Google para quien
   solo quiere consultar, y un fallo de la hoja dejaba la página sin datos
   actualizados.
-- **Editar el JSON a mano**: posible, pero la hoja es más cómoda para escribir
-  textos largos y código.
+- **Mantener la hoja como origen y regenerar el JSON desde ella**: dos copias de
+  los mismos datos que hay que mantener de acuerdo, sin ventaja para quien
+  consulta el directorio.
 
 ## Consecuencias
 
-La web no hace ninguna petición a Google. Un recurso nuevo no aparece hasta que
-se regenera el JSON y se publica.
+La web no hace ninguna petición a Google. Un recurso nuevo aparece en cuanto se
+publica el JSON. Si se conserva el CSV, hay que actualizarlo en cada cambio.
 
 ## Evidencia
 
 Commit `2dc53c9` («migrar datos de CSV a JSON con campos tipados»): elimina el
 lector de CSV y la dirección de la hoja. Commit `5a5a05f`: primera
 regeneración del JSON y del CSV desde la hoja.
-
-## Riesgos y limitaciones
-
-Hipótesis pendiente de validación: el repositorio no guarda el procedimiento de
-regeneración, así que no consta cómo se hace ni si el CSV sigue haciendo falta.
-El apartado «Datos» del README todavía describe la carga desde la hoja.
