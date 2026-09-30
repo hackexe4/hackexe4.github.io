@@ -30,7 +30,7 @@ Para compartir un recurso o una selección, usa el botón **Compartir** — gene
 
 ## Datos
 
-Los recursos están en `HackeXe4.json`, una lista con un objeto por recurso. La aplicación solo lee este archivo. `HackeXe4.csv` es una copia con las mismas columnas para abrirla en una hoja de cálculo; la aplicación no la usa.
+Los recursos están en `HackeXe4.json`, una lista con un objeto por recurso. Es el único archivo de datos: la aplicación lo lee y el cuaderno de NotebookLM de eXeLearning (Karla) recibe cada día una versión en Markdown generada a partir de él.
 
 Campos:
 

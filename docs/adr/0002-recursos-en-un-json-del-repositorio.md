@@ -16,9 +16,12 @@ CSV en el navegador, con campos de lista escritos como texto separado por comas.
 - La aplicación lee solo `HackeXe4.json`, servido desde el propio repositorio.
 - Las etiquetas, categorías, recursos relacionados y lugares de inserción son
   listas reales en el JSON, no texto que haya que partir.
-- Los recursos se añaden y se corrigen en `HackeXe4.json`. `HackeXe4.csv` es una
-  copia con las mismas columnas, para consultarla en una hoja de cálculo; la
-  aplicación no la usa.
+- Los recursos se añaden y se corrigen en `HackeXe4.json`, que es el único archivo
+  de datos. La copia `HackeXe4.csv`, que la aplicación no leía desde mayo, se
+  eliminó el 30-09-2026: se había desincronizado y obligaba a hacer cada cambio
+  dos veces.
+- El cuaderno de NotebookLM de eXeLearning (Karla) no lee la hoja de cálculo,
+  sino un Markdown generado a partir del JSON en su actualización diaria.
 
 ## Alternativas descartadas
 
@@ -32,7 +35,7 @@ CSV en el navegador, con campos de lista escritos como texto separado por comas.
 ## Consecuencias
 
 La web no hace ninguna petición a Google. Un recurso nuevo aparece en cuanto se
-publica el JSON. Si se conserva el CSV, hay que actualizarlo en cada cambio.
+publica el JSON, y llega a Karla en la siguiente actualización diaria.
 
 ## Evidencia
 
