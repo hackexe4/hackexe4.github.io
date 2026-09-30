@@ -53,6 +53,37 @@ Aplicación web estática — HTML, CSS y JavaScript vanilla, sin frameworks ni 
 
 Alojada en GitHub Pages.
 
+## Cómo modificarlo
+
+**Archivos**
+
+| Archivo | Para qué sirve |
+|---|---|
+| `index.html` | Estructura de la página: cabecera, barra de categorías, vistas y pie |
+| `app.js` | Todo el funcionamiento; la cabecera del archivo explica cómo está organizado |
+| `style.css` | Aspecto, con los colores de los temas claro y oscuro al principio |
+| `HackeXe4.json` | Los recursos |
+| `docs/adr/` | Las decisiones del proyecto y su motivo |
+
+**Añadir un recurso**
+
+1. Añade un objeto al final de `HackeXe4.json` con el `id` siguiente al último (`exe_0033`, `exe_0034`…) y los campos del apartado «Datos».
+2. Si es un fragmento de código, pon en `script` el código completo y en `donde` el lugar de eXeLearning donde se pega. Si es una ficha de un programa o una web, deja los dos vacíos.
+3. En `relacionados`, los `id` de los recursos con los que se relaciona.
+4. Para crear una categoría nueva basta con escribir su nombre en `categorias`: aparece sola en la barra lateral.
+
+**Probarlo en local**
+
+La página carga el JSON, y los navegadores no lo permiten si se abre el archivo directamente desde el disco. Hay que servir la carpeta, por ejemplo con `python3 -m http.server 8000`, y abrir `http://localhost:8000`.
+
+**Publicarlo**
+
+Basta con subir los cambios a `main`: GitHub Pages publica la web en unos segundos. Añadir o corregir recursos no cambia la versión; si cambia la aplicación, se actualiza el número del pie de `index.html` y se crean la etiqueta y la release ([ADR 5](docs/adr/0005-version-a-mano-con-etiqueta.md)).
+
+## Uso de IA
+
+Esta aplicación se ha programado con ayuda de IA, en [cocreación, nivel 4 del MIAE](https://jjdeharo.github.io/miae/?nivel=4): el autor ha elegido los recursos, ha decidido el diseño y las funciones, y ha probado el programa para detectar errores y aspectos que mejorar.
+
 ## Licencia
 
 - Código de la aplicación: [GNU AGPL v3 o posterior](LICENSE).

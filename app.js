@@ -1,10 +1,30 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+/*
+ * HackeXe4: directorio de recursos para eXeLearning 4.
+ *
+ * Cómo está organizado:
+ * - Los datos están en HackeXe4.json, una lista con un objeto por recurso. Se
+ *   leen una sola vez al arrancar (loadData) y se guardan en allScripts.
+ * - Hay tres vistas que se alternan dentro de la misma página: la lista de
+ *   tarjetas, el mapa de relaciones (un canvas con un grafo de fuerzas) y la
+ *   ficha de un recurso.
+ * - Lo que se ve (búsqueda, categoría, vista, recurso abierto o selección
+ *   compartida) se guarda en la parte de la dirección que va tras «#», para
+ *   poder compartirlo con un enlace y volver atrás con el navegador.
+ * - En el navegador solo se guardan dos preferencias: el tema elegido
+ *   (hackexe-theme) y si se ha cerrado el aviso inicial (hackexe-about-closed).
+ * - Bibliotecas externas: highlight.js colorea el código y marked da formato a
+ *   las descripciones, escritas en Markdown. Si no cargan, el texto se muestra
+ *   tal cual.
+ */
 'use strict';
 
-/* ─── Config ────────────────────────────────────────────── */
+/* ─── Configuración ─────────────────────────────────────── */
+/* Archivo de datos que se carga al arrancar. */
 const JSON_URL = 'HackeXe4.json';
 
-/* ─── i18n ──────────────────────────────────────────────── */
+/* ─── Textos de la interfaz ─────────────────────────────── */
+/* Todos los textos visibles, reunidos para cambiarlos o traducirlos en un solo sitio. */
 const T = {
   appName:        'HackeXe4',
   appSub:         'Recursos para eXeLearning 4+',
@@ -64,7 +84,8 @@ const WHERE_INSERT_HELP = [
   }
 ];
 
-/* ─── Icons (inline SVG snippets) ───────────────────────── */
+/* ─── Iconos ────────────────────────────────────────────── */
+/* Trazados SVG de los iconos (Feather, licencia MIT; ver TERCEROS.md). */
 const IC = {
   link:   `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
   check:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
@@ -78,24 +99,26 @@ const IC = {
   map:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M8.7 7.4 10.9 15"/><path d="M15.3 7.4 13.1 15"/><path d="M9 6h6"/></svg>`,
 };
 
-/* ─── State ─────────────────────────────────────────────── */
+/* ─── Estado ────────────────────────────────────────────── */
+/* Variables que describen lo que se está viendo en cada momento. */
 let allScripts     = [];
 let activeCategory = '';
 let searchQuery    = '';
 let currentScript  = null;
 let selectionMode  = false;
 let selectedIds    = new Set();
-let sharedScripts  = [];        // non-empty = shared-set view
+let sharedScripts  = [];        // si no está vacía, se muestra una selección compartida
 let debounceTimer  = null;
-let pendingURLState = null;     // URL state to apply after data loads
-let navStack       = [];        // history stack for detail-to-detail navigation
-let activeView     = 'list';    // list | map | detail
-let detailReturnView = 'list';  // list | map
-let detailMapState   = null;    // { visualFocus, mapHistory } saved when entering detail from map
-let visualFocus    = null;      // { type: 'category' | 'tag' | 'script', value: string }
-let mapHistory     = [];        // navigation history within the visual map
+let pendingURLState = null;     // estado de la dirección que se aplica al terminar de cargar
+let navStack       = [];        // historial para volver atrás al saltar de una ficha a otra
+let activeView     = 'list';    // list (lista) | map (mapa) | detail (ficha)
+let detailReturnView = 'list';  // list (lista) | map (mapa)
+let detailMapState   = null;    // { visualFocus, mapHistory }: estado del mapa guardado al abrir una ficha desde él
+let visualFocus    = null;      // centro del mapa: { type: 'category' | 'tag' | 'script', value }
+let mapHistory     = [];        // historial de navegación dentro del mapa
 
-/* ─── DOM refs ──────────────────────────────────────────── */
+/* ─── Referencias a la página ───────────────────────────── */
+/* Elementos del HTML que se usan a menudo, localizados una sola vez. */
 const $ = id => document.getElementById(id);
 const dom = {};
 function initDom() {
@@ -124,7 +147,8 @@ function initDom() {
 }
 
 
-/* ─── Helpers ────────────────────────────────────────────── */
+/* ─── Utilidades ────────────────────────────────────────── */
+/* Funciones pequeñas de uso general: escapar HTML, comparar textos sin tildes, dar formato al Markdown… */
 function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -159,7 +183,7 @@ function openExternalLinksInNewTab(html) {
         link.setAttribute('rel', 'noopener noreferrer');
       }
     } catch {
-      // Ignore malformed URLs and leave the generated link untouched.
+      // Si la dirección no es válida, el enlace se deja como está.
     }
   });
 
@@ -224,7 +248,13 @@ function stripMd(text) {
     .trim();
 }
 
-/* ─── Graph engine (canvas force-directed) ──────────────── */
+/* ─── Motor del mapa ────────────────────────────────────── */
+/*
+ * Dibuja el mapa de relaciones en un canvas. Cada recurso, categoría o etiqueta
+ * es un nodo; los nodos se repelen entre sí y las relaciones los atraen, y la
+ * simulación se enfría poco a poco hasta quedarse quieta. HG reúne los
+ * parámetros de la simulación y HMAP, su estado.
+ */
 const HG = {
   REPULSION:  14000,
   IDEAL_LEN:  115,
@@ -277,6 +307,7 @@ function buildCatColorMap() {
   catColorMap = new Map(cats.map((c, i) => [c, i % HPAL.light.length]));
 }
 
+// Colores de un nodo según su tipo y el tema activo.
 function hmapNodePal(nd) {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark';
   const pal  = dark ? HPAL.dark : HPAL.light;
@@ -300,10 +331,12 @@ const HMAP = {
   dragNode: -1,
 };
 
+// Detiene la animación del mapa.
 function hmapStop() {
   if (HMAP.raf !== null) { cancelAnimationFrame(HMAP.raf); HMAP.raf = null; }
 }
 
+// Crea los nodos y las aristas del mapa alrededor del centro elegido y los coloca en su posición inicial.
 function hmapBuild(focus) {
   const nodes = [];
   const edges = [];
@@ -459,6 +492,7 @@ function wrapLabel(ctx, text, maxWidth) {
   return lines.slice(0, 2);
 }
 
+// Un paso de la simulación: repulsión entre nodos, atracción de las aristas y gravedad hacia el centro.
 function hmapTick() {
   const { nodes, edges } = HMAP;
   const n = nodes.length;
@@ -513,6 +547,7 @@ function hmapTick() {
   HMAP.alpha *= HG.COOLING;
 }
 
+// Dibuja el estado actual del mapa en el canvas.
 function hmapDraw() {
   const canvas = HMAP.canvas;
   if (!canvas) return;
@@ -577,6 +612,7 @@ function hmapDraw() {
   ctx.restore();
 }
 
+// Ajusta el canvas al tamaño de su contenedor y a la densidad de píxeles de la pantalla.
 function hmapResize() {
   const canvas = HMAP.canvas;
   if (!canvas || !canvas.clientWidth) return;
@@ -585,6 +621,7 @@ function hmapResize() {
   canvas.height = Math.round(canvas.clientHeight * dpr);
 }
 
+// Devuelve el nodo que hay bajo un punto de la pantalla, o -1 si no hay ninguno.
 function hmapHit(sx, sy) {
   const canvas = HMAP.canvas;
   if (!canvas) return -1;
@@ -601,6 +638,7 @@ function hmapHit(sx, sy) {
   return -1;
 }
 
+// Bucle de animación: avanza la simulación hasta que el mapa se queda quieto y lo redibuja en cada fotograma.
 function hmapLoop() {
   if (HMAP.alpha > HG.STOP_ALPHA) hmapTick();
   hmapResize();
@@ -608,6 +646,7 @@ function hmapLoop() {
   HMAP.raf = requestAnimationFrame(hmapLoop);
 }
 
+// Al pulsar un nodo: si es el centro y es un recurso, abre su ficha; si no, el mapa se recentra en ese nodo (recurso, categoría o etiqueta).
 function hmapNavigate(nd) {
   if (!nd) return;
   if (nd.isCenter) {
@@ -628,6 +667,7 @@ function hmapNavigate(nd) {
   updateURL();
 }
 
+// Monta el mapa desde cero para un centro y arranca la animación.
 function hmapStart(focus) {
   hmapStop();
   const canvas = document.getElementById('hmap-canvas');
@@ -822,7 +862,11 @@ function findById(id) {
   return allScripts.find(s => s.id === id) || null;
 }
 
-/* ─── URL State ──────────────────────────────────────────── */
+/* ─── Estado en la dirección ────────────────────────────── */
+/*
+ * Lee y escribe en la dirección (tras «#») lo que se está viendo, para compartirlo
+ * con un enlace y para que funcionen los botones de atrás y adelante.
+ */
 function readURLState() {
   const hash = window.location.hash.slice(1);
   const params = new URLSearchParams(hash);
@@ -903,7 +947,8 @@ function applyURLState(state) {
   updateURL();
 }
 
-/* ─── Toast ──────────────────────────────────────────────── */
+/* ─── Avisos breves ─────────────────────────────────────── */
+/* Mensaje flotante que confirma una acción, como copiar el código. */
 let toastTimer = null;
 function showToast(msg, ok = true) {
   const t = dom.toast;
@@ -913,7 +958,8 @@ function showToast(msg, ok = true) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-/* ─── Clipboard ──────────────────────────────────────────── */
+/* ─── Portapapeles ──────────────────────────────────────── */
+/* Copia texto; si el navegador no deja usar la API moderna, usa un textarea oculto. */
 async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
@@ -937,7 +983,8 @@ async function shareURL(url) {
   showToast(ok ? T.linkCopied : T.linkCopiedFail, ok);
 }
 
-/* ─── Categories ─────────────────────────────────────────── */
+/* ─── Categorías ────────────────────────────────────────── */
+/* Lista lateral de categorías con el número de recursos de cada una. */
 function allCategories() {
   const map = new Map();
   allScripts.forEach(s => {
@@ -1015,7 +1062,8 @@ function filterByTag(tag) {
   updateURL();
 }
 
-/* ─── Filter ─────────────────────────────────────────────── */
+/* ─── Filtro ────────────────────────────────────────────── */
+/* Recursos que corresponden a la categoría y a la búsqueda activas. */
 function filteredScripts() {
   if (sharedScripts.length > 0) return sharedScripts;
   let list = allScripts;
@@ -1035,7 +1083,8 @@ function filteredScripts() {
   return list;
 }
 
-/* ─── Toolbar ────────────────────────────────────────────── */
+/* ─── Barra de resultados ───────────────────────────────── */
+/* Línea sobre las tarjetas con el recuento y los botones para compartir. */
 function renderToolbar() {
   const list = filteredScripts();
   let html = '';
@@ -1102,7 +1151,8 @@ function renderToolbar() {
   $('btnExitShared')?.addEventListener('click', exitSharedView);
 }
 
-/* ─── Selection mode ─────────────────────────────────────── */
+/* ─── Modo selección ────────────────────────────────────── */
+/* Permite marcar varios recursos para compartirlos juntos con un enlace. */
 function enterSelectionMode() {
   selectionMode = true;
   selectedIds.clear();
@@ -1144,7 +1194,8 @@ function exitSharedView() {
   updateURL();
 }
 
-/* ─── Cards ──────────────────────────────────────────────── */
+/* ─── Tarjetas ──────────────────────────────────────────── */
+/* Dibuja la lista de tarjetas de la vista principal. */
 function renderList() {
   const list = filteredScripts();
   dom.cardGrid.innerHTML = '';
@@ -1236,7 +1287,11 @@ function createCard(script) {
   return card;
 }
 
-/* ─── Visual Explorer ────────────────────────────────────── */
+/* ─── Explorador visual ─────────────────────────────────── */
+/*
+ * Prepara el mapa: elige el centro (un recurso, una categoría o una etiqueta),
+ * calcula qué recursos están conectados y dibuja el panel lateral con su lista.
+ */
 function countTerms(getTerms, scripts = allScripts) {
   const map = new Map();
   scripts.forEach(script => {
@@ -1312,7 +1367,7 @@ function connectedScriptsForFocus(focus) {
   return { direct, related: sortedRelated, scripts: sortScriptsByTitle([...direct, ...sortedRelated]) };
 }
 
-// Builds mixed map nodes (scripts + category/tag terms) from the already-computed connected data.
+// Construye los nodos del mapa (recursos, categorías y etiquetas) a partir de los recursos conectados ya calculados.
 function mapNodesForFocus(focus, connected, maxNodes) {
   const directIds = new Set(connected.direct.map(s => s.id));
 
@@ -1519,7 +1574,7 @@ function renderVisualExplorer() {
 
 function showExplore(popHistory = false) {
   hmapStop();
-  if (!popHistory) visualFocus = null; // let pickVisualFocus derive from current list state
+  if (!popHistory) visualFocus = null; // pickVisualFocus decide el centro a partir de la lista actual
   activeView = 'map';
   detailReturnView = 'map';
   currentScript = null;
@@ -1547,7 +1602,11 @@ function showExplore(popHistory = false) {
   if (!popHistory) updateURL();
 }
 
-/* ─── Detail View ────────────────────────────────────────── */
+/* ─── Ficha de un recurso ───────────────────────────────── */
+/*
+ * Muestra la ficha completa: descripción, dónde insertarlo, código con botón de
+ * copiar, fuente y recursos relacionados.
+ */
 function showDetail(script, pushHistory = true) {
   hmapStop();
   if (pushHistory && currentScript) navStack.push(currentScript);
@@ -1653,7 +1712,7 @@ function showDetail(script, pushHistory = true) {
             </button>
           </div>
           <div class="code-scroll">
-            <pre><code class="hljs language-${lang === 'html' ? 'xml' : lang}">${highlighted}</code></pre>
+            <pre><code tabindex="0" role="region" aria-label="Código del recurso" class="hljs language-${lang === 'html' ? 'xml' : lang}">${highlighted}</code></pre>
           </div>
         </div>
       </div>` : ''}
@@ -1751,7 +1810,8 @@ function showList(popHistory = false) {
   if (!popHistory) updateURL();
 }
 
-/* ─── Status helpers ─────────────────────────────────────── */
+/* ─── Mensajes de estado ────────────────────────────────── */
+/* Pantallas de carga y de error. */
 function showLoading() {
   dom.statusMsg.hidden = false;
   dom.cardGrid.innerHTML = '';
@@ -1772,7 +1832,8 @@ function showError() {
   $('retryBtn')?.addEventListener('click', loadData);
 }
 
-/* ─── Theme ──────────────────────────────────────────────── */
+/* ─── Tema ──────────────────────────────────────────────── */
+/* Tema claro u oscuro: sigue al del sistema salvo que se elija otro con el botón. */
 function initTheme() {
   const saved = localStorage.getItem('hackexe-theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1795,7 +1856,8 @@ function toggleTheme() {
   applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 }
 
-/* ─── Sidebar (mobile) ───────────────────────────────────── */
+/* ─── Barra lateral en el móvil ─────────────────────────── */
+/* Abre y cierra la lista de categorías en pantallas estrechas. */
 function closeSidebar() {
   dom.sidebar.classList.remove('open');
   dom.sidebarToggle.setAttribute('aria-expanded', 'false');
@@ -1805,7 +1867,8 @@ function toggleSidebar() {
   dom.sidebarToggle.setAttribute('aria-expanded', String(open));
 }
 
-/* ─── Data loading ───────────────────────────────────────── */
+/* ─── Carga de datos ────────────────────────────────────── */
+/* Lee HackeXe4.json y, al terminar, aplica el estado que traía la dirección. */
 async function loadData() {
   showLoading();
   activeView = 'list';
@@ -1832,7 +1895,8 @@ async function loadData() {
   }
 }
 
-/* ─── Events ─────────────────────────────────────────────── */
+/* ─── Eventos ───────────────────────────────────────────── */
+/* Conecta los botones, el buscador, el teclado y el ratón con sus funciones. */
 function initEvents() {
   document.addEventListener('mouseup', () => {
     if (HMAP.dragNode >= 0) {
@@ -1951,7 +2015,8 @@ function initEvents() {
   });
 }
 
-/* ─── Init ───────────────────────────────────────────────── */
+/* ─── Arranque ──────────────────────────────────────────── */
+/* Prepara la página cuando termina de cargarse el HTML. */
 function init() {
   initDom();
   initTheme();

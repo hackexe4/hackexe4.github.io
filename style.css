@@ -11,9 +11,10 @@
   --border:      #e2e8f0;
   --text:        #1e293b;
   --text-muted:  #64748b;
-  --text-xmuted: #94a3b8;
+  --text-xmuted: #5b6b82;
   --accent:      #2563eb;
   --accent-h:    #1d4ed8;
+  --on-accent:   #ffffff;   /* texto sobre el color de acento */
   --accent-bg:   #eff6ff;
   --accent-text: #1e40af;
   --sidebar-bg:  #f8fafc;
@@ -43,9 +44,10 @@
   --border:      #334155;
   --text:        #e2e8f0;
   --text-muted:  #94a3b8;
-  --text-xmuted: #64748b;
+  --text-xmuted: #8b9ab0;
   --accent:      #60a5fa;
   --accent-h:    #93c5fd;
+  --on-accent:   #0f172a;   /* el acento claro del tema oscuro necesita texto oscuro */
   --accent-bg:   #172554;
   --accent-text: #93c5fd;
   --sidebar-bg:  #1a2744;
@@ -203,7 +205,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   justify-content: center;
   width: 36px; height: 36px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: .8rem;
   font-weight: 800;
   border-radius: var(--radius-sm);
@@ -320,7 +322,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
 }
 .cat-item.active .cat-count {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 /* ─── Main Content ──────────────────────────────────────── */
@@ -400,14 +402,14 @@ html:not([data-theme]) .icon-sun  { display: none; }
   gap: .4rem;
   padding: .5rem 1.1rem;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-radius: var(--radius-sm);
   font-size: .88rem;
   font-weight: 500;
   transition: background .15s;
   text-decoration: none;
 }
-.btn-retry:hover { background: var(--accent-h); color: #fff; }
+.btn-retry:hover { background: var(--accent-h); color: var(--on-accent); }
 
 .loading-dots {
   display: flex; gap: .4rem; align-items: center;
@@ -548,7 +550,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
 }
 .tag-clickable:hover {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 
@@ -1010,7 +1012,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
 .visual-chip.active {
   border-color: var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
@@ -1114,7 +1116,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
   border-radius: var(--radius);
   animation: mapHubIn .45s cubic-bezier(.22,1,.36,1) both;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   text-align: center;
   z-index: 2;
 }
@@ -1223,7 +1225,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   text-align: center;
   z-index: 2;
   position: absolute;
@@ -1637,7 +1639,7 @@ html:not([data-theme]) .icon-sun  { display: none; }
 .card-check.checked {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .card-grid.selection-mode .script-card {
