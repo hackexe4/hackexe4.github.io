@@ -1047,9 +1047,15 @@ El botón depende de Google Translate y puede requerir conexión a Internet.",Ca
 <script>
 $exe.options.atools.translator = true;
 </script>",traducción; accesibilidad; Google Translate; barra; cabecera HTML,Traducción; Accesibilidad,exe_0009,Información aportada por Juan José de Haro.
-exe_0027,elpx-optimizer,"Reduce el peso de los proyectos de eXeLearning recomprimiendo vídeos, imágenes, audio y PDF, y quitando los archivos que no se usan. El resultado se sigue pudiendo editar.","### elpx-optimizer
+exe_0027,elpx-optimizer,"Reduce el peso de los proyectos de eXeLearning recomprimiendo vídeos, imágenes, audio y PDF, y quitando los archivos que no se usan. El resultado se sigue pudiendo editar. Funciona en la web, en la terminal y con asistentes de IA.","### elpx-optimizer
 
-Aplicación web del Área de Tecnología Educativa del Gobierno de Canarias para aligerar proyectos de eXeLearning (`.elpx`). Todo ocurre en el navegador: el proyecto no se sube a ningún servidor y el original no se modifica.
+Programa del Área de Tecnología Educativa del Gobierno de Canarias para aligerar proyectos de eXeLearning (`.elpx`). El original no se modifica y el resultado se sigue pudiendo editar en eXeLearning.
+
+**Formas de usarlo**
+
+- **Web:** se arrastra el proyecto a la página y se descarga el resultado. Todo ocurre en el navegador: el proyecto no se sube a ningún servidor.
+- **Terminal:** con `npx elpx-optimizer optimize curso.elpx`, que necesita Node.js y FFmpeg, o con Docker, que lo incluye todo. Permite procesar varios proyectos y ajustar cada opción.
+- **Asistentes de IA:** se instala como Agent Skill en los asistentes compatibles con ese formato. El asistente analiza el proyecto, explica qué va a hacer y pide confirmación antes de cualquier cambio que reduzca la calidad o altere la estructura. La optimización la hace el propio programa.
 
 **Para qué sirve**
 
@@ -1058,8 +1064,8 @@ Aplicación web del Área de Tecnología Educativa del Gobierno de Canarias para
 - Dar nombres limpios a los archivos: minúsculas, sin espacios ni tildes.
 - Crear la miniatura del proyecto a partir de su primera página o de una imagen propia.
 
-Antes de optimizar muestra qué ocupa cada tipo de archivo, qué va a hacer y el ahorro estimado, con tres niveles de calidad. El proyecto optimizado se descarga como un `.elpx` nuevo que se abre en eXeLearning como cualquier otro.
+Antes de optimizar muestra qué ocupa cada tipo de archivo, qué va a hacer y el ahorro estimado, con tres niveles de calidad.
 
-Es útil cuando un proyecto supera el tamaño que admite la plataforma donde se publica. Completa el optimizador de imágenes que eXeLearning incluye en Utilidades, porque trata también vídeo, audio y PDF y revisa el proyecto entero. También puede usarse desde la terminal o con Docker para procesar varios proyectos.
+Completa el optimizador de imágenes que eXeLearning incluye en Utilidades, porque trata también vídeo, audio y PDF y revisa el proyecto entero.
 
 **URL:** https://ateeducacion.github.io/elpx-optimizer/",,,optimización; ELPX; imágenes; vídeo; peso,Herramientas externas; Publicación y visualización,exe_0007; exe_0008; exe_0024,[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/elpx-optimizer/)
