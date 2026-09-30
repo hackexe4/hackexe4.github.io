@@ -11,3 +11,4 @@ raíz del repositorio: `nuevo-adr "Título de la decisión"`, a partir de
 | [2](0002-recursos-en-un-json-del-repositorio.md) | Los recursos se guardan en un JSON dentro del repositorio | aceptado |
 | [3](0003-licencias.md) | AGPL para el código de la aplicación y CC BY-SA para los recursos | aceptado |
 | [4](0004-sin-estadisticas-de-uso.md) | La web no recoge estadísticas de uso | aceptado |
+| [5](0005-version-a-mano-con-etiqueta.md) | La versión se fija a mano al publicar, con su etiqueta | aceptado |
