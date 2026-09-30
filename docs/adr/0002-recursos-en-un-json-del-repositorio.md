@@ -21,7 +21,8 @@ CSV en el navegador, con campos de lista escritos como texto separado por comas.
   eliminó el 30-09-2026: se había desincronizado y obligaba a hacer cada cambio
   dos veces.
 - El cuaderno de NotebookLM de eXeLearning (Karla) no lee la hoja de cálculo,
-  sino un Markdown generado a partir del JSON en su actualización diaria.
+  sino un Markdown generado a partir del JSON. La pasada diaria del cuaderno lo
+  compara con lo último subido y solo lo sustituye cuando el JSON ha cambiado.
 
 ## Alternativas descartadas
 
@@ -35,7 +36,7 @@ CSV en el navegador, con campos de lista escritos como texto separado por comas.
 ## Consecuencias
 
 La web no hace ninguna petición a Google. Un recurso nuevo aparece en cuanto se
-publica el JSON, y llega a Karla en la siguiente actualización diaria.
+publica el JSON y, cuando cambia, llega a Karla al día siguiente.
 
 ## Evidencia
 
