@@ -660,9 +660,9 @@
   },
   {
     "id": "exe_0028",
-    "titulo": "Plugins para Moodle",
-    "resumen": "Añaden a Moodle actividades de eXeLearning que se crean, editan y muestran dentro del curso, en formato SCORM o como sitio web, sin instalar eXeLearning en el ordenador.",
-    "descripcion": "### Plugins para Moodle\n\nPlugins oficiales de eXeLearning que añaden a Moodle dos tipos de actividad. Los recursos se crean o se editan con eXeLearning sin salir de Moodle y sin instalar nada en el ordenador.\n\n**Cuál elegir**\n\n- **eXeLearning (SCORM)** ([mod_exescorm](https://github.com/exelearning/mod_exescorm)): muestra el contenido en el visor SCORM de Moodle y permite hacer seguimiento y recoger calificaciones.\n- **eXeLearning (sitio web)** ([mod_exeweb](https://github.com/exelearning/mod_exeweb)): muestra el contenido como sitio web, con su estilo completo.\n\n**Cómo se instala**\n\nLo hace la administración de la plataforma. Se descarga el ZIP de la última versión desde la página de cada plugin y se sube desde la instalación de plugins de la administración del sitio. Funcionan con Moodle 4.2 o posterior. El editor puede ir integrado en el propio Moodle, sin otro servidor, o conectarse a una instalación de eXeLearning online.\n\n**Cómo se usa**\n\n1. En el curso, con la edición activada, se añade una actividad **eXeLearning (SCORM)** o **eXeLearning (sitio web)**.\n2. Se elige entre subir un proyecto `.elpx` ya hecho o crearlo con eXeLearning.\n3. Al guardar, se abre el editor de eXeLearning. Al terminar, el contenido vuelve a Moodle y queda publicado en el curso.\n\nLas versiones antiguas de estos plugins no admiten los proyectos de eXeLearning 4. Si la plataforma del centro no los abre, conviene pedir que se actualicen. Los dos se pueden probar en el navegador con Moodle Playground, desde el enlace de la página de cada plugin.\n\n**URL:** https://exelearning.net/descargas/",
+    "titulo": "eXeLearning (SCORM) para Moodle",
+    "resumen": "Plugin oficial que añade a Moodle actividades de eXeLearning en formato SCORM, con seguimiento y calificaciones. Se crean y se editan sin salir de Moodle.",
+    "descripcion": "### eXeLearning (SCORM) para Moodle\n\nPlugin oficial de eXeLearning que añade a Moodle la actividad **eXeLearning (SCORM)**. El contenido se muestra en el visor SCORM de Moodle, que permite hacer seguimiento del alumnado y recoger calificaciones en el libro de calificaciones. Los recursos se crean o se editan con eXeLearning sin salir de Moodle y sin instalar nada en el ordenador.\n\n**Cómo se instala**\n\nLo hace la administración de la plataforma. Se descarga el ZIP de la última versión desde la página del plugin y se sube desde la instalación de plugins de la administración del sitio. Funciona con Moodle 4.2 o posterior. El editor puede ir integrado en el propio Moodle, sin otro servidor, o conectarse a una instalación de eXeLearning online.\n\n**Cómo se usa**\n\n1. En el curso, con la edición activada, se añade una actividad **eXeLearning (SCORM)**.\n2. Se elige entre subir un proyecto `.elpx` ya hecho o crearlo con eXeLearning.\n3. Al guardar, se abre el editor de eXeLearning. Al terminar, el contenido vuelve a Moodle y queda publicado en el curso.\n\nLas versiones antiguas de este plugin no admiten los proyectos de eXeLearning 4. Si la plataforma del centro no los abre, conviene pedir que se actualice. Se puede probar en el navegador con Moodle Playground, desde el enlace de la página del plugin.\n\nSi se necesita recoger calificaciones, conviene el plugin **eXeLearning (SCORM)**; para mostrar el contenido tal cual, con su estilo completo, el de **sitio web**.\n\n**URL:** https://github.com/exelearning/mod_exescorm",
     "donde": [],
     "script": "",
     "etiquetas": [
@@ -676,9 +676,9 @@
       "Integración en plataformas"
     ],
     "relacionados": [
+      "exe_0032",
       "exe_0029",
-      "exe_0030",
-      "exe_0017"
+      "exe_0030"
     ],
     "fuente": "[eXeLearning](https://exelearning.net/descargas/)"
   },
@@ -701,6 +701,7 @@
     ],
     "relacionados": [
       "exe_0028",
+      "exe_0032",
       "exe_0030",
       "exe_0008"
     ],
@@ -725,6 +726,7 @@
     ],
     "relacionados": [
       "exe_0028",
+      "exe_0032",
       "exe_0029"
     ],
     "fuente": "[eXeLearning](https://exelearning.net/descargas/)"
@@ -751,5 +753,28 @@
       "exe_0027"
     ],
     "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://ateeducacion.github.io/h5p2elpx/)"
+  },
+  {
+    "id": "exe_0032",
+    "titulo": "eXeLearning (sitio web) para Moodle",
+    "resumen": "Plugin oficial que añade a Moodle actividades de eXeLearning que se muestran como sitio web, con su estilo completo. Se crean y se editan sin salir de Moodle.",
+    "descripcion": "### eXeLearning (sitio web) para Moodle\n\nPlugin oficial de eXeLearning que añade a Moodle la actividad **eXeLearning (sitio web)**. El contenido se muestra como sitio web, con su estilo y su menú de navegación completos. Es un recurso para consultar: no recoge calificaciones, aunque la actividad se puede dar por completada cuando el alumnado la abre. Los recursos se crean o se editan con eXeLearning sin salir de Moodle y sin instalar nada en el ordenador.\n\n**Cómo se instala**\n\nLo hace la administración de la plataforma. Se descarga el ZIP de la última versión desde la página del plugin y se sube desde la instalación de plugins de la administración del sitio. Funciona con Moodle 4.2 o posterior. El editor puede ir integrado en el propio Moodle, sin otro servidor, o conectarse a una instalación de eXeLearning online.\n\n**Cómo se usa**\n\n1. En el curso, con la edición activada, se añade una actividad **eXeLearning (sitio web)**.\n2. Se elige entre subir un proyecto `.elpx` ya hecho o crearlo con eXeLearning.\n3. Al guardar, se abre el editor de eXeLearning. Al terminar, el contenido vuelve a Moodle y queda publicado en el curso.\n\nLas versiones antiguas de este plugin no admiten los proyectos de eXeLearning 4. Si la plataforma del centro no los abre, conviene pedir que se actualice. Se puede probar en el navegador con Moodle Playground, desde el enlace de la página del plugin.\n\nSi se necesita recoger calificaciones, conviene el plugin **eXeLearning (SCORM)**; para mostrar el contenido tal cual, con su estilo completo, el de **sitio web**.\n\n**URL:** https://github.com/exelearning/mod_exeweb",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "Moodle",
+      "plugin",
+      "sitio web",
+      "ELPX"
+    ],
+    "categorias": [
+      "Integración en plataformas"
+    ],
+    "relacionados": [
+      "exe_0028",
+      "exe_0029",
+      "exe_0030"
+    ],
+    "fuente": "[eXeLearning](https://exelearning.net/descargas/)"
   }
 ]
