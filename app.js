@@ -2017,7 +2017,31 @@ function initEvents() {
 
 /* ─── Arranque ──────────────────────────────────────────── */
 /* Prepara la página cuando termina de cargarse el HTML. */
+// Cuando el contenido cabe en la pantalla, guarda la altura del pie en
+// --footer-h para que la barra lateral le deje sitio y el pie se vea sin
+// desplazar la página. Si el contenido es más largo, la barra usa todo el alto.
+function watchFooterSpace() {
+  const footer = document.querySelector('.app-footer');
+  const header = document.querySelector('.app-header');
+  const main   = document.querySelector('main');
+  if (!footer || !header || !main) return;
+  const update = () => {
+    const cs = getComputedStyle(main);
+    const content = [...main.children].reduce((h, el) => h + (el.hidden ? 0 : el.offsetHeight), 0)
+      + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const fits = header.offsetHeight + content + footer.offsetHeight <= window.innerHeight;
+    document.documentElement.style.setProperty('--footer-h', fits ? footer.offsetHeight + 'px' : '0px');
+  };
+  update();
+  window.addEventListener('resize', update);
+  if (typeof ResizeObserver === 'function') {
+    const observer = new ResizeObserver(update);
+    [footer, ...main.children].forEach(el => observer.observe(el));
+  }
+}
+
 function init() {
+  watchFooterSpace();
   initDom();
   initTheme();
   initEvents();

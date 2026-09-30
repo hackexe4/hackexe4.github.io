@@ -275,6 +275,24 @@ html:not([data-theme]) .icon-sun  { display: none; }
 
 .sidebar-inner { padding: 1.25rem 0; }
 
+/* En escritorio, la barra mide lo que sus categorías, sin pasar del alto de la
+   pantalla. Cuando el contenido cabe entero, app.js pone en --footer-h la altura
+   del pie para que la barra le deje sitio y el pie se vea sin desplazar la página. El fondo y el borde de la columna los
+   pinta .app-body en todo su alto, para que la barra se vea entera igual. */
+@media (min-width: 769px) {
+  .sidebar {
+    height: auto;
+    max-height: calc(100vh - var(--header-h) - var(--footer-h, 0px));
+    align-self: flex-start;
+  }
+  .app-body:not(.map-mode) {
+    background: linear-gradient(to right,
+      var(--sidebar-bg) calc(var(--sidebar-w) - 1px),
+      var(--border) calc(var(--sidebar-w) - 1px) var(--sidebar-w),
+      transparent var(--sidebar-w));
+  }
+}
+
 .sidebar-title {
   font-size: .7rem;
   font-weight: 700;
