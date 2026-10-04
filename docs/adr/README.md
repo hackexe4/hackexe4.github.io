@@ -12,3 +12,4 @@ raíz del repositorio: `nuevo-adr "Título de la decisión"`, a partir de
 | [3](0003-licencias.md) | AGPL para el código de la aplicación y CC BY-SA para los recursos | aceptado |
 | [4](0004-sin-estadisticas-de-uso.md) | La web no recoge estadísticas de uso | aceptado |
 | [5](0005-version-a-mano-con-etiqueta.md) | La versión se fija a mano al publicar, con su etiqueta | aceptado |
+| [6](0006-imagenes-de-los-recursos-en-el-repositorio.md) | Los recursos visuales llevan imagen, guardada en el repositorio | aceptado |

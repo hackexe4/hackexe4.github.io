@@ -19,6 +19,7 @@ Compatibles con **eXeLearning 4 y superiores**. Para la versión 2.9 visita [hac
 - **Vista de código** con resaltado de sintaxis (HTML, CSS, JavaScript)
 - **Copiar con un clic** para pegar directamente en eXeLearning
 - **Compartir recursos** mediante URL: una vista, un recurso concreto o una selección personalizada
+- **Imágenes** de los recursos visuales, como los estilos: miniatura en la lista y, en la ficha, imagen que se amplía al pulsarla
 - **Modo claro/oscuro** automático y manual
 - Los recursos se guardan en `HackeXe4.json`, dentro del propio repositorio
 
@@ -46,6 +47,8 @@ Campos:
 | `categorias` | Categorías (lista) |
 | `relacionados` | IDs de recursos relacionados (lista) |
 | `fuente` | Autoría y procedencia, en Markdown |
+| `imagen` | Opcional. Imagen de la ficha, en `img/` ([ADR 6](docs/adr/0006-imagenes-de-los-recursos-en-el-repositorio.md)) |
+| `miniatura` | Opcional. Imagen de la tarjeta de la lista; si falta, se usa `imagen` |
 
 ## Tecnología
 
@@ -70,7 +73,8 @@ Alojada en GitHub Pages.
 1. Añade un objeto al final de `HackeXe4.json` con el `id` siguiente al último (`exe_0033`, `exe_0034`…) y los campos del apartado «Datos».
 2. Si es un fragmento de código, pon en `script` el código completo y en `donde` el lugar de eXeLearning donde se pega. Si es una ficha de un programa o una web, deja los dos vacíos.
 3. En `relacionados`, los `id` de los recursos con los que se relaciona.
-4. Para crear una categoría nueva basta con escribir su nombre en `categorias`: aparece sola en la barra lateral.
+4. Si lo importante es el aspecto (un estilo, por ejemplo), pon en `imagen` una captura en WebP de 1200 px de ancho y en `miniatura` la misma a 600 px, las dos en `img/`. Si la captura es ajena, acredítala en `TERCEROS.md`.
+5. Para crear una categoría nueva basta con escribir su nombre en `categorias`: aparece sola en la barra lateral.
 
 **Probarlo en local**
 

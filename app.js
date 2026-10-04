@@ -63,6 +63,10 @@ const T = {
   resourcesInMap: n => `${n} recurso${n !== 1 ? 's' : ''}`,
   linkCopied:     '¡Enlace copiado!',
   linkCopiedFail: 'No se pudo copiar el enlace',
+  enlargeImage:   'Ampliar imagen',
+  imageAlt:       t => `Captura de ${t}`,
+  downloadImage:  'Descargar imagen',
+  close:          'Cerrar',
 };
 
 const WHERE_INSERT_HELP = [
@@ -96,6 +100,9 @@ const IC = {
   where:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
   retry:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`,
   select: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`,
+  zoom:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`,
+  download: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  close:  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
   map:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M8.7 7.4 10.9 15"/><path d="M15.3 7.4 13.1 15"/><path d="M9 6h6"/></svg>`,
 };
 
@@ -1222,6 +1229,7 @@ function createCard(script) {
   const related  = script.relacionados || [];
   const fullDesc = stripMarkdown(stripHtml(script.resumen || script.descripcion || ''));
   const id       = script.id;
+  const thumb    = script.miniatura || script.imagen || '';
   const isSelected = selectedIds.has(id);
 
   const relatedItems = related
@@ -1237,6 +1245,7 @@ function createCard(script) {
     <div class="card-check ${isSelected ? 'checked' : ''}" aria-hidden="true">
       ${IC.check}
     </div>
+    ${thumb ? `<img class="card-thumb" src="${escHtml(thumb)}" alt="" loading="lazy" width="600" height="350">` : ''}
     ${cats.length ? `<div class="card-cats">${cats.map(c => `<span class="card-category tag-clickable" data-cat="${escHtml(c)}">${escHtml(c)}</span>`).join('')}</div>` : ''}
     <h3 class="card-title">${escHtml(script.titulo)}</h3>
     <p class="card-desc">${escHtml(fullDesc)}</p>
@@ -1602,6 +1611,38 @@ function showExplore(popHistory = false) {
   if (!popHistory) updateURL();
 }
 
+/* ─── Visor de imágenes ─────────────────────────────────── */
+/*
+ * Muestra la imagen de un recurso al mayor tamaño que cabe en la ventana, con
+ * un enlace para descargarla. Es un <dialog> nativo: se cierra con Escape, con
+ * el botón de cerrar o pulsando fuera de la imagen.
+ */
+function openImageViewer(script) {
+  let dlg = $('imageViewer');
+  if (!dlg) {
+    dlg = document.createElement('dialog');
+    dlg.id = 'imageViewer';
+    dlg.className = 'image-viewer';
+    dlg.addEventListener('click', e => {
+      if (e.target === dlg || e.target.classList.contains('image-viewer-body')) dlg.close();
+    });
+    document.body.appendChild(dlg);
+  }
+  const src = escHtml(script.imagen);
+  const file = escHtml(script.imagen.split('/').pop());
+  dlg.setAttribute('aria-label', T.imageAlt(script.titulo));
+  dlg.innerHTML = `
+    <div class="image-viewer-bar">
+      <a class="btn-toolbar" href="${src}" download="${file}">${IC.download} ${T.downloadImage}</a>
+      <button class="btn-toolbar image-viewer-close" type="button" autofocus aria-label="${T.close}" title="${T.close}">${IC.close}</button>
+    </div>
+    <div class="image-viewer-body">
+      <img src="${src}" alt="${escHtml(T.imageAlt(script.titulo))}">
+    </div>`;
+  dlg.querySelector('.image-viewer-close').addEventListener('click', () => dlg.close());
+  dlg.showModal();
+}
+
 /* ─── Ficha de un recurso ───────────────────────────────── */
 /*
  * Muestra la ficha completa: descripción, dónde insertarlo, código con botón de
@@ -1668,6 +1709,13 @@ function showDetail(script, pushHistory = true) {
         <h1 class="detail-title">${escHtml(script.titulo)}</h1>
         <p class="detail-id">ID: <code>${escHtml(script.id)}</code></p>
       </div>
+
+      ${script.imagen ? `<div class="detail-section">
+        <button class="detail-image" type="button" id="detailImage" title="${T.enlargeImage}">
+          <img src="${escHtml(script.imagen)}" alt="${escHtml(T.imageAlt(script.titulo))}" width="1200" height="700">
+          <span class="detail-image-zoom" aria-hidden="true">${IC.zoom}</span>
+        </button>
+      </div>` : ''}
 
       ${resumen ? `<div class="detail-section">
         <p class="detail-label">${T.summary}</p>
@@ -1747,6 +1795,8 @@ function showDetail(script, pushHistory = true) {
 
   $('btnShareDetail').addEventListener('click', e =>
     shareURL(e.currentTarget.dataset.url));
+
+  $('detailImage')?.addEventListener('click', () => openImageViewer(script));
 
   const btnCopy = $('btnCopy');
   if (btnCopy) {
@@ -1988,6 +2038,7 @@ function initEvents() {
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
+      if ($('imageViewer')?.open) return;
       if (dom.sidebar.classList.contains('open')) closeSidebar();
       else if (selectionMode) exitSelectionMode();
       else if (!dom.detailView.hidden) showList();

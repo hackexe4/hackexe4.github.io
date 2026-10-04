@@ -140,7 +140,8 @@
     ],
     "categorias": [
       "Programas complementarios",
-      "Personalización visual"
+      "Personalización visual",
+      "Estilos"
     ],
     "relacionados": [
       "exe_0015",
@@ -525,7 +526,8 @@
     ],
     "categorias": [
       "Documentación y ayuda",
-      "Personalización visual"
+      "Personalización visual",
+      "Estilos"
     ],
     "relacionados": [
       "exe_0006"
@@ -776,5 +778,126 @@
       "exe_0030"
     ],
     "fuente": "[eXeLearning](https://exelearning.net/descargas/)"
+  },
+  {
+    "id": "exe_0033",
+    "titulo": "Estilo Spectrum 128K",
+    "resumen": "Estilo retro inspirado en el ordenador Sinclair ZX Spectrum 128K: franjas multicolor, colores brillantes y letra pixelada.",
+    "descripcion": "### Estilo Spectrum 128K\n\nEstilo de eXeLearning del Área de Tecnología Educativa del Gobierno de Canarias inspirado en el ordenador Sinclair ZX Spectrum 128K y en la estética del teletexto.\n\n**Cómo es**\n\n- Franjas de colores del Spectrum, paleta de colores brillantes y letra pixelada.\n- Un botón de ajustes en la barra superior permite a quien lee cambiar las franjas (diagonales, verticales o sin color), usar la letra pixelada solo en los títulos o en todo el texto y activar el efecto de pantalla antigua (líneas de barrido).\n\n**Cómo se instala**\n\n1. Se descarga el estilo: [spectrum128k.zip](https://github.com/ateeducacion/exelearning-style-spectrum128k/releases/latest/download/spectrum128k.zip).\n2. En eXeLearning se abre el panel de estilos y, en la pestaña de estilos importados, se importa el archivo ZIP.\n3. Se elige el estilo para el proyecto.\n\n**Para verlo antes de instalarlo**\n\n- [Ejemplo publicado](https://ateeducacion.github.io/exelearning-style-spectrum128k/): el recurso «El ciclo del agua» con este estilo.\n- [Abrir el ejemplo en eXeLearning online](https://static.exelearning.dev/?url=https://github-proxy.exelearning.dev/?repo=ateeducacion/exelearning-style-spectrum128k&branch=main): para ver cómo se edita.\n\n**URL:** https://ateeducacion.github.io/exelearning-style-spectrum128k/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "retro",
+      "Spectrum",
+      "diseño"
+    ],
+    "categorias": [
+      "Estilos"
+    ],
+    "relacionados": [
+      "exe_0006",
+      "exe_0022"
+    ],
+    "imagen": "img/estilo-spectrum128k.webp",
+    "miniatura": "img/estilo-spectrum128k-mini.webp",
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-spectrum128k). Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/43329) el 19-04-2026. Licencia CC0."
+  },
+  {
+    "id": "exe_0034",
+    "titulo": "Estilo SCUMM Adventure",
+    "resumen": "Estilo inspirado en las aventuras gráficas clásicas de LucasArts: escena pixelada, panel de verbos e inventario y cuadros de diálogo.",
+    "descripcion": "### Estilo SCUMM Adventure\n\nEstilo de eXeLearning del Área de Tecnología Educativa del Gobierno de Canarias inspirado en las aventuras gráficas clásicas de LucasArts, hechas con el motor SCUMM.\n\n**Cómo es**\n\n- Escena en pixel art, panel inferior de verbos e inventario, cuadros de diálogo de color beige y paleta reducida de 8 y 16 bits.\n- Pantalla de carga al entrar.\n- Un botón de ajustes en la barra superior permite ocultar el panel de verbos (en el móvil empieza oculto), quitar el efecto de pantalla antigua, pasar del modo de día al de noche y volver a ver la pantalla de carga.\n\nSu tipografía principal solo admite uso no comercial.\n\n**Cómo se instala**\n\n1. Se descarga el estilo: [la última versión, en la página de descargas](https://github.com/ateeducacion/exelearning-style-scumm/releases/latest).\n2. En eXeLearning se abre el panel de estilos y, en la pestaña de estilos importados, se importa el archivo ZIP.\n3. Se elige el estilo para el proyecto.\n\n**Para verlo antes de instalarlo**\n\n- [Ejemplo publicado](https://ateeducacion.github.io/exelearning-style-scumm/): el recurso «El ciclo del agua» con este estilo.\n- [Abrir el ejemplo en eXeLearning online](https://static.exelearning.dev/?url=https://github-proxy.exelearning.dev/?repo=ateeducacion/exelearning-style-scumm&branch=main): para ver cómo se edita.\n\n**URL:** https://ateeducacion.github.io/exelearning-style-scumm/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "retro",
+      "videojuegos",
+      "diseño"
+    ],
+    "categorias": [
+      "Estilos"
+    ],
+    "relacionados": [
+      "exe_0006",
+      "exe_0022"
+    ],
+    "imagen": "img/estilo-scumm.webp",
+    "miniatura": "img/estilo-scumm-mini.webp",
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-scumm). Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/43348) el 21-04-2026. Licencia CC0."
+  },
+  {
+    "id": "exe_0035",
+    "titulo": "Estilo Hacker",
+    "resumen": "Estilo futurista inspirado en las terminales de las películas: lluvia de caracteres de Matrix, bordes de neón de Tron y panel de Fallout.",
+    "descripcion": "### Estilo Hacker\n\nEstilo de eXeLearning del Área de Tecnología Educativa del Gobierno de Canarias inspirado en las terminales de *Matrix*, *Tron* y el videojuego *Fallout*.\n\n**Cómo es**\n\n- Lluvia de caracteres de fondo, bordes de neón que se dibujan en cada caja y barra lateral con pestañas, barras de estado y reloj.\n- Pantalla de arranque al entrar.\n- Un botón de ajustes en la barra superior permite cambiar el color (verde, ámbar o cian), quitar la lluvia de fondo, el parpadeo y el efecto de pantalla antigua, curvar la pantalla, elegir dónde se usa la letra pixelada y hacer que el texto aparezca letra a letra. Si el sistema pide reducir el movimiento, el texto aparece de golpe.\n\n**Cómo se instala**\n\n1. Se descarga el estilo: [hacker.zip](https://github.com/ateeducacion/exelearning-style-hacker/releases/latest/download/hacker.zip).\n2. En eXeLearning se abre el panel de estilos y, en la pestaña de estilos importados, se importa el archivo ZIP.\n3. Se elige el estilo para el proyecto.\n\n**Para verlo antes de instalarlo**\n\n- [Ejemplo publicado](https://ateeducacion.github.io/exelearning-style-hacker/): el recurso «El ciclo del agua» con este estilo.\n- [Abrir el ejemplo en eXeLearning online](https://static.exelearning.dev/?url=https://github-proxy.exelearning.dev/?repo=ateeducacion/exelearning-style-hacker&branch=main): para ver cómo se edita.\n\n**URL:** https://ateeducacion.github.io/exelearning-style-hacker/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "futurista",
+      "Matrix",
+      "diseño"
+    ],
+    "categorias": [
+      "Estilos"
+    ],
+    "relacionados": [
+      "exe_0006",
+      "exe_0022"
+    ],
+    "imagen": "img/estilo-hacker.webp",
+    "miniatura": "img/estilo-hacker-mini.webp",
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-hacker). Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/43361) el 21-04-2026. Licencia CC0."
+  },
+  {
+    "id": "exe_0036",
+    "titulo": "Estilo Pocket",
+    "resumen": "Estilo que convierte el recurso en una consola portátil inspirada en la Game Boy, con pantalla verde, botones que funcionan y sonido.",
+    "descripcion": "### Estilo Pocket\n\nEstilo de eXeLearning del Área de Tecnología Educativa del Gobierno de Canarias que muestra el recurso dentro de una consola portátil inspirada en la Game Boy.\n\n**Cómo es**\n\n- Pantalla verde de matriz de puntos y botones que funcionan: START abre el menú de páginas, la cruceta mueve la selección, A entra y B vuelve.\n- SELECT activa el sonido y el botón de ampliar agranda la pantalla para leer y hacer las actividades, con las imágenes en color.\n- También se maneja con el teclado. Sin JavaScript, el contenido se lee como una página normal.\n\n**Cómo se instala**\n\n1. Se descarga el estilo: [pocket.zip](https://github.com/ateeducacion/exelearning-style-pocket/releases/latest/download/pocket.zip).\n2. En eXeLearning se abre el panel de estilos y, en la pestaña de estilos importados, se importa el archivo ZIP.\n3. Se elige el estilo para el proyecto.\n\n**Para verlo antes de instalarlo**\n\n- [Ejemplo publicado](https://ateeducacion.github.io/exelearning-style-pocket/): el recurso «El ciclo del agua» con este estilo.\n- [Abrir el ejemplo en eXeLearning online](https://static.exelearning.dev/?url=https://github-proxy.exelearning.dev/?repo=ateeducacion/exelearning-style-pocket&branch=main): para ver cómo se edita.\n\n**URL:** https://ateeducacion.github.io/exelearning-style-pocket/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "retro",
+      "videojuegos",
+      "consola",
+      "diseño"
+    ],
+    "categorias": [
+      "Estilos"
+    ],
+    "relacionados": [
+      "exe_0006",
+      "exe_0022"
+    ],
+    "imagen": "img/estilo-pocket.webp",
+    "miniatura": "img/estilo-pocket-mini.webp",
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-pocket). Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/45250) el 07-09-2026. Licencia CC0."
+  },
+  {
+    "id": "exe_0037",
+    "titulo": "Estilo Libro",
+    "resumen": "Estilo que presenta el recurso como un libro abierto sobre la mesa, con dos páginas a la vez y paso de página animado.",
+    "descripcion": "### Estilo Libro\n\nEstilo de eXeLearning del Área de Tecnología Educativa del Gobierno de Canarias que presenta el recurso como un libro abierto sobre la mesa.\n\n**Cómo es**\n\n- Cada página del recurso se reparte en páginas de libro: dos a la vez en pantallas anchas y una en el móvil, sin desplazamiento vertical.\n- Se pasa de página pulsando las esquinas inferiores, que se doblan como una hoja de papel, con las flechas del teclado o deslizando el dedo.\n- Una cinta de marcapáginas abre el índice, con buscador. Las actividades no se parten entre dos páginas.\n- Al imprimir, o sin JavaScript, el contenido se lee como una página normal.\n\nPensado para eXeLearning 4.\n\n**Cómo se instala**\n\n1. Se descarga el estilo: [book.zip](https://github.com/ateeducacion/exelearning-style-book/releases/latest/download/book.zip).\n2. En eXeLearning se abre el panel de estilos y, en la pestaña de estilos importados, se importa el archivo ZIP.\n3. Se elige el estilo para el proyecto.\n\n**Para verlo antes de instalarlo**\n\n- [Ejemplo publicado](https://ateeducacion.github.io/exelearning-style-book/): el recurso «El ciclo del agua» con este estilo.\n- [Abrir el ejemplo en eXeLearning online](https://static.exelearning.dev/?url=https://github-proxy.exelearning.dev/?repo=ateeducacion/exelearning-style-book&branch=main): para ver cómo se edita.\n\n**URL:** https://ateeducacion.github.io/exelearning-style-book/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "libro",
+      "lectura",
+      "diseño"
+    ],
+    "categorias": [
+      "Estilos"
+    ],
+    "relacionados": [
+      "exe_0006",
+      "exe_0022"
+    ],
+    "imagen": "img/estilo-book.webp",
+    "miniatura": "img/estilo-book-mini.webp",
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-book). Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/45669) el 04-10-2026. Licencia CC0."
   }
 ]
