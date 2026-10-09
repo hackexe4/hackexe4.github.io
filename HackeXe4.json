@@ -899,5 +899,30 @@
     "imagen": "img/estilo-book.webp",
     "miniatura": "img/estilo-book-mini.webp",
     "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-book). Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/45669) el 04-10-2026. Licencia CC0."
+  },
+  {
+    "id": "exe_0038",
+    "titulo": "Estilo Boost",
+    "resumen": "Estilo con el aspecto del tema Boost de Moodle: barra superior, índice del curso en un panel lateral, pestañas de sección y tarjetas de actividad.",
+    "descripcion": "### Estilo Boost\n\nEstilo de eXeLearning del Área de Tecnología Educativa del Gobierno de Canarias con el aspecto del tema Boost de Moodle, para que el recurso se vea como un curso de la plataforma. Está basado en ese tema, pero no es un producto de Moodle.\n\n**Cómo es**\n\n- Barra superior con el nombre del recurso, el buscador y el número de página, e índice del curso en un panel lateral con las secciones plegables. El panel se oculta con un botón y en el móvil se abre sobre el contenido.\n- Migas de pan, pestañas con las páginas de cada sección y botones de anterior, «Ir a…» y siguiente al final de cada página, como en Moodle.\n- Cada iDevice va en una tarjeta de actividad, con un icono del color que Moodle da a cada tipo de actividad. Colores y tipografía (Noto Sans) son los de Moodle.\n- Al imprimir, o sin JavaScript, el contenido se lee como una página normal.\n\nFunciona con eXeLearning 4.0.5 o posterior.\n\n**Lo más sencillo: partir del proyecto de ejemplo**\n\nEl ejemplo «El ciclo del agua» ya lleva el estilo dentro. **Al abrirlo en eXeLearning, el programa ofrece instalar el estilo, sin tener que importarlo aparte.**\n\n1. Se descarga el proyecto de ejemplo, [ciclo-del-agua.elpx](https://github.com/ateeducacion/exelearning-style-boost/releases/latest/download/ciclo-del-agua.elpx). También se puede [abrir en eXeLearning online](https://static.exelearning.dev/?url=https://github-proxy.exelearning.dev/?repo=ateeducacion/exelearning-style-boost&branch=main) y descargarlo desde allí como archivo de eXeLearning (.elpx).\n2. Se abre en eXeLearning y se acepta instalar el estilo cuando el programa lo pregunta.\n3. Se sustituye el contenido del ejemplo por el propio, o se aplica el estilo, ya instalado, a otro proyecto.\n\n**Instalar solo el estilo**\n\nSe descarga el estilo ([boost.zip](https://github.com/ateeducacion/exelearning-style-boost/releases/latest/download/boost.zip)) y, en eXeLearning, se importa el archivo ZIP desde el panel de estilos, en la pestaña de estilos importados.\n\n**Para verlo publicado**\n\n[Ejemplo publicado](https://ateeducacion.github.io/exelearning-style-boost/): el recurso «El ciclo del agua» con este estilo.\n\n**URL:** https://ateeducacion.github.io/exelearning-style-boost/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "moodle",
+      "curso",
+      "diseño"
+    ],
+    "categorias": [
+      "Estilos"
+    ],
+    "relacionados": [
+      "exe_0006",
+      "exe_0022",
+      "exe_0032"
+    ],
+    "imagen": "img/estilo-boost.webp",
+    "miniatura": "img/estilo-boost-mini.webp",
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-boost), a partir del [tema Boost de Moodle](https://github.com/moodle/moodle/tree/main/public/theme/boost). Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/45831) el 09-10-2026. Licencia GPL-3.0; el recurso de ejemplo, CC0."
   }
 ]

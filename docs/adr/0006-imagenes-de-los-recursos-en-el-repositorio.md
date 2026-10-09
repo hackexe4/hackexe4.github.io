@@ -20,7 +20,10 @@ entonces las fichas solo tenían texto y código.
   ventana, con un enlace para descargarla. El visor es un `<dialog>` nativo y
   se cierra con Escape, con su botón o pulsando fuera.
 - Las imágenes de los estilos son las capturas que publica su autor en cada
-  repositorio (`.github/screenshot.png`, CC0), convertidas a WebP.
+  repositorio (`.github/screenshot.png`), convertidas a WebP. Llevan la
+  licencia de ese repositorio, que se indica en `TERCEROS.md`: CC0 en la
+  mayoría y GPL-3.0 en el estilo Boost (`exe_0038`, añadido el 09-10-2026),
+  derivado del tema Boost de Moodle.
 
 ## Alternativas descartadas
 
