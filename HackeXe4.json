@@ -924,5 +924,30 @@
     "imagen": "img/estilo-boost.webp",
     "miniatura": "img/estilo-boost-mini.webp",
     "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-boost), a partir del [tema Boost de Moodle](https://github.com/moodle/moodle/tree/main/public/theme/boost). Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/45831) el 09-10-2026. Licencia GPL-3.0; el recurso de ejemplo, CC0."
+  },
+  {
+    "id": "exe_0039",
+    "titulo": "Estilo eXeTexto",
+    "resumen": "Estilo que presenta el recurso como un servicio de teletexto: páginas numeradas que se pueden teclear, teclas de colores para moverse y paneles de colores.",
+    "descripcion": "### Estilo eXeTexto\n\nEstilo de eXeLearning del Área de Tecnología Educativa del Gobierno de Canarias que presenta el recurso como un servicio de teletexto: pantalla negra, los ocho colores del teletexto, la letra de los televisores de entonces y titulares a doble altura.\n\n**Cómo es**\n\n- Cada página tiene su número (100, 200, 210…), como en el teletexto, y se puede ir a ella tecleando sus tres cifras. La fila de cabecera muestra la página, el nombre del servicio, la fecha y la hora.\n- Al pie, las cuatro teclas de colores, siempre visibles: roja y azul para la página anterior y la siguiente (también con las flechas del teclado), verde para el índice y amarilla para las actividades.\n- Índice numerado a la izquierda, con el buscador del recurso. En el móvil se abre sobre la página con la tecla verde.\n- Las actividades van en un panel amarillo, y cualquier caja puede llevar otro color, o pasar a la columna lateral, escribiendo una clase en el campo «Clase CSS» de sus propiedades: `tt-red`, `tt-green`, `tt-yellow`, `tt-blue`, `tt-magenta`, `tt-cyan`, `tt-white` y `tt-side` (columna lateral, que se combina con un color).\n- La letra no tiene sitio para las tildes de las mayúsculas, así que conviene escribir los títulos en minúscula, como en el ejemplo.\n- Al imprimir, o sin JavaScript, el contenido se lee como una página normal.\n\nFunciona con eXeLearning 4.0.5 o posterior.\n\n**Lo más sencillo: partir del proyecto de ejemplo**\n\nEl ejemplo «El ciclo del agua» ya lleva el estilo dentro. **Al abrirlo en eXeLearning, el programa ofrece instalar el estilo, sin tener que importarlo aparte.**\n\n1. Se descarga el proyecto de ejemplo, [ciclo-del-agua.elpx](https://github.com/ateeducacion/exelearning-style-teletext/releases/latest/download/ciclo-del-agua.elpx). También se puede [abrir en eXeLearning online](https://static.exelearning.dev/?url=https://github-proxy.exelearning.dev/?repo=ateeducacion/exelearning-style-teletext&branch=main) y descargarlo desde allí como archivo de eXeLearning (.elpx).\n2. Se abre en eXeLearning y se acepta instalar el estilo cuando el programa lo pregunta.\n3. Se sustituye el contenido del ejemplo por el propio, o se aplica el estilo, ya instalado, a otro proyecto.\n\n**Instalar solo el estilo**\n\nSe descarga el estilo ([teletext.zip](https://github.com/ateeducacion/exelearning-style-teletext/releases/latest/download/teletext.zip)) y, en eXeLearning, se importa el archivo ZIP desde el panel de estilos, en la pestaña de estilos importados.\n\n**Para verlo publicado**\n\n[Ejemplo publicado](https://ateeducacion.github.io/exelearning-style-teletext/): el recurso «El ciclo del agua» con este estilo.\n\n**URL:** https://ateeducacion.github.io/exelearning-style-teletext/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "estilos",
+      "retro",
+      "teletexto",
+      "diseño"
+    ],
+    "categorias": [
+      "Estilos"
+    ],
+    "relacionados": [
+      "exe_0006",
+      "exe_0022",
+      "exe_0033"
+    ],
+    "imagen": "img/estilo-teletext.webp",
+    "miniatura": "img/estilo-teletext-mini.webp",
+    "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-teletext), con la tipografía [Bedstead](https://fontlibrary.org/es/font/bedstead) de Ben Harris. Licencia CC0; los iconos de los iDevices, Apache 2.0."
   }
 ]
