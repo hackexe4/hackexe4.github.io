@@ -70,7 +70,9 @@
     "categorias": [
       "Fórmulas"
     ],
-    "relacionados": [],
+    "relacionados": [
+      "exe_0040"
+    ],
     "fuente": "Elaboración propia"
   },
   {
@@ -949,5 +951,28 @@
     "imagen": "img/estilo-teletext.webp",
     "miniatura": "img/estilo-teletext-mini.webp",
     "fuente": "[Área de Tecnología Educativa del Gobierno de Canarias](https://github.com/ateeducacion/exelearning-style-teletext), con la tipografía [Bedstead](https://fontlibrary.org/es/font/bedstead) de Ben Harris. Presentado por Ernesto Serrano en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/45985) el 15-10-2026. Licencia CC0; los iconos de los iDevices, Apache 2.0."
+  },
+  {
+    "id": "exe_0040",
+    "titulo": "Convertidor de delimitadores matemáticos",
+    "resumen": "Cambia las fórmulas escritas entre dólares ($...$ y $$...$$) de un proyecto de eXeLearning a los delimitadores de LaTeX que usa el programa. Distingue las fórmulas de los importes y funciona en el navegador, sin subir el proyecto.",
+    "descripcion": "### Convertidor de delimitadores matemáticos\n\nAplicación web de Rubén Jiménez Jiménez que cambia los delimitadores de las fórmulas de un proyecto de eXeLearning (`.elpx` o `.elp`) del formato con dólares al de LaTeX que usa eXeLearning:\n\n- `$$…$$` pasa a `\\[…\\]` (fórmula en bloque).\n- `$…$` pasa a `\\(…\\)` (fórmula en línea).\n\n**Para qué sirve**\n\nPara pasar a eXeLearning 4 proyectos antiguos, también de la versión 2.9, cuyas fórmulas se escribieron con dólares y necesitaban un código añadido para verse, como el de «Añadir delimitadores de fórmulas $...$». Tras la conversión, ese código sobra: eXeLearning reconoce las fórmulas por sí solo.\n\n**Cómo se usa**\n\n1. Se abre la web y se arrastra el proyecto o se elige desde el equipo.\n2. Se pulsa el botón de convertir y se guarda la copia, que lleva `_convertido` en el nombre. El original no se modifica.\n3. Se abre la copia en eXeLearning para comprobar que las fórmulas se ven bien.\n\nTodo ocurre en el navegador: el proyecto no se sube a ningún servidor.\n\n**Qué no convierte**\n\n- Los importes: `5$`, `$5 y $10` o `cuesta 5$ y 10$` se dejan como están. Al terminar, indica cuántos signos `$` no ha cambiado.\n- Las fórmulas con espacio junto al dólar: `$ x $` hay que escribirlo como `$x$`.\n- El código (`script`, `code`, `pre`) y los atributos de las etiquetas.\n- Las fórmulas de los juegos (preguntas rápidas, adivina…), porque eXeLearning guarda sus datos cifrados.\n\n**URL:** https://rujimenez05.github.io/math-apps/convertidor_dolar/",
+    "donde": [],
+    "script": "",
+    "etiquetas": [
+      "fórmulas",
+      "LaTeX",
+      "MathJax",
+      "conversión",
+      "ELPX"
+    ],
+    "categorias": [
+      "Programas complementarios",
+      "Fórmulas"
+    ],
+    "relacionados": [
+      "exe_0003"
+    ],
+    "fuente": "[Rubén Jiménez Jiménez](https://github.com/rujimenez05/math-apps), con licencia Apache 2.0. Presentado en el [grupo de Telegram de eXeLearning](https://t.me/eXeLearning/46122) el 24-10-2026."
   }
 ]
