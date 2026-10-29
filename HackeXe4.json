@@ -538,9 +538,9 @@
   },
   {
     "id": "exe_0023",
-    "titulo": "Asistente de IA Karla",
-    "resumen": "Asistente de IA sobre eXeLearning. Usa conversaciones del grupo de Telegram e información técnica para ayudar con el uso, instalación y problemas del programa.",
-    "descripcion": "### Asistente de IA Karla\n\nAsistente de IA orientado a resolver dudas sobre eXeLearning.\n\n**Para qué sirve**\n\n- Ayudar en el uso cotidiano de eXeLearning.\n- Resolver dudas de instalación y configuración.\n- Orientar ante problemas técnicos o errores del programa.\n- Consultar información procedente de conversaciones del grupo de Telegram y documentación técnica relacionada.\n\n**URL:** https://ja.cat/karla",
+    "titulo": "Karla bot",
+    "resumen": "Bot de Telegram que resuelve dudas sobre eXeLearning con su manual, la documentación del programa y de sus complementos y las conversaciones del grupo de Telegram, y dice de dónde sale cada respuesta.",
+    "descripcion": "### Karla bot\n\nAsistente de IA en Telegram para resolver dudas sobre eXeLearning. No es una persona: es un programa que usa Claude, una IA de Anthropic.\n\n**Para qué sirve**\n\n- Ayudar en el uso cotidiano de eXeLearning.\n- Resolver dudas de instalación y configuración, y de cómo publicar un recurso en Moodle u otras plataformas.\n- Orientar ante problemas técnicos o errores del programa y, si se trata de un fallo, preparar el aviso para el equipo que lo desarrolla, que solo se envía si la persona lo confirma.\n- Responder con el enlace al mensaje del grupo o al documento de donde sale cada cosa.\n\nResponde por chat privado a los miembros del grupo eXeLearning de Telegram, en el idioma en que se le escribe.\n\n**URL:** https://t.me/eXeKarlaBot",
     "donde": [],
     "script": "",
     "etiquetas": [
@@ -557,7 +557,7 @@
       "exe_0021",
       "exe_0019"
     ],
-    "fuente": "[Asistente de IA Karla](https://ja.cat/karla)"
+    "fuente": "[Karla bot](https://t.me/eXeKarlaBot)"
   },
   {
     "id": "exe_0024",
